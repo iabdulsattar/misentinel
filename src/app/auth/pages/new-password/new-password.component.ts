@@ -1,15 +1,12 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { AuthPageLayoutComponent } from '../../../layout/auth-page-layout/auth-page-layout.component';
-import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
 
 @Component({
   selector: 'app-new-password',
   templateUrl: './new-password.component.html',
-  styles: ''
+  styles: '',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class NewPasswordComponent {
   isLoading = false;

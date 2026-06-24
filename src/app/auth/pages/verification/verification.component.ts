@@ -1,17 +1,11 @@
-import { Component } from '@angular/core';
-import { VerificationFormComponent } from '../../components/verification-form/verification-form.component';
-import { AuthPageLayoutComponent } from '../../../layout/auth-page-layout/auth-page-layout.component';
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 @Component({
   selector: 'app-verification',
-  imports: [
-    VerificationFormComponent,
-    AuthPageLayoutComponent
-  ],
   templateUrl: './verification.component.html',
-  styles: ''
-  
+  styles: '',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class VerificationComponent {
+export class VerificationComponent {}
 
-}
+

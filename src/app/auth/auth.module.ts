@@ -12,6 +12,8 @@ import { NewPasswordComponent } from './pages/new-password/new-password.componen
 import { SigninFormComponent } from './components/signin-form/signin-form.component';
 import { SignupFormComponent } from './components/signup-form/signup-form.component';
 import { ForgotpasswordFormComponent } from './components/forgotpassword-form/forgotpassword-form.component';
+import { VerificationFormComponent } from './components/verification-form/verification-form.component';
+
 
 
 @NgModule({
@@ -24,7 +26,8 @@ import { ForgotpasswordFormComponent } from './components/forgotpassword-form/fo
     NewPasswordComponent,
     SigninFormComponent,
     SignupFormComponent,
-    ForgotpasswordFormComponent
+    ForgotpasswordFormComponent,
+    VerificationFormComponent
   ],
   imports: [
     CommonModule,
