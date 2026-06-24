@@ -1,0 +1,92 @@
+<div class="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
+  <div
+    class="relative flex flex-col justify-center w-full h-screen lg:flex-row dark:bg-gray-900 sm:p-0"
+  >
+    <div
+      class="items-center hidden w-full h-full lg:w-2/5 g-brand-950 dark:bg-white/5 lg:grid relative"
+    >
+      <!-- <div class="flex items-center justify-center z-1"> -->
+      <div class="flex flex-col flex-1">  
+        <!-- ===== Common Grid Shape Start ===== -->
+        <app-grid-shape />
+        <!-- <div class="flex flex-col items-center max-w-xs"> -->
+        <div class="flex flex-col justify-center flex-1 w-full max-w-sm mx-auto">
+          <div class="pb-5">    
+          <h1 class="mb-2 font-semibold text-brand-500 text-xl ">
+            Capture. Report. Stay Informed.
+          </h1>
+          
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            eDOB helps your team record, manage and review occurrences in real time - keeping your operations transparent, accountable and efficient.
+          </p>
+          </div>
+
+          <div class="pb-3">
+            <div class="flex items-center gap-3">
+              <div class="h-[50px] w-[50px] flex items-center justify-center overflow-hidden rounded-md border dark:border-gray-700 dark:text-gray-400">
+                <!-- <img src="/images/product/product-01.jpg" alt="product.name" class="h-[50px] w-[50px]" /> -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text-icon lucide-file-text"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg> 
+              </div>
+              <div>
+                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                  Real-time Reporting
+                </p>
+                <span class="text-gray-500 text-theme-xs dark:text-gray-400">
+                  Capture incidents and observations instantly.
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="pb-3">
+            <div class="flex items-center gap-3">
+              <div class="h-[50px] w-[50px] flex items-center justify-center overflow-hidden rounded-md border dark:border-gray-700 dark:text-gray-400">              
+                <!-- <img src="/images/product/product-01.jpg" alt="product.name" class="h-[50px] w-[50px]" /> -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg> 
+              </div>
+              <div>
+                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                  Review & Collaboration
+                </p>
+                <span class="text-gray-500 text-theme-xs dark:text-gray-400">
+                  Seamless review, comments and escalation.
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="">
+            <div class="flex items-center gap-3">
+              <div class="h-[50px] w-[50px] flex items-center justify-center overflow-hidden rounded-md border dark:border-gray-700 dark:text-gray-400">              
+                <!-- <img src="/images/product/product-01.jpg" alt="product.name" class="h-[50px] w-[50px]" /> -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-no-axes-combined-icon lucide-chart-no-axes-combined"><path d="M12 16v5"/><path d="M16 14.639V21"/><path d="M20 10.656V21"/><path d="m22 3-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15"/><path d="M4 18.463V21"/><path d="M8 14.656V21"/></svg> 
+              </div>
+              <div>
+                <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                  Insights & Compliance
+                </p>
+                <span class="text-gray-500 text-theme-xs dark:text-gray-400">
+                  Powerful reports and audit trails for compliance.
+                </span>
+              </div>
+            </div>
+          </div>
+           
+        </div>
+        <div class="w-full max-w-sm pt-10 mx-auto">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            © 2024 MiSentinel. All rights reserved
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <ng-content></ng-content>
+    
+    <div class="fixed z-50 hidden bottom-6 right-6 sm:block">
+      <app-theme-toggle-two />
+    </div>
+    
+  </div>
+</div>
