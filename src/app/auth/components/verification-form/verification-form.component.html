@@ -1,11 +1,11 @@
 
   <div class="w-full max-w-lg pt-10 mx-auto">
     <a
-      routerLink="/"
+      routerLink="/signup"
       class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20" fill="none" class="size-5"><path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-      Back to dashboard
+      Back to Sign Up
     </a>
   </div>
 
@@ -19,8 +19,9 @@
             We've sent a 6-digit verification code to
         </p>
         <p class="mb-1 text-sm text-brand-500 dark:text-brand-400">
-            john.smith@company.com
+            {{ email }}
         </p>
+
         <p class="text-sm text-gray-500 dark:text-gray-400">
             Please check your inbox and enter the code to continue. 
         </p>
@@ -84,123 +85,150 @@
       </div> -->
 
       <!-- Form -->
-      <form (ngSubmit)="onSignIn()" class="space-y-6">
+      <form (ngSubmit)="onVerify()" class="space-y-6">
+
+        @if (successMessage) {
+        <div class="mb-5 p-4 rounded-lg bg-success-50 border border-success-200">
+          <p class="text-sm text-success-700">{{ successMessage }}</p>
+        </div>
+        }
+
+        @if (errorMessage) {
+        <div class="mb-5 p-4 rounded-lg bg-error-50 border border-error-200">
+          <p class="text-sm text-error-700">{{ errorMessage }}</p>
+        </div>
+        }
 
         <div class="flex">
-        <div class="w-1/6 mr-2">               
-          <app-input-field
-            type="text"
-            placeholder=""
-            name="d1"
-            class="form-input"
-            [maxlength]="1"
-            [(value)]="d1"
-            className="text-center"
-            required
-          />
-        </div> 
-        
-        <div class="w-1/6 mr-2">               
-          <app-input-field
-            type="text"
-            placeholder=""
-            name="d2"
-            class="form-input"
-            [maxlength]="1"
-            [(value)]="d2"
-            className="text-center"            
-            required
-          />
+          <div class="w-1/6 mr-2">
+            <app-input-field
+              type="text"
+              placeholder=""
+              name="d1"
+              class="form-input"
+              [maxlength]="1"
+              [error]="digitError"
+              [(value)]="d1"
+              (paste)="onPaste($event)"
+              className="text-center"
+              required
+            />
+          </div>
+
+          <div class="w-1/6 mr-2">
+            <app-input-field
+              type="text"
+              placeholder=""
+              name="d2"
+              class="form-input"
+              [maxlength]="1"
+              [error]="digitError"
+              [(value)]="d2"
+              (paste)="onPaste($event)"
+              className="text-center"
+              required
+            />
+          </div>
+
+          <div class="w-1/6 mr-2">
+            <app-input-field
+              type="text"
+              placeholder=""
+              name="d3"
+              class="form-input"
+              [maxlength]="1"
+              [error]="digitError"
+              [(value)]="d3"
+              (paste)="onPaste($event)"
+              className="text-center"
+              required
+            />
+          </div>
+
+          <div class="w-1/6 mr-2">
+            <app-input-field
+              type="text"
+              placeholder=""
+              name="d4"
+              class="form-input"
+              [maxlength]="1"
+              [error]="digitError"
+              [(value)]="d4"
+              (paste)="onPaste($event)"
+              className="text-center"
+              required
+            />
+          </div>
+
+          <div class="w-1/6 mr-2">
+            <app-input-field
+              type="text"
+              placeholder=""
+              name="d5"
+              class="form-input"
+              [maxlength]="1"
+              [error]="digitError"
+              [(value)]="d5"
+              (paste)="onPaste($event)"
+              className="text-center"
+              required
+            />
+          </div>
+
+          <div class="w-1/6">
+            <app-input-field
+              type="text"
+              placeholder=""
+              name="d6"
+              class="form-input"
+              [maxlength]="1"
+              [error]="digitError"
+              [(value)]="d6"
+              (paste)="onPaste($event)"
+              className="text-center"
+              required
+            />
+          </div>
         </div>
 
-        <div class="w-1/6 mr-2">               
-          <app-input-field
-            type="text"
-            placeholder=""
-            name="d3"
-            class="form-input"
-            [maxlength]="1"
-            [(value)]="d3"
-            className="text-center"            
-            required
-          />
-        </div>
-        
-        <div class="w-1/6 mr-2">               
-          <app-input-field
-            type="text"
-            placeholder=""
-            name="d4"
-            class="form-input"
-            [maxlength]="1"
-            [(value)]="d4"
-            className="text-center"            
-            required
-          />
-        </div>
-        
-        <div class="w-1/6 mr-2">               
-          <app-input-field
-            type="text"
-            placeholder=""
-            name="d5"
-            class="form-input"
-            [maxlength]="1"
-            className="text-center"            
-            required
-          />
-        </div>
-        
-        <div class="w-1/6 ">               
-          <app-input-field
-            type="text"
-            placeholder=""
-            name="d6"
-            class="form-input"
-            [maxlength]="1"
-            className="text-center"            
-            required
-          />
-        </div>
-        
-        </div> 
-
-        
         <div class="mt-5 mb-2">
-          <p class="text-sm font-normal text-center text-gray-700 dark:text-gray-400 ">
+          <p class="text-sm font-normal text-center text-gray-700 dark:text-gray-400">
             Didn't receive the code?
-            <a class="text-brand-500 hover:text-brand-600 dark:text-brand-400">
+            <a (click)="onResendCode()" class="text-brand-500 hover:text-brand-600 dark:text-brand-400 cursor-pointer">
               Resend Code
             </a>
           </p>
         </div>
-        
+
         <div class="flex items-center gap-3 justify-center">
           <app-checkbox className="w-5 h-5" [(checked)]="isCheckedOne" />
           <p class="inline-block font-normal text-gray-500 dark:text-gray-400">
             Remember this device for next 7 days
           </p>
         </div>
-         
+
         <app-button
           className="w-full mb-5"
           size="sm"
           variant="outline"
-          (btnClick)="onSignIn()"
+          [disabled]="isLoading"
+          (btnClick)="onVerify()"
         >
-          Verify Code          
+          Verify Code
         </app-button>
 
         <app-button
           className="w-full"
           size="sm"
           variant="outline"
+          [disabled]="isLoading"
           routerLink="/signin"
         >
           Back to Sign In
         </app-button>
 
       </form>
+
          
         
     </div>

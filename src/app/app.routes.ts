@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { EcommerceComponent } from './dashboard/pages/ecommerce/ecommerce.component';
 import { ProfileComponent } from './dashboard/pages/profile/profile.component';
 import { FormElementsComponent } from './features/pages/forms/form-elements/form-elements.component';
 import { BasicTablesComponent } from './features/pages/tables/basic-tables/basic-tables.component';
@@ -18,32 +17,51 @@ import { VideosComponent } from './ui-elements/pages/videos/videos.component';
 import { SignInComponent } from './auth/pages/sign-in/sign-in.component';
 import { ForgotPasswordComponent } from './auth/pages/forgot-password/forgot-password.component';
 import { ForgotPasswordcheckComponent } from './auth/pages/forgot-passwordcheck/forgot-passwordcheck.component';
+import { ConfirmPasswordComponent } from './auth/pages/confirm-password/confirm-password.component';
+
 import { VerificationComponent } from './auth/pages/verification/verification.component';
-import { NewPasswordComponent } from './auth/pages/new-password/new-password.component';
-
-
 import { SignUpComponent } from './auth/pages/sign-up/sign-up.component';
 import { CalenderComponent } from './dashboard/pages/calender/calender.component';
+import { SubscriptionPlanComponent } from './auth/pages/subscription-plan/subscription-plan.component';
+import { NewPasswordComponent } from './auth/pages/new-password/new-password.component';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  {
-    path:'',
-    component:AppLayoutComponent,
-    canActivate: [authGuard],
-    children:[
       {
-        path: '',
-        component: EcommerceComponent,
-        pathMatch: 'full',
-        title:
-          'Dashboard | eDOB',
-      },
-      {
-        path:'calendar',
-        component:CalenderComponent,
+        path:'',
+        component:AppLayoutComponent,
+        canActivate: [authGuard],
+        children:[
+          {
+            path: '',
+            loadComponent: () => import('./dashboard/dashboard-shell/dashboard-shell.component').then(m => m.DashboardShellComponent),
+            pathMatch: 'full',
+            title:
+              'Dashboard | eDOB',
+          },
+          {
+            path: 'dashboard',
+            loadComponent: () => import('./dashboard/dashboard-shell/dashboard-shell.component').then(m => m.DashboardShellComponent),
+            title: 'Dashboard | eDOB'
+          },
+          {
+            path: 'dob-feed',
+            loadComponent: () => import('./dob-feed/dob-feed.component').then(m => m.DobFeedComponent),
+            title: 'DOB Feed | eDOB'
+          },
+          {
+            path: 'create-entry',
+            loadComponent: () => import('./dob-feed/create-entry/create-entry.component').then(m => m.CreateEntryComponent),
+            title: 'Create Entry | eDOB'
+          },
+          {
+            path:'calendar',
+            component:CalenderComponent,
+
+
         title:'Angular Calender | TailAdmin - Angular Admin Dashboard Template'
       },
+
       {
         path:'profile',
         component:ProfileComponent,
@@ -129,6 +147,11 @@ export const routes: Routes = [
     title:'Forgot Password | eDOB'
   },
   {
+    path:'confirm-password',
+    component:ConfirmPasswordComponent,
+    title:'Confirm Password | eDOB'
+  },  
+  {
     path:'reset-password',
     component:NewPasswordComponent,
     title:'Reset Password | eDOB'
@@ -138,7 +161,11 @@ export const routes: Routes = [
     component:VerificationComponent,
     title:'Verification | eDOB'
   },
-
+  {
+    path:'subscription-plan',
+    component:SubscriptionPlanComponent,
+    title:'Choose Plan | eDOB'
+  },
   {
     path:'signup',
     component:SignUpComponent,

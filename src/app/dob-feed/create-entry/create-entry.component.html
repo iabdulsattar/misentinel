@@ -1,0 +1,220 @@
+<div class="min-h-[calc(100vh-120px)] bg-gray-50 dark:bg-gray-950">
+  <div class="max-w-4xl mx-auto p-6 md:p-8">
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Create Entry</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Record an observation, activity, note, or occurrence.</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <button class="w-9 h-9 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-xl text-gray-600 dark:text-gray-400" aria-label="Notifications">🛎️</button>
+        <button class="w-9 h-9 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-xl text-gray-600 dark:text-gray-400" aria-label="Help">❔</button>
+        <button class="w-9 h-9 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-xl text-gray-400 dark:text-gray-500" aria-label="Close">✕</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="mb-8">
+      <div class="flex gap-1 bg-white dark:bg-gray-900 rounded-3xl p-1.5 shadow-sm border border-gray-200 dark:border-gray-700 inline-flex flex-wrap">
+        @for (tab of tabs; track tab.id; let i = $index) {
+          <button 
+            (click)="setActiveTab(i)"
+            [ngClass]="activeTab === i 
+              ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm' 
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'"
+            class="px-5 py-2.5 rounded-2xl flex items-center gap-2 font-medium text-sm transition-all">
+            <span>{{ tab.icon }}</span>
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- AI Generate -->
+    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border border-purple-100 dark:border-purple-900/50 rounded-3xl p-5 flex items-center justify-between mb-10">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center text-2xl">✨</div>
+        <div>
+          <div class="font-semibold text-purple-900 dark:text-purple-300">Generate an entry draft with AI</div>
+          <div class="text-purple-700 dark:text-purple-400 text-sm">Save time and write smarter.</div>
+        </div>
+      </div>
+      <button 
+        class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-2xl font-medium flex items-center gap-2 transition-colors text-sm">
+        <span class="text-lg">✨</span>
+        AI Generate
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form class="space-y-10" (ngSubmit)="onSubmitEntry()">
+      <!-- Entry Information -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+          <span class="text-gray-400 dark:text-gray-500">1.</span>
+          Entry Information
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Title -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Title <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              [(ngModel)]="title" name="title"
+              placeholder="Enter a concise title"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-colors">
+          </div>
+
+          <!-- Category -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Category <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <select 
+                [(ngModel)]="categoryId" name="category"
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-colors">
+                <option value="" disabled>Select category</option>
+                @for (cat of categories; track cat.id) {
+                  <option [value]="cat.id">{{ cat.name }}</option>
+                }
+              </select>
+              <div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none">▼</div>
+            </div>
+          </div>
+
+          <!-- Priority -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Priority <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <select 
+                [(ngModel)]="priority" name="priority"
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-colors">
+                <option value="" disabled>Select priority</option>
+                @for (p of priorities; track p.value) {
+                  <option [value]="p.value">{{ p.label }}</option>
+                }
+              </select>
+              <div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none">▼</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          Description <span class="text-red-500">*</span>
+        </label>
+        
+        <!-- Toolbar -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-t-3xl px-4 py-2.5 flex items-center gap-2 border-b-0">
+          <select class="bg-transparent dark:text-gray-300 text-sm font-medium px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-xl outline-none">
+            <option>Normal</option>
+            <option>Heading 1</option>
+            <option>Heading 2</option>
+          </select>
+          <button type="button" class="w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center font-bold text-gray-700 dark:text-gray-300">B</button>
+          <button type="button" class="w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center italic text-gray-700 dark:text-gray-300">I</button>
+          <button type="button" class="w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center underline text-gray-700 dark:text-gray-300">U</button>
+          <div class="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+          <button type="button" class="w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center text-gray-500 dark:text-gray-400">≡</button>
+          <button type="button" class="w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center text-gray-500 dark:text-gray-400">⋮⋮</button>
+          <button type="button" class="w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center text-gray-500 dark:text-gray-400">🔗</button>
+          
+          <div class="flex-1"></div>
+          
+          <button type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 w-8 h-8 flex items-center justify-center">⟳</button>
+          <button type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 w-8 h-8 flex items-center justify-center">⟲</button>
+        </div>
+
+        <!-- Textarea -->
+        <textarea 
+          rows="8"
+          [ngModel]="description" (ngModelChange)="onDescriptionInput($event)" name="description"
+          placeholder="Describe the occurrence in detail..."
+          class="w-full px-4 py-4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 rounded-b-3xl focus:outline-none resize-y min-h-[200px] placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-colors"></textarea>
+
+        <div class="flex justify-between text-xs text-gray-400 dark:text-gray-500 mt-1.5 px-1">
+          <span>{{ descriptionLength }} / {{ maxChars }}</span>
+          <button type="button" class="flex items-center gap-1 hover:text-gray-600 dark:hover:text-gray-300">
+            <span>🎤</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Attachments -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+          <span class="text-gray-400 dark:text-gray-500">3.</span>
+          Attachments <span class="text-sm font-normal text-gray-400 dark:text-gray-500">(Optional)</span>
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Upload File -->
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-3xl p-6 hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer group">
+            <div class="flex flex-col items-center text-center">
+              <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">📄</div>
+              <div class="font-semibold text-gray-900 dark:text-white">Upload File</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Attach PDF, Word, Excel, or other documents.</div>
+              <div class="text-xs text-gray-400 dark:text-gray-500 mt-4">Max size: 100MB per file</div>
+              <div class="mt-5 w-10 h-10 border-2 border-gray-300 dark:border-gray-600 rounded-2xl flex items-center justify-center text-2xl text-gray-400 group-hover:border-blue-400 dark:group-hover:border-blue-500 group-hover:text-blue-500 transition-colors">+</div>
+            </div>
+          </div>
+
+          <!-- Upload Photo -->
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-3xl p-6 hover:border-green-400 dark:hover:border-green-500 transition-colors cursor-pointer group">
+            <div class="flex flex-col items-center text-center">
+              <div class="w-12 h-12 bg-green-100 dark:bg-green-500/20 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">🖼️</div>
+              <div class="font-semibold text-green-700 dark:text-green-400">Upload Photo</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Attach photos in PNG, JPEG, or JPG format.</div>
+              <div class="text-xs text-gray-400 dark:text-gray-500 mt-4">Max size: 100MB per file</div>
+              <div class="mt-5 w-10 h-10 border-2 border-gray-300 dark:border-gray-600 rounded-2xl flex items-center justify-center text-2xl text-gray-400 group-hover:border-green-400 dark:group-hover:border-green-500 group-hover:text-green-500 transition-colors">+</div>
+            </div>
+          </div>
+
+          <!-- Record Audio -->
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-3xl p-6 hover:border-purple-400 dark:hover:border-purple-500 transition-colors cursor-pointer group">
+            <div class="flex flex-col items-center text-center">
+              <div class="w-12 h-12 bg-purple-100 dark:bg-purple-500/20 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">🎙️</div>
+              <div class="font-semibold text-purple-700 dark:text-purple-400">Record Audio</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Record and attach audio note.</div>
+              <div class="text-xs text-gray-400 dark:text-gray-500 mt-4">Max duration: 10 minutes</div>
+              <div class="mt-5 w-10 h-10 border-2 border-gray-300 dark:border-gray-600 rounded-2xl flex items-center justify-center text-2xl text-gray-400 group-hover:border-purple-400 dark:group-hover:border-purple-500 group-hover:text-purple-500 transition-colors">+</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-xs text-gray-400 dark:text-gray-500 mt-4">
+          Supported: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, PNG, JPEG, JPG, MP3, M4A, WAV
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap justify-end gap-3 pt-8 border-t border-gray-200 dark:border-gray-800">
+        <button 
+          type="button"
+          (click)="onCancel()"
+          class="px-8 py-3.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-2xl font-medium text-sm transition-colors">
+          Cancel
+        </button>
+        <button 
+          type="button"
+          (click)="onSaveDraft()"
+          class="px-8 py-3.5 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-2xl font-medium text-sm text-gray-700 dark:text-gray-300 transition-colors">
+          Save Draft
+        </button>
+        <button 
+          type="submit"
+          class="px-8 py-3.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-medium text-sm hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          [disabled]="!title || !categoryId || !priority">
+          Submit Entry
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

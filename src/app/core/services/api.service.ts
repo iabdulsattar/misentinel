@@ -15,6 +15,10 @@ export class ApiService {
     return this.http.post<T>(`${API_BASE}${path}`, body, { headers });
   }
 
+  put<T>(path: string, body: any, headers?: HttpHeaders): Observable<T> {
+    return this.http.put<T>(`${API_BASE}${path}`, body, { headers });
+  }
+
   patch<T>(path: string, body: any, headers?: HttpHeaders): Observable<T> {
     return this.http.patch<T>(`${API_BASE}${path}`, body, { headers });
   }

@@ -42,11 +42,27 @@ export class SigninFormComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.authService.login({ username: this.email, password: this.password }).subscribe({
+     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: (res) => {
         console.log('Login successful:', res);
-        localStorage.setItem('access_token_saas', res.access_token);
-        localStorage.setItem('refresh_token', res.refresh_token);
+        const data = res as any;
+        const accessToken = data?.tokens?.access_token ?? data?.access_token;
+        const refreshToken = data?.tokens?.refresh_token ?? data?.refresh_token;
+
+        if (!accessToken) {
+          this.isLoading = false;
+          this.errorMessage = 'Login succeeded but no access token was returned. Please contact support.';
+          return;
+        }
+
+        localStorage.setItem('access_token_saas', accessToken);
+        localStorage.setItem('refresh_token', refreshToken ?? '');
+
+        const orgs = data?.organizations ?? [];
+        if (orgs?.length > 0) {
+          localStorage.setItem('org_id', orgs[0].id);
+        }
+
         this.isLoading = false;
         this.router.navigate(['/']);
       },

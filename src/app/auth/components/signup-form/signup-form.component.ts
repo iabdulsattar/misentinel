@@ -61,8 +61,12 @@ export class SignupFormComponent {
   };
 
   options = [
-    { value: '5', label: '5' },
+    { value: '1-50', label: '1–50' },
+    { value: '51-100', label: '51–100' },
+    { value: '101-500', label: '101–500' },
+    { value: '500+', label: '500+' },
   ];
+
 
   handleSelectChange(value: string) {
     this.selectedValue = value;
@@ -82,6 +86,21 @@ export class SignupFormComponent {
     return name.toLowerCase().replace(/\s+/g, '-');
   }
 
+  // Country options for dropdown (2-letter country codes)
+  countryOptions = [
+    { value: 'US', label: 'United States (US)' },
+    { value: 'PK', label: 'Pakistan (PK)' },
+    { value: 'CA', label: 'Canada (CA)' },
+    { value: 'GB', label: 'United Kingdom (GB)' },
+    { value: 'AU', label: 'Australia (AU)' },
+    { value: 'DE', label: 'Germany (DE)' },
+    { value: 'FR', label: 'France (FR)' },
+    { value: 'IN', label: 'India (IN)' },
+    { value: 'AE', label: 'United Arab Emirates (AE)' },
+    { value: 'SG', label: 'Singapore (SG)' },
+  ];
+
+
   validateForm(): boolean {
     let isValid = true;
     this.errors = {
@@ -96,25 +115,41 @@ export class SignupFormComponent {
       confirmpassword: ''
     };
 
+    const nameAlphaRegex = /^[A-Za-z]+$/;
+    const employeeAllowed = new Set(['1-50', '51-100', '101-500', '500+']);
+
+
     if (!this.fname.trim()) {
       this.errors.fname = 'First name is required';
+      isValid = false;
+    } else if (!nameAlphaRegex.test(this.fname.trim())) {
+      this.errors.fname = 'First name must contain alphabets only';
       isValid = false;
     }
 
     if (!this.lname.trim()) {
       this.errors.lname = 'Last name is required';
       isValid = false;
-    }
-
-    if (!this.jtitle.trim()) {
-      this.errors.jtitle = 'Job title is required';
+    } else if (!nameAlphaRegex.test(this.lname.trim())) {
+      this.errors.lname = 'Last name must contain alphabets only';
       isValid = false;
     }
 
-    if (!this.cname.trim()) {
-      this.errors.cname = 'Company name is required';
-      isValid = false;
+
+    // Job Title (optional): do not enforce any character validation
+    // (If provided, we only send it to the API as-is.)
+
+
+    // Company Name (optional): if provided, allow alphabets, numbers, and special characters
+    if (this.cname.trim()) {
+      // Allow letters/numbers/spaces and common special characters
+      const companyRegex = /^[A-Za-z0-9\s\-\.,&()'"/]+$/;
+      if (!companyRegex.test(this.cname.trim())) {
+        this.errors.cname = 'Company name contains invalid characters';
+        isValid = false;
+      }
     }
+
 
     if (!this.country.trim()) {
       this.errors.country = 'Country is required';
@@ -124,10 +159,18 @@ export class SignupFormComponent {
       isValid = false;
     }
 
+
     if (!this.pnumber.trim()) {
       this.errors.pnumber = 'Phone number is required';
       isValid = false;
+    } else {
+      const phoneDigitsRegex = /^[0-9]+$/;
+      if (!phoneDigitsRegex.test(this.pnumber.trim())) {
+        this.errors.pnumber = 'Phone number must contain digits only';
+        isValid = false;
+      }
     }
+
 
     if (!this.email.trim()) {
       this.errors.email = 'Email is required';
@@ -140,16 +183,34 @@ export class SignupFormComponent {
     if (!this.password) {
       this.errors.password = 'Password is required';
       isValid = false;
-    } else if (this.password.length < 12) {
-      this.errors.password = 'Password must be at least 12 characters';
-      isValid = false;
+    } else {
+      // Must include: uppercase, lowercase, number, special character
+      const upperRegex = /[A-Z]/;
+      const lowerRegex = /[a-z]/;
+      const numberRegex = /[0-9]/;
+      const specialRegex = /[^A-Za-z0-9]/;
+
+      if (this.password.length < 12) {
+        this.errors.password = 'Password must be at least 12 characters';
+        isValid = false;
+      } else if (!upperRegex.test(this.password) || !lowerRegex.test(this.password) || !numberRegex.test(this.password) || !specialRegex.test(this.password)) {
+        this.errors.password = 'Password must include uppercase, lowercase, number, and special character';
+        isValid = false;
+      }
     }
+
 
     if (!this.confirmpassword) {
       this.errors.confirmpassword = 'Please confirm your password';
       isValid = false;
     } else if (this.password !== this.confirmpassword) {
       this.errors.confirmpassword = 'Passwords do not match';
+      isValid = false;
+    }
+
+    // Number of Employees (optional): if selected, must be one of allowed values
+    if (this.selectedValue && !employeeAllowed.has(this.selectedValue)) {
+      this.isLoading = false;
       isValid = false;
     }
 
@@ -160,6 +221,7 @@ export class SignupFormComponent {
 
     return isValid;
   }
+
 
   isValidEmail(email: string): boolean {
     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
@@ -184,54 +246,67 @@ export class SignupFormComponent {
   //   console.log('Remember Me:', this.isChecked);
   // }
 
-onSignUp() {
-  if (!this.validateForm()) {
-    return;
-  }
-
-  const payload = {
-    organizationName: this.cname,
-    organizationSlug: this.generateSlug(this.cname),
-    country: this.country,
-    email: this.email,
-    password: this.password,
-    firstName: this.fname,
-    lastName: this.lname,
-
-    jobTitle: this.jtitle,
-    phoneNumber: this.pnumber,
-    employeeCount: this.selectedValue,
-    receiveProductUpdates: this.isCheckedOne,
-    acceptedTerms: this.isChecked,
-  };
-
-  this.isLoading = true;
-  this.successMessage = '';
-  this.errorMessage = '';
-
-  this.authService.signup(payload).subscribe({
-    next: (res) => {
-      console.log('Signup successful:', res);
-      localStorage.setItem('org_id', res.organization.id);
-      this.successMessage = 'Account created successfully! Please verify your email.';
-
-      // Redirect to OTP/verification screen after successful signup
-      this.isLoading = false;
-      this.router.navigate(['/verification']);
-    },
-    error: (err) => {
-      console.error('Signup error:', err);
-      console.error('Error status:', err.status);
-      console.error('Error message:', err.message);
-      console.error('Error body:', JSON.stringify(err.error, null, 2));
-      console.error('Payload being sent:', JSON.stringify(payload, null, 2));
-      
-      if (err.status === 409) {
-        this.errorMessage = err.error?.detail || 'Email or company name already registered. Please use a different email or sign in.';
-      }
-      
-      this.isLoading = false;
+  onSignUp() {
+    if (!this.validateForm()) {
+      return;
     }
-  });
-}  
+
+    const payload: any = {
+      country: this.country,
+      email: this.email,
+      password: this.password,
+      firstName: this.fname,
+      lastName: this.lname,
+      phoneNumber: this.pnumber,
+      receiveProductUpdates: this.isCheckedOne,
+      acceptedTerms: this.isChecked,
+      organizationSlug: this.cname ? this.generateSlug(this.cname) : '',
+      organizationName: this.cname,
+    };
+
+    // Optional fields: include only if user provided them
+    if (this.jtitle.trim()) payload.jobTitle = this.jtitle.trim();
+    if (this.cname.trim()) payload.organizationName = this.cname.trim();
+    if (this.selectedValue) payload.employeeCount = this.selectedValue;
+
+    this.isLoading = true;
+    this.successMessage = '';
+    this.errorMessage = '';
+
+    this.authService.signup(payload).subscribe({
+      next: (res) => {
+        console.log('Signup successful:', res);
+        const orgId = res?.membership?.id || res?.organization?.id;
+        const userEmail = res?.user?.email || this.email;
+
+        if (orgId) {
+          localStorage.setItem('org_id', orgId);
+        }
+        this.successMessage = 'Account created successfully! Please verify your email.';
+
+        try {
+          localStorage.setItem('verification_email', userEmail);
+        } catch {
+          // ignore storage errors
+        }
+        this.isLoading = false;
+        this.router.navigate(['/verification']);
+      },
+      error: (err) => {
+        console.error('Signup error:', err);
+        console.error('Error status:', err.status);
+        console.error('Error message:', err.message);
+        console.error('Error body:', JSON.stringify(err.error, null, 2));
+        console.error('Payload being sent:', JSON.stringify(payload, null, 2));
+
+        if (err.status === 409) {
+          this.errorMessage = err.error?.detail || 'Email or company name already registered. Please use a different email or sign in.';
+        }
+
+        this.isLoading = false;
+      }
+    });
+  }
 }
+
+

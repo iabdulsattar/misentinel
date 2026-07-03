@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+
 import { InputFieldComponent } from '../../../shared/components/form/input/input-field.component';
-import { LabelComponent } from '../../../shared/components/form/label/label.component';
 import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
 import { CheckboxComponent } from '../../../shared/components/form/input/checkbox.component';
 import { AuthService } from '../../../core/services/auth.service';
@@ -13,14 +14,14 @@ import { AuthService } from '../../../core/services/auth.service';
     RouterModule,
     FormsModule,
     InputFieldComponent,
-    LabelComponent,
     ButtonComponent,
     CheckboxComponent,
   ],
   templateUrl: './verification-form.component.html',
   styles: ''
 })
-export class VerificationFormComponent {
+export class VerificationFormComponent implements OnInit {
+
   isCheckedOne = false;
 
   // Email to verify
@@ -35,39 +36,124 @@ export class VerificationFormComponent {
   d6 = '';
 
   get code(): string {
-    return `${this.d1}${this.d2}${this.d3}${this.d4}${this.d5}${this.d6}`;
+    const digits = [this.d1, this.d2, this.d3, this.d4, this.d5, this.d6].map(d => (d ?? '').toString());
+    return digits.join('');
   }
-
 
   isLoading = false;
   errorMessage = '';
   successMessage = '';
+  digitError = false;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
-  onSignIn() {
-    // Postman: POST /api/v1/auth/signup/verify-otp { email, code }
+  ngOnInit(): void {
+    try {
+      this.email = localStorage.getItem('verification_email') || '';
+    } catch {
+      this.email = '';
+    }
+  }
+
+  onPaste(event: ClipboardEvent) {
+    event.preventDefault();
+    const pasted = (event.clipboardData?.getData('text') ?? '').replace(/\s+/g, '');
+    const digits = pasted.replace(/\D/g, '').slice(0, 6);
+    if (digits.length !== 6) return;
+
+    this.d1 = digits[0];
+    this.d2 = digits[1];
+    this.d3 = digits[2];
+    this.d4 = digits[3];
+    this.d5 = digits[4];
+    this.d6 = digits[5];
+  }
+
+  isEmailValid(email: string): boolean {
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    return emailRegex.test(email);
+  }
+
+  onVerify() {
     this.isLoading = true;
     this.errorMessage = '';
     this.successMessage = '';
+    this.digitError = false;
 
-    const otp = this.code?.trim();
-    if (!this.email?.trim() || !otp || otp.length < 4) {
+    const otp = (this.code ?? '').replace(/\s+/g, '').trim();
+    const email = this.email?.trim() ?? '';
+
+    if (!email) {
       this.isLoading = false;
-      this.errorMessage = 'Enter a valid email and verification code.';
+      this.errorMessage = 'Email is missing. Please go back and try again.';
       return;
     }
 
-    this.authService.verifySignupOtp({ email: this.email, code: otp }).subscribe({
-      next: () => {
+    if (!this.isEmailValid(email)) {
+      this.isLoading = false;
+      this.errorMessage = 'Please enter a valid email address.';
+      return;
+    }
+
+    if (!otp) {
+      this.isLoading = false;
+      this.digitError = true;
+      this.errorMessage = 'Enter the 6-digit verification code.';
+      return;
+    }
+
+    if (!/^\d{6}$/.test(otp)) {
+      this.isLoading = false;
+      this.digitError = true;
+      this.errorMessage = 'Invalid code. Please enter exactly 6 digits.';
+      return;
+    }
+
+    this.authService.verifySignupOtp({ email, code: otp }).subscribe({
+      next: (res) => {
         this.isLoading = false;
-        this.successMessage = 'Email verified successfully.';
+        this.successMessage = res?.message || 'Email verified successfully.';
+
+        const orgId = localStorage.getItem('org_id');
+        setTimeout(() => {
+          if (orgId) {
+            this.router.navigate(['/subscription-plan']);
+          } else {
+            this.router.navigate(['/signin']);
+          }
+        }, 600);
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.detail || 'Verification failed. Please try again.';
-      }
+        const detail = err?.error?.detail;
+        this.errorMessage = detail ? `Verification failed: ${detail}` : 'Verification failed. Please try again.';
+      },
+    });
+  }
+
+  onResendCode() {
+    const email = this.email?.trim() ?? '';
+    if (!email) {
+      this.errorMessage = 'Email is missing. Please go back and try again.';
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.authService.resendSignupOtp({ email }).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.successMessage = 'Verification code resent. Please check your inbox.';
+      },
+      error: (err) => {
+        this.isLoading = false;
+        const detail = err?.error?.detail;
+        this.errorMessage = detail ? `Resend failed: ${detail}` : 'Failed to resend code. Please try again.';
+      },
     });
   }
 }
-

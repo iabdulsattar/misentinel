@@ -29,19 +29,52 @@ export interface SignupRequest {
 }
 
 export interface SignupResponse {
-  organization: Organization;
-  user: User;
+  membership: {
+    id: string;
+    slug: string;
+    name: string;
+    role?: string;
+    [key: string]: any;
+  };
+  organization: {
+    id: string;
+    slug: string;
+    name: string;
+    country?: string;
+    createdAt?: string;
+    ownerUserId?: string;
+    [key: string]: any;
+  };
+  user: {
+    id: string;
+    keycloakId?: string;
+    email: string;
+    enabled?: boolean;
+    firstName?: string;
+    lastName?: string;
+    createdAt?: string;
+    [key: string]: any;
+  };
 }
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
 export interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
-  organizations: Organization[];
+  requiresOtp?: boolean;
+  tokens: {
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+    refresh_expires_in: number;
+    token_type: string;
+    scope: string;
+    [key: string]: any;
+  };
+  organizations?: Organization[];
+  [key: string]: any;
 }
 
 export interface ProfileResponse {
@@ -142,6 +175,20 @@ export interface ResetPasswordResponse {
   message?: string;
 }
 
+export interface ApiMeta {
+  timestamp: string;
+  requestId: string;
+  [key: string]: any;
+}
+
+export interface ApiWrapper<T> {
+  success: boolean;
+  code: string;
+  message: string;
+  data: T;
+  meta: ApiMeta;
+}
+
 // -------- Session --------
 export interface SubscriptionFeatures {
   // free-form features returned by subscription-service
@@ -162,6 +209,15 @@ export interface SessionOrganization {
   slug?: string;
   role?: string;
   subscription?: SessionSubscription;
+  user?: {
+    id: string;
+    keycloakId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    enabled: boolean;
+    [key: string]: any;
+  };
 }
 
 export interface SessionResponse {
@@ -170,6 +226,7 @@ export interface SessionResponse {
   firstName?: string;
   lastName?: string;
   organizations?: SessionOrganization[];
+  fetchedAt?: string;
   // Some backends include additional fields; keep it permissive
   [key: string]: any;
 }
