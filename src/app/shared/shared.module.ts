@@ -13,27 +13,24 @@ import { SelectComponent } from './components/form/select/select.component';
 import { ButtonComponent } from './components/ui/button/button.component';
 
 @NgModule({
-  declarations: [
-    // Form Components
-    InputFieldComponent,
-    LabelComponent,
-    CheckboxComponent,
-    SelectComponent,
-    // UI Components
-    ButtonComponent
-  ],
   imports: [
     CommonModule,
     FormsModule,
-    RouterModule
-  ],
-  exports: [
-    // Form Components
+    RouterModule,
     InputFieldComponent,
     LabelComponent,
     CheckboxComponent,
     SelectComponent,
-    // UI Components
+    ButtonComponent
+  ],
+  exports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    InputFieldComponent,
+    LabelComponent,
+    CheckboxComponent,
+    SelectComponent,
     ButtonComponent
   ]
 })

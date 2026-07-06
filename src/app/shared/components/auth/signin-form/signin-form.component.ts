@@ -37,11 +37,11 @@ export class SigninFormComponent {
   }
 
   onSignIn() {
-    this.authService.login({ username: this.email, password: this.password }).subscribe({
+    this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: (res) => {
         console.log('Login successful:', res);
-        localStorage.setItem('access_token_saas', res.access_token);
-        localStorage.setItem('refresh_token', res.refresh_token);
+        localStorage.setItem('access_token_saas', res.tokens.access_token);
+        localStorage.setItem('refresh_token', res.tokens.refresh_token);
         this.router.navigate(['/']);
       },
       error: (err) => {

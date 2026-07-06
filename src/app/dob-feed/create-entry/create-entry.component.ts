@@ -3,7 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { EdobService } from '../../core/services/edob.service';
+import { AIGenerationService, AIMessage } from '../../core/services/ai-generation.service';
 import { EntryType, Category } from '../../core/models/edob.models';
+
+interface AIHistoryItem {
+  prompt: string;
+  result: string;
+  timestamp: Date;
+}
 
 @Component({
   selector: 'app-create-entry',
@@ -48,9 +55,17 @@ export class CreateEntryComponent implements OnInit {
     { value: 'CRITICAL', label: 'Critical' },
   ];
 
+  // AI drawer state
+  aiDrawerOpen = false;
+  aiPrompt = '';
+  aiHistory: AIHistoryItem[] = [];
+  isAiGenerating = false;
+  aiError = '';
+
   constructor(
     private edobService: EdobService,
-    private router: Router
+    private router: Router,
+    private aiService: AIGenerationService
   ) {}
 
   ngOnInit(): void {
@@ -183,5 +198,75 @@ export class CreateEntryComponent implements OnInit {
     }
 
     return formData;
+  }
+
+  toggleAiDrawer(): void {
+    this.aiDrawerOpen = !this.aiDrawerOpen;
+  }
+
+  onGenerateEntry(): void {
+    if (!this.aiPrompt.trim()) return;
+    this.isAiGenerating = true;
+    this.aiError = '';
+
+    const history: AIMessage[] = this.aiHistory
+      .slice(-6)
+      .map(item => ({ role: 'user' as const, content: item.prompt }));
+
+    const categoryNames = this.categories.map(c => c.name);
+    const priorityValues = this.priorities.map(p => p.value);
+
+    this.aiService.generateEntry(this.aiPrompt, history, categoryNames, priorityValues).subscribe({
+      next: (res) => {
+        const text = res?.content || '';
+        this.aiHistory.unshift({
+          prompt: this.aiPrompt,
+          result: text,
+          timestamp: new Date()
+        });
+        this.applyAiContent(text);
+        this.aiPrompt = '';
+        this.isAiGenerating = false;
+      },
+      error: (err) => {
+        this.aiError = err?.error?.error?.message || err?.message || 'Failed to generate entry. Please try again.';
+        this.isAiGenerating = false;
+      }
+    });
+  }
+
+  applyAiContent(text: string): void {
+    let parsed: any = {};
+    try {
+      const cleaned = text.replace(/```json\n?|\n?```/g, '').trim();
+      parsed = JSON.parse(cleaned);
+    } catch {
+      parsed = { description: text };
+    }
+
+    if (parsed.title) {
+      this.title = parsed.title;
+    }
+    if (parsed.description) {
+      this.description = parsed.description;
+      this.descriptionLength = parsed.description.length;
+    }
+    if (parsed.priority) {
+      const upper = String(parsed.priority).toUpperCase();
+      const valid = this.priorities.find(p => p.value === upper);
+      if (valid) {
+        this.priority = valid.value;
+      }
+    }
+    if (parsed.category) {
+      const match = this.categories.find(c => c.name.toLowerCase() === String(parsed.category).toLowerCase());
+      if (match) {
+        this.categoryId = match.id;
+      }
+    }
+  }
+
+  clearAiHistory(): void {
+    this.aiHistory = [];
   }
 }

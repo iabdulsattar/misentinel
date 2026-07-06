@@ -7,11 +7,6 @@ import { ProfileComponent } from './pages/profile/profile.component';
 import { CalenderComponent } from './pages/calender/calender.component';
 
 @NgModule({
-  declarations: [
-    EcommerceComponent,
-    ProfileComponent,
-    CalenderComponent
-  ],
   imports: [
     CommonModule,
     SharedModule,
@@ -19,7 +14,10 @@ import { CalenderComponent } from './pages/calender/calender.component';
       { path: '', component: EcommerceComponent },
       { path: 'profile', component: ProfileComponent },
       { path: 'calendar', component: CalenderComponent }
-    ])
+    ]),
+    EcommerceComponent,
+    ProfileComponent,
+    CalenderComponent
   ]
 })
 export class DashboardModule { }

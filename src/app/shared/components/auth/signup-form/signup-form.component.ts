@@ -197,7 +197,12 @@ onSignUp() {
     email: this.email,
     password: this.password,
     firstName: this.fname,
-    lastName: this.lname
+    lastName: this.lname,
+    jobTitle: this.jtitle,
+    phoneNumber: this.pnumber,
+    employeeCount: this.selectedValue,
+    receiveProductUpdates: this.isChecked,
+    acceptedTerms: this.isChecked
   };
 
   this.isLoading = true;
@@ -212,15 +217,15 @@ onSignUp() {
 
       // Auto-login after signup
       const loginPayload = {
-        username: this.email,
+        email: this.email,
         password: this.password
       };
 
       this.authService.login(loginPayload).subscribe({
         next: (loginRes) => {
           console.log('Login successful:', loginRes);
-          localStorage.setItem('access_token', loginRes.access_token);
-          localStorage.setItem('refresh_token', loginRes.refresh_token);
+          localStorage.setItem('access_token', loginRes.tokens.access_token);
+          localStorage.setItem('refresh_token', loginRes.tokens.refresh_token);
           this.isLoading = false;
           this.router.navigate(['/']);
         },

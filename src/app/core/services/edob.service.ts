@@ -107,9 +107,9 @@ export class EdobService {
     return this.api.get<ApiWrapper<any>>(`${this.basePath(orgId)}/entries${qs ? `?${qs}` : ''}`).pipe(
       map(res => ({
         entries: res.data,
-        total: res.meta.totalElements,
-        page: res.meta.page,
-        size: res.meta.size
+        total: res.meta['totalElements'],
+        page: res.meta['page'],
+        size: res.meta['size']
       }))
     );
   }

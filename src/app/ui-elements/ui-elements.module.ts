@@ -10,14 +10,6 @@ import { ImagesComponent } from './pages/images/images.component';
 import { VideosComponent } from './pages/videos/videos.component';
 
 @NgModule({
-  declarations: [
-    AlertsComponent,
-    AvatarElementComponent,
-    BadgesComponent,
-    ButtonsComponent,
-    ImagesComponent,
-    VideosComponent
-  ],
   imports: [
     CommonModule,
     SharedModule,
@@ -28,7 +20,13 @@ import { VideosComponent } from './pages/videos/videos.component';
       { path: 'buttons', component: ButtonsComponent },
       { path: 'images', component: ImagesComponent },
       { path: 'videos', component: VideosComponent }
-    ])
+    ]),
+    AlertsComponent,
+    AvatarElementComponent,
+    BadgesComponent,
+    ButtonsComponent,
+    ImagesComponent,
+    VideosComponent
   ]
 })
 export class UIElementsModule { }

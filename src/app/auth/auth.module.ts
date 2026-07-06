@@ -13,7 +13,11 @@ import { SubscriptionPlanComponent } from './pages/subscription-plan/subscriptio
 import { NewPasswordComponent } from './pages/new-password/new-password.component';
 
 @NgModule({
-  declarations: [
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    SharedModule,
     SignInComponent,
     SignUpComponent,
     ForgotPasswordComponent,
@@ -22,12 +26,6 @@ import { NewPasswordComponent } from './pages/new-password/new-password.componen
     ForgotpasswordFormComponent,
     SubscriptionPlanComponent,
     NewPasswordComponent
-  ],
-  imports: [
-    CommonModule,
-    RouterModule,
-    FormsModule,
-    SharedModule
   ]
 })
 export class AuthModule { }

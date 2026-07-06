@@ -40,6 +40,7 @@
         </div>
       </div>
       <button 
+        (click)="toggleAiDrawer()"
         class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-2xl font-medium flex items-center gap-2 transition-colors text-sm">
         <span class="text-lg">✨</span>
         AI Generate
@@ -216,5 +217,70 @@
         </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- AI Generation Drawer -->
+<!-- Backdrop -->
+<div *ngIf="aiDrawerOpen" class="fixed inset-0 bg-black/40 z-40 transition-opacity" (click)="toggleAiDrawer()"></div>
+
+<!-- Drawer Panel -->
+<div *ngIf="aiDrawerOpen" class="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-gray-900 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col">
+  <!-- Header -->
+  <div class="flex items-center justify-between px-6 py-5 border-b border-gray-200 dark:border-gray-800">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">✨</span>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">AI Entry Generator</h2>
+    </div>
+    <button (click)="toggleAiDrawer()" class="w-8 h-8 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xl">✕</button>
+  </div>
+
+  <!-- Body -->
+  <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+    <!-- Prompt -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Describe the entry you want to create
+      </label>
+      <textarea
+        rows="5"
+        [(ngModel)]="aiPrompt"
+        name="aiPrompt"
+        placeholder="e.g., A minor slip-and-fall near the east warehouse ramp during morning delivery..."
+        class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-colors resize-y min-h-[120px]"></textarea>
+      <button
+        (click)="onGenerateEntry()"
+        [disabled]="!aiPrompt.trim() || isAiGenerating"
+        class="mt-3 w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-3 rounded-2xl font-medium flex items-center justify-center gap-2 transition-colors text-sm">
+        <span *ngIf="isAiGenerating" class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+        <span>{{ isAiGenerating ? 'Generating...' : '✨ Generate Entry' }}</span>
+      </button>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="aiError" class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm px-4 py-3 rounded-2xl">
+      {{ aiError }}
+    </div>
+
+    <!-- History -->
+    <div *ngIf="aiHistory.length > 0" class="border-t border-gray-200 dark:border-gray-800 pt-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-200">Prompt History</h3>
+        <button (click)="clearAiHistory()" class="text-xs text-red-500 hover:text-red-600 dark:text-red-400">Clear</button>
+      </div>
+      <div class="space-y-3">
+        <div *ngFor="let item of aiHistory" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl p-4">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+            {{ item.timestamp | date: 'short' }}
+          </div>
+          <div class="text-sm text-gray-700 dark:text-gray-300 mb-1">
+            <span class="font-semibold">Prompt:</span> {{ item.prompt }}
+          </div>
+          <div class="text-sm text-gray-900 dark:text-gray-100 line-clamp-3">
+            <span class="font-semibold">Result:</span> {{ item.result }}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
