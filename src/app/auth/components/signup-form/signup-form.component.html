@@ -1,17 +1,7 @@
-<div class="w-full max-w-lg mx-auto mb-5 sm:pt-10">
-  <a routerLink="/"
-    class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20" fill="none" class="size-5">
-      <path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-        stroke-linejoin="round"></path>
-    </svg>
-    Back to dashboard
-  </a>
-</div>
 
-<div class="flex flex-col justify-center flex-1 w-full max-w-lg mx-auto">
-  <div>
-    <div class="mb-5 sm:mb-8">
+<div class="flex flex-col justify-center flex-1 w-full ">
+  <div class="mx-10">
+    <div class="mb-5 sm:mb-8 pt-10">
       <h1 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
         Create Your Account
       </h1>
@@ -74,63 +64,25 @@
             </div>
           </div>
         </div>
-        <div>
-          <app-label>
-            Job Title <span class="text-error-500"></span>
-          </app-label>
-
-          <div class="relative">
-          <span class="absolute z-10 left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-briefcase-business-icon lucide-briefcase-business"><path d="M12 12h.01"/><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M22 13a18.15 18.15 0 0 1-20 0"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
-          </span>
-               
-          <app-input-field type="text" [(value)]="jtitle" id="jtitle" name="jtitle" placeholder="Enter your job title" className="pl-[62px]" [error]="!!errors.jtitle"/>
-          @if (errors.jtitle) {
-          <p class="mt-1 text-xs text-error-500">{{ errors.jtitle }}</p>
-          }
-          </div>
-        </div>
-        <div>
-          <app-label>
-            Company Name <span class="text-error-500">*</span>
-          </app-label>
-          <div class="relative">
-          <span class="absolute z-10 left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2-icon lucide-building-2"><path d="M10 12h4"/><path d="M10 8h4"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/><path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/></svg>
-          </span>
-               
-          <app-input-field type="text" [(value)]="cname" id="cname" name="cname" placeholder="Enter your company name" className="pl-[62px]" [error]="!!errors.cname"/>
-          @if (errors.cname) {
-          <p class="mt-1 text-xs text-error-500">{{ errors.cname }}</p>
-          }
-          </div>
-        </div>
-
-<!-- NEW -->
-        <div>
-          <app-label>
-            Country <span class="text-error-500">*</span>
-          </app-label>
-          <div class="relative">
-          <span class="absolute z-10 left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2-icon lucide-building-2"><path d="M10 12h4"/><path d="M10 8h4"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/><path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/></svg>
-          </span>
-               
-          <app-select
-            [options]="countryOptions"
-            placeholder="Select your country"
-            [value]="country"
-            (valueChange)="country = $event"
-            class="pl-[62px] dark:bg-dark-900"
-          ></app-select>
-          @if (errors.country) {
-          <p class="mt-1 text-xs text-error-500">{{ errors.country }}</p>
-          }
-          </div>
-        </div>
-
 
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <!-- Email -->
+          <div class="sm:col-span-1">
+            <app-label>
+              Business Email Address <span class="text-error-500">*</span>
+            </app-label>
+            <div class="relative">
+            <span class="absolute z-10 left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg> 
+            </span>
+                
+            <app-input-field type="email" [(value)]="email" id="email" name="email" placeholder="Enter your business email address" className="pl-[62px]" [error]="!!errors.email"/>
+            @if (errors.email) {
+            <p class="mt-1 text-xs text-error-500">{{ errors.email }}</p>
+            }
+            </div>
+          </div>
+          
           <div class="sm:col-span-1">
             <app-label>
               Phone Number<span class="text-error-500">*</span>
@@ -146,37 +98,9 @@
             }
             </div>
           </div>
-          <div class="sm:col-span-1">
-            <app-label>
-              Number of Employees<span class="text-error-500">*</span>
-            </app-label>
-            <app-select
-              [options]="options"
-              placeholder="Select number of employees"
-              [value]="selectedValue"
-              (valueChange)="handleSelectChange($event)"
-              class="dark:bg-dark-900"
-            ></app-select>
-                  
-          </div>
+          
         </div>
-        
-        <!-- Email -->
-        <div>
-          <app-label>
-            Business Email Address <span class="text-error-500">*</span>
-          </app-label>
-          <div class="relative">
-          <span class="absolute z-10 left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg> 
-          </span>
-               
-          <app-input-field type="email" [(value)]="email" id="email" name="email" placeholder="Enter your business email address" className="pl-[62px]" [error]="!!errors.email"/>
-          @if (errors.email) {
-          <p class="mt-1 text-xs text-error-500">{{ errors.email }}</p>
-          }
-          </div>
-        </div>
+
         <!-- Password -->
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div class="sm:col-span-1">            
@@ -243,6 +167,79 @@
         </div>
         
         </div>
+                
+        <!-- NEW -->
+        <!-- <div>
+          <app-label>
+            Country <span class="text-error-500">*</span>
+          </app-label>
+          <div class="relative">
+          <span class="absolute z-10 left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2-icon lucide-building-2"><path d="M10 12h4"/><path d="M10 8h4"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/><path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/></svg>
+          </span>
+               
+          <app-select
+            [options]="countryOptions"
+            placeholder="Select your country"
+            [value]="country"
+            (valueChange)="country = $event"
+            class="pl-[62px] dark:bg-dark-900"
+          ></app-select>
+          @if (errors.country) {
+          <p class="mt-1 text-xs text-error-500">{{ errors.country }}</p>
+          }
+          </div>
+        </div> -->
+
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <div class="sm:col-span-1">
+            <app-label>
+              Job Title <span class="text-gray-500">(Optional)</span>
+            </app-label>
+
+            <div class="relative">
+            <span class="absolute z-10 left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-briefcase-business-icon lucide-briefcase-business"><path d="M12 12h.01"/><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M22 13a18.15 18.15 0 0 1-20 0"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
+            </span>
+                
+            <app-input-field type="text" [(value)]="jtitle" id="jtitle" name="jtitle" placeholder="Enter your job title" className="pl-[62px]" [error]="!!errors.jtitle"/>
+            @if (errors.jtitle) {
+            <p class="mt-1 text-xs text-error-500">{{ errors.jtitle }}</p>
+            }
+            </div>
+          </div>
+          
+          <div class="sm:col-span-1">
+            <app-label>
+              Company Name <span class="text-gray-500">(Optional)</span>
+            </app-label>
+            <div class="relative">
+            <span class="absolute z-10 left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2-icon lucide-building-2"><path d="M10 12h4"/><path d="M10 8h4"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/><path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/></svg>
+            </span>
+                
+            <app-input-field type="text" [(value)]="cname" id="cname" name="cname" placeholder="Enter your company name" className="pl-[62px]" [error]="!!errors.cname"/>
+            @if (errors.cname) {
+            <p class="mt-1 text-xs text-error-500">{{ errors.cname }}</p>
+            }
+            </div>
+          </div>
+          
+          <div class="sm:col-span-1">
+            <app-label>
+              Number of Employees <span class="text-gray-500">(Optional)</span>
+            </app-label>
+            <app-select
+              [options]="options"
+              placeholder="Select number of employees"
+              [value]="selectedValue"
+              (valueChange)="handleSelectChange($event)"
+              class="dark:bg-dark-900"
+            ></app-select>
+                  
+          </div>
+        </div>
+                
         <!-- Checkbox -->
         <div class="flex items-center gap-3">
           <app-checkbox className="w-5 h-5" [(checked)]="isCheckedOne" />
