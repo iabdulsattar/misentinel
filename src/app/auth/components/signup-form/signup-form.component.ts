@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
@@ -21,9 +21,26 @@ import { SelectComponent } from '../../../shared/components/form/select/select.c
   templateUrl: './signup-form.component.html',
   styles: ''
 })
-export class SignupFormComponent {
+export class SignupFormComponent implements OnInit {
 
   constructor(private authService: AuthService, private router: Router) {}
+
+  ngOnInit(): void {
+    this.country = this.detectCountry();
+  }
+
+  private detectCountry(): string {
+    try {
+      const locale = (navigator.language || (navigator as any).userLanguage || '') as string;
+      const parts = locale.split(/[-_]/);
+      if (parts.length >= 2 && parts[1].length === 2) {
+        return parts[1].toUpperCase();
+      }
+    } catch {
+      // ignore
+    }
+    return '';
+  }
   
   showPassword = false;
   confirmPassword = false;
@@ -40,20 +57,17 @@ export class SignupFormComponent {
   password = '';
   confirmpassword = '';
 
-  // NEW
   country = '';
 
   isLoading = false;
   successMessage = '';
   errorMessage = '';
 
-  // Validation errors
   errors = {
     fname: '',
     lname: '',
     jtitle: '',
     cname: '',
-    country: '',
     pnumber: '',
     email: '',
     password: '',
@@ -81,25 +95,9 @@ export class SignupFormComponent {
     this.confirmPassword = !this.confirmPassword;
   }
 
-  // NEW
   generateSlug(name: string) {
     return name.toLowerCase().replace(/\s+/g, '-');
   }
-
-  // Country options for dropdown (2-letter country codes)
-  countryOptions = [
-    { value: 'US', label: 'United States (US)' },
-    { value: 'PK', label: 'Pakistan (PK)' },
-    { value: 'CA', label: 'Canada (CA)' },
-    { value: 'GB', label: 'United Kingdom (GB)' },
-    { value: 'AU', label: 'Australia (AU)' },
-    { value: 'DE', label: 'Germany (DE)' },
-    { value: 'FR', label: 'France (FR)' },
-    { value: 'IN', label: 'India (IN)' },
-    { value: 'AE', label: 'United Arab Emirates (AE)' },
-    { value: 'SG', label: 'Singapore (SG)' },
-  ];
-
 
   validateForm(): boolean {
     let isValid = true;
@@ -108,7 +106,6 @@ export class SignupFormComponent {
       lname: '',
       jtitle: '',
       cname: '',
-      country: '',
       pnumber: '',
       email: '',
       password: '',
@@ -140,23 +137,15 @@ export class SignupFormComponent {
     // (If provided, we only send it to the API as-is.)
 
 
-    // Company Name (optional): if provided, allow alphabets, numbers, and special characters
-    if (this.cname.trim()) {
-      // Allow letters/numbers/spaces and common special characters
+    if (!this.cname.trim()) {
+      this.errors.cname = 'Company name is required';
+      isValid = false;
+    } else {
       const companyRegex = /^[A-Za-z0-9\s\-\.,&()'"/]+$/;
       if (!companyRegex.test(this.cname.trim())) {
         this.errors.cname = 'Company name contains invalid characters';
         isValid = false;
       }
-    }
-
-
-    if (!this.country.trim()) {
-      this.errors.country = 'Country is required';
-      isValid = false;
-    } else if (this.country.length !== 2) {
-      this.errors.country = 'Country must be a 2-letter code (e.g., US, PK)';
-      isValid = false;
     }
 
 
@@ -227,6 +216,18 @@ export class SignupFormComponent {
     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     return emailRegex.test(email);
   }
+
+  private extractOrgId(res: any): string | null {
+    if (!res || typeof res !== 'object') return null;
+    return (
+      res?.membership?.id ||
+      res?.organization?.id ||
+      res?.orgId ||
+      res?.organizationId ||
+      res?.org?.id ||
+      null
+    );
+  }
   
   // onSignIn() {
   // onSignUp() {
@@ -260,13 +261,11 @@ export class SignupFormComponent {
       phoneNumber: this.pnumber,
       receiveProductUpdates: this.isCheckedOne,
       acceptedTerms: this.isChecked,
-      organizationSlug: this.cname ? this.generateSlug(this.cname) : '',
-      organizationName: this.cname,
+      organizationSlug: this.generateSlug(this.cname),
+      organizationName: this.cname.trim(),
     };
 
-    // Optional fields: include only if user provided them
     if (this.jtitle.trim()) payload.jobTitle = this.jtitle.trim();
-    if (this.cname.trim()) payload.organizationName = this.cname.trim();
     if (this.selectedValue) payload.employeeCount = this.selectedValue;
 
     this.isLoading = true;
@@ -275,19 +274,22 @@ export class SignupFormComponent {
 
     this.authService.signup(payload).subscribe({
       next: (res) => {
-        console.log('Signup successful:', res);
-        const orgId = res?.membership?.id || res?.organization?.id;
+        console.log('Signup successful. Full response:', JSON.stringify(res, null, 2));
+
+        const orgId = this.extractOrgId(res);
         const userEmail = res?.user?.email || this.email;
 
         if (orgId) {
           localStorage.setItem('org_id', orgId);
+          localStorage.setItem('organizationId', orgId);
+        } else {
+          console.warn('Organization ID not found in signup response. Available keys:', Object.keys(res || {}));
         }
         this.successMessage = 'Account created successfully! Please verify your email.';
 
         try {
           localStorage.setItem('verification_email', userEmail);
         } catch {
-          // ignore storage errors
         }
         this.isLoading = false;
         this.router.navigate(['/verification']);
@@ -308,5 +310,3 @@ export class SignupFormComponent {
     });
   }
 }
-
-
