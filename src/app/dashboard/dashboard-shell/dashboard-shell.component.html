@@ -1,0 +1,188 @@
+<section class="min-h-[calc(100vh-120px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+  <div class="mx-auto w-full max-w-full space-y-8">
+    <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+      <div>
+        <h1 class="text-[32px] font-semibold leading-tight text-gray-950 dark:text-white">
+          {{ greeting }}, {{ userName }}
+        </h1>
+        <p class="mt-2 text-base text-gray-500 dark:text-gray-400">
+          Here's what's happening with your operations today.
+        </p>
+      </div>
+
+      <div class="hidden items-center gap-4 lg:flex">
+        <label class="relative block">
+          <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M11 19a8 8 0 1 1 5.29-14A8 8 0 0 1 11 19Zm9 1-4.35-4.35" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <input
+            type="search"
+            aria-label="Search everything"
+            placeholder="Search everything..."
+            class="h-12 w-[360px] rounded-lg border border-gray-200 bg-white pl-12 pr-16 text-sm text-gray-700 shadow-theme-xs outline-none transition placeholder:text-gray-400 focus:border-brand-300 focus:ring-4 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+          />
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-500">Ctrl K</span>
+        </label>
+
+        <button class="relative flex size-11 items-center justify-center rounded-lg text-gray-900 transition hover:bg-gray-100 dark:text-white dark:hover:bg-white/5" aria-label="Notifications">
+          <svg class="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M15 17H9m9-2.5V11a6 6 0 1 0-12 0v3.5L4.75 17h14.5L18 14.5ZM10 20h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-error-500 text-[11px] font-semibold text-white">8</span>
+        </button>
+
+        <button class="flex size-11 items-center justify-center rounded-lg text-gray-900 transition hover:bg-gray-100 dark:text-white dark:hover:bg-white/5" aria-label="Open menu">
+          <svg class="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 7h14M5 12h14M5 17h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-7 2xl:grid-cols-[1fr_300px]">
+      <main class="space-y-8">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          @for (entry of quickEntries; track entry.title) {
+            <button class="group flex min-h-[112px] items-center gap-5 rounded-lg border border-gray-200 bg-white p-6 text-left shadow-theme-xs transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-brand-800">
+              <span class="flex size-11 shrink-0 items-center justify-center rounded-md text-gray-950 transition group-hover:bg-gray-50 group-hover:text-brand-600 dark:text-white dark:group-hover:bg-white/5">
+                <span [innerHTML]="entry.icon"></span>
+              </span>
+              <span>
+                <span class="block text-sm font-semibold text-gray-950 dark:text-white">{{ entry.title }}</span>
+                <span class="mt-1 block text-sm leading-5 text-gray-500 dark:text-gray-400">{{ entry.description }}</span>
+              </span>
+            </button>
+          }
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          @for (metric of metrics; track metric.label) {
+            <article class="rounded-lg border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+              <div class="flex items-center gap-5">
+                <div class="flex size-11 items-center justify-center rounded-lg" [ngClass]="metric.iconWrap">
+                  <span [innerHTML]="metric.icon"></span>
+                </div>
+                <div>
+                  <div class="text-2xl font-semibold leading-none text-gray-950 dark:text-white">{{ metric.value }}</div>
+                  <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ metric.label }}</p>
+                </div>
+              </div>
+              <p class="mt-5 text-xs font-medium" [ngClass]="metric.positive ? 'text-success-600' : 'text-error-500'">
+                {{ metric.change }}
+              </p>
+            </article>
+          }
+        </div>
+
+        <section>
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-base font-semibold text-gray-950 dark:text-white">Recent Entries</h2>
+            <button class="text-sm font-medium text-brand-600 hover:text-brand-700">View all</button>
+          </div>
+
+          <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="grid min-w-[760px] grid-cols-[1.45fr_0.55fr_0.55fr_0.65fr_0.8fr_0.45fr_40px] border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400">
+              <span>Title</span>
+              <span>Type</span>
+              <span>Priority</span>
+              <span>Status</span>
+              <span>Created By</span>
+              <span>Time</span>
+              <span></span>
+            </div>
+
+            <div class="overflow-x-auto">
+              @for (entry of recentEntries; track entry.title) {
+                <div class="grid min-w-[760px] grid-cols-[1.45fr_0.55fr_0.55fr_0.65fr_0.8fr_0.45fr_40px] items-center border-b border-gray-100 px-5 py-4 last:border-b-0 dark:border-gray-800">
+                  <div>
+                    <h3 class="text-sm font-semibold text-gray-950 dark:text-white">{{ entry.title }}</h3>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ entry.note }}</p>
+                  </div>
+                  <span class="w-fit rounded-md px-2.5 py-1 text-xs font-medium" [ngClass]="entry.typeClass">{{ entry.type }}</span>
+                  <span class="w-fit rounded-md px-2.5 py-1 text-xs font-medium" [ngClass]="entry.priorityClass">{{ entry.priority }}</span>
+                  <span class="w-fit rounded-md px-2.5 py-1 text-xs font-medium" [ngClass]="entry.statusClass">{{ entry.status }}</span>
+                  <div class="flex items-center gap-3">
+                    <span class="flex size-7 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">{{ entry.initials }}</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-300">{{ entry.createdBy }}</span>
+                  </div>
+                  <span class="text-sm text-gray-600 dark:text-gray-300">{{ entry.time }}</span>
+                  <button class="flex size-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5" aria-label="Entry options">
+                    <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/>
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <aside class="space-y-5">
+        <section class="rounded-lg border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+          <div class="mb-5 flex items-center justify-between">
+            <h2 class="text-base font-semibold text-gray-950 dark:text-white">Critical</h2>
+            <button class="text-sm font-medium text-brand-600 hover:text-brand-700">View all</button>
+          </div>
+          <div class="space-y-5">
+            @for (alert of criticalAlerts; track alert.title) {
+              <div class="flex gap-4">
+                <span class="mt-1.5 size-2.5 shrink-0 rounded-full" [ngClass]="alert.dotClass"></span>
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-950 dark:text-white">{{ alert.title }}</h3>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ alert.meta }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="rounded-lg border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+          <div class="mb-5 flex items-center justify-between">
+            <h2 class="text-base font-semibold text-gray-950 dark:text-white">Most Active Types</h2>
+            <button class="inline-flex items-center gap-1 text-sm text-gray-500">
+              Today
+              <svg class="size-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="space-y-5">
+            @for (type of activeTypes; track type.name) {
+              <div class="grid grid-cols-[24px_1fr_82px_22px] items-center gap-3 text-sm">
+                <span class="text-gray-900 dark:text-white" [innerHTML]="type.icon"></span>
+                <span class="font-medium text-gray-700 dark:text-gray-300">{{ type.name }}</span>
+                <span class="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
+                  <span class="block h-full rounded-full" [ngClass]="type.barClass" [style.width.%]="type.percent"></span>
+                </span>
+                <span class="text-right font-semibold text-gray-950 dark:text-white">{{ type.count }}</span>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="rounded-lg border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+          <div class="mb-5 flex items-center justify-between">
+            <h2 class="text-base font-semibold text-gray-950 dark:text-white">Activity Snapshot</h2>
+            <button class="inline-flex items-center gap-1 text-sm text-gray-500">
+              This Week
+              <svg class="size-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="space-y-4">
+            @for (snapshot of snapshots; track snapshot.label) {
+              <div class="flex items-center justify-between text-sm">
+                <span class="font-medium text-gray-600 dark:text-gray-300">{{ snapshot.label }}</span>
+                <span class="font-semibold text-gray-950 dark:text-white">{{ snapshot.value }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+</section>

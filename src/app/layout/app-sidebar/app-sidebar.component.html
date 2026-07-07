@@ -1,0 +1,147 @@
+<aside
+  class="fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-gray-200 bg-white px-5 text-gray-900 transition-all duration-300 ease-in-out dark:border-gray-800 dark:bg-gray-950"
+  [ngClass]="{
+    'w-[290px]': (isExpanded$ | async) || (isMobileOpen$ | async) || (isHovered$ | async),
+    'w-[90px]': !((isExpanded$ | async) || (isMobileOpen$ | async) || (isHovered$ | async)),
+    'translate-x-0': isMobileOpen$ | async,
+    '-translate-x-full': !(isMobileOpen$ | async),
+    'xl:translate-x-0': true
+  }"
+  (mouseenter)="onSidebarMouseEnter()"
+  (mouseleave)="sidebarService.setHovered(false)"
+>
+  <div class="flex h-full flex-col">
+    <a
+      routerLink="/"
+      class="flex items-center gap-3 py-7"
+      [ngClass]="{
+        'justify-center': !((isExpanded$ | async) || (isHovered$ | async) || (isMobileOpen$ | async))
+      }"
+    >
+      <span
+        class="flex size-11 shrink-0 items-center justify-center rounded-md text-gray-950 dark:text-white"
+        [ngClass]="isDobFeed ? 'bg-black text-white' : 'border border-gray-200 dark:border-gray-800'"
+      >
+        @if (isDobFeed) {
+          <svg class="size-7" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <path d="M16 3 6 7v7.5c0 6.2 4.1 11.9 10 14.5 5.9-2.6 10-8.3 10-14.5V7L16 3Z" fill="currentColor"/>
+            <path d="M12 11h8l-3 5h4l-9 7 2.5-6H11l1-6Z" fill="white"/>
+          </svg>
+        } @else {
+          <svg class="size-8" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <path d="M6 6.5c4.4.4 7.3 1.8 10 4.1v16.2c-2.7-2.3-5.6-3.7-10-4.1V6.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M26 6.5c-4.4.4-7.3 1.8-10 4.1v16.2c2.7-2.3 5.6-3.7 10-4.1V6.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M10 11.5c1.4.3 2.6.8 3.7 1.5M10 15.5c1.4.3 2.6.8 3.7 1.5M22 11.5c-1.4.3-2.6.8-3.7 1.5M22 15.5c-1.4.3-2.6.8-3.7 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        }
+      </span>
+      @if ((isExpanded$ | async) || (isHovered$ | async) || (isMobileOpen$ | async)) {
+        <span class="min-w-0">
+          <span class="block text-2xl font-semibold leading-6 text-gray-950 dark:text-white">eDOB</span>
+          <span class="block text-[11px] font-medium text-gray-500 dark:text-gray-400">Digital Occurrence Book</span>
+        </span>
+      }
+    </a>
+
+    @if (!isDobFeed && ((isExpanded$ | async) || (isHovered$ | async) || (isMobileOpen$ | async))) {
+      <button class="mb-5 flex w-full items-center justify-between rounded-lg text-left text-base font-semibold text-gray-950 dark:text-white">
+        {{ displayCompanyName }}
+        <svg class="size-4 text-gray-700 dark:text-gray-300" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    }
+
+    @if ((isExpanded$ | async) || (isHovered$ | async) || (isMobileOpen$ | async)) {
+      <label class="relative mb-5 block">
+        <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M11 19a8 8 0 1 1 5.29-14A8 8 0 0 1 11 19Zm9 1-4.35-4.35" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <input
+          type="search"
+          aria-label="Search"
+          placeholder="Search"
+          class="h-11 w-full rounded-lg border border-gray-200 bg-white pl-11 pr-12 text-sm text-gray-700 shadow-theme-xs outline-none placeholder:text-gray-500 focus:border-brand-300 focus:ring-4 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90"
+        />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-500">K</span>
+      </label>
+    }
+
+    <nav class="flex-1 overflow-y-auto pb-5 no-scrollbar">
+      <ul class="space-y-1">
+        @for (nav of navItems; track nav.name) {
+          <li>
+            <a
+              [routerLink]="nav.path"
+              class="group flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition"
+              [ngClass]="{
+                'justify-center': !((isExpanded$ | async) || (isHovered$ | async) || (isMobileOpen$ | async)),
+                'bg-gray-100 text-gray-950 dark:bg-white/10 dark:text-white': isActive(nav.path || ''),
+                'text-gray-800 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5': !isActive(nav.path || '')
+              }"
+            >
+              <span class="shrink-0 text-gray-900 dark:text-gray-200" [innerHTML]="nav.icon | safeHtml"></span>
+              @if ((isExpanded$ | async) || (isHovered$ | async) || (isMobileOpen$ | async)) {
+                <span class="flex min-w-0 flex-1 items-center justify-between">
+                  <span>{{ nav.name }}</span>
+                  @if (isDobFeed && nav.name === 'Review Queue') {
+                    <span class="flex size-6 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-700">5</span>
+                  }
+                </span>
+              }
+            </a>
+          </li>
+        }
+      </ul>
+
+      <div class="my-5 h-px bg-gray-100 dark:bg-gray-800"></div>
+
+      <ul class="space-y-1">
+        @for (nav of othersItems; track nav.name) {
+          <li>
+            <a
+              [routerLink]="nav.path"
+              class="group flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
+              [ngClass]="{
+                'justify-center': !((isExpanded$ | async) || (isHovered$ | async) || (isMobileOpen$ | async))
+              }"
+            >
+              <span class="shrink-0 text-gray-900 dark:text-gray-200" [innerHTML]="nav.icon | safeHtml"></span>
+              @if ((isExpanded$ | async) || (isHovered$ | async) || (isMobileOpen$ | async)) {
+                <span>{{ nav.name }}</span>
+              }
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    @if ((isExpanded$ | async) || (isHovered$ | async) || (isMobileOpen$ | async)) {
+      <button class="mb-6 flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left shadow-theme-xs dark:border-gray-800 dark:bg-gray-900">
+        <span class="relative shrink-0">
+          <img src="/images/user/user-01.jpg" alt="User" class="size-10 rounded-full object-cover" />
+          @if (isDobFeed) {
+            <span class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-white bg-success-500"></span>
+          }
+        </span>
+        <span class="min-w-0 flex-1">
+          <span class="block truncate text-sm font-semibold text-gray-950 dark:text-white">{{ displayUserName }}</span>
+          <span class="block truncate text-xs font-medium text-gray-500 dark:text-gray-400">{{ displayRoleName }}</span>
+        </span>
+        <svg class="size-4 text-gray-700 dark:text-gray-300" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <button
+        type="button"
+        class="flex w-full items-center justify-center rounded-lg border border-gray-200 bg-white py-3 text-sm font-semibold text-gray-900 shadow-theme-xs hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:text-white dark:hover:bg-white/5"
+        (click)="logout()"
+      >
+        Logout
+      </button>
+    }
+  </div>
+</aside>
