@@ -7,8 +7,6 @@ import { InputFieldComponent } from '../../../shared/components/form/input/input
 import { LabelComponent } from '../../../shared/components/form/label/label.component';
 import { CheckboxComponent } from '../../../shared/components/form/input/checkbox.component';
 import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
-import { catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
 
 @Component({
   selector: 'app-signin-form',
@@ -57,54 +55,16 @@ export class SigninFormComponent {
           return;
         }
 
-        const orgs = data?.tokens?.organizations ?? [];
+        localStorage.setItem('access_token_saas', accessToken);
+        localStorage.setItem('refresh_token', refreshToken ?? '');
 
-        const storeOrgId = (id: string) => {
-          if (this.isChecked) {
-            localStorage.setItem('org_id', id);
-          } else {
-            sessionStorage.setItem('org_id', id);
-          }
-        };
-
-        const applyTokens = (token: string, refresh: string | undefined, orgId?: string) => {
-          if (this.isChecked) {
-            localStorage.setItem('access_token_saas', token);
-            localStorage.setItem('refresh_token', refresh ?? '');
-            localStorage.setItem('remember_device', 'true');
-            localStorage.setItem('session_expires_at', String(Date.now() + 24 * 60 * 60 * 1000));
-            sessionStorage.removeItem('access_token_saas');
-            sessionStorage.removeItem('refresh_token');
-          } else {
-            sessionStorage.setItem('access_token_saas', token);
-            sessionStorage.setItem('refresh_token', refresh ?? '');
-            sessionStorage.removeItem('remember_device');
-            localStorage.removeItem('access_token_saas');
-            localStorage.removeItem('refresh_token');
-          }
-
-          if (orgId) {
-            storeOrgId(orgId);
-          }
-        };
-
-        applyTokens(accessToken, refreshToken, orgs?.[0]?.id);
-
-        if (!orgs?.length) {
-          this.authService.me(accessToken).pipe(
-            catchError(() => of(null))
-          ).subscribe((profile: any) => {
-            const profileOrgs = profile?.organizations || [];
-            if (profileOrgs?.[0]?.id) {
-              storeOrgId(profileOrgs[0].id);
-            }
-            this.isLoading = false;
-            this.router.navigate(['/']);
-          });
-        } else {
-          this.isLoading = false;
-          this.router.navigate(['/']);
+        const orgs = data?.organizations ?? [];
+        if (orgs?.length > 0) {
+          localStorage.setItem('org_id', orgs[0].id);
         }
+
+        this.isLoading = false;
+        this.router.navigate(['/']);
       },
       error: (err) => {
         console.error('Login error:', err);

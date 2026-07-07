@@ -45,7 +45,7 @@ export class SubscriptionPlanComponent implements OnInit {
   }
 
   get orgId(): string | null {
-    return localStorage.getItem('org_id') || sessionStorage.getItem('org_id') || localStorage.getItem('organizationId') || sessionStorage.getItem('organizationId') || null;
+    return localStorage.getItem('org_id');
   }
 
   selectPlan(planId: string) {

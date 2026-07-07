@@ -276,7 +276,7 @@ export class SignupFormComponent {
     this.authService.signup(payload).subscribe({
       next: (res) => {
         console.log('Signup successful:', res);
-        const orgId = res?.organization?.id || res?.membership?.id;
+        const orgId = res?.membership?.id || res?.organization?.id;
         const userEmail = res?.user?.email || this.email;
 
         if (orgId) {
