@@ -1,35 +1,10 @@
-import { Routes } from '@angular/router';
-import { ProfileComponent } from './dashboard/pages/profile/profile.component';
-import { FormElementsComponent } from './features/pages/forms/form-elements/form-elements.component';
-import { BasicTablesComponent } from './features/pages/tables/basic-tables/basic-tables.component';
-import { BlankComponent } from './features/pages/blank/blank.component';
-import { NotFoundComponent } from './features/pages/other-page/not-found/not-found.component';
-import { AppLayoutComponent } from './layout/app-layout/app-layout.component';
-import { InvoicesComponent } from './features/pages/invoices/invoices.component';
-import { LineChartComponent } from './features/pages/charts/line-chart/line-chart.component';
-import { BarChartComponent } from './features/pages/charts/bar-chart/bar-chart.component';
-import { AlertsComponent } from './ui-elements/pages/alerts/alerts.component';
-import { AvatarElementComponent } from './ui-elements/pages/avatar-element/avatar-element.component';
-import { BadgesComponent } from './ui-elements/pages/badges/badges.component';
-import { ButtonsComponent } from './ui-elements/pages/buttons/buttons.component';
-import { ImagesComponent } from './ui-elements/pages/images/images.component';
-import { VideosComponent } from './ui-elements/pages/videos/videos.component';
-import { SignInComponent } from './auth/pages/sign-in/sign-in.component';
-import { ForgotPasswordComponent } from './auth/pages/forgot-password/forgot-password.component';
-import { ForgotPasswordcheckComponent } from './auth/pages/forgot-passwordcheck/forgot-passwordcheck.component';
-import { ConfirmPasswordComponent } from './auth/pages/confirm-password/confirm-password.component';
-
-import { VerificationComponent } from './auth/pages/verification/verification.component';
-import { SignUpComponent } from './auth/pages/sign-up/sign-up.component';
-import { CalenderComponent } from './dashboard/pages/calender/calender.component';
-import { SubscriptionPlanComponent } from './auth/pages/subscription-plan/subscription-plan.component';
-import { NewPasswordComponent } from './auth/pages/new-password/new-password.component';
+import { Routes, PreloadAllModules } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
       {
         path:'',
-        component:AppLayoutComponent,
+        loadComponent: () => import('./layout/app-layout/app-layout.component').then(m => m.AppLayoutComponent),
         canActivate: [authGuard],
         children:[
           {
@@ -46,8 +21,13 @@ export const routes: Routes = [
           },
           {
             path: 'dob-feed',
-            loadComponent: () => import('./dob-feed/dob-feed.component').then(m => m.DobFeedComponent),
-            title: 'DOB Feed | eDOB'
+            redirectTo: 'entries',
+            pathMatch: 'full'
+          },
+          {
+            path: 'entries',
+            loadComponent: () => import('./dob-feed/entries.component').then(m => m.EntriesComponent),
+            title: 'Entries | eDOB'
           },
           {
             path: 'create-entry',
@@ -56,125 +36,121 @@ export const routes: Routes = [
           },
           {
             path:'calendar',
-            component:CalenderComponent,
-
-
-        title:'Angular Calender | TailAdmin - Angular Admin Dashboard Template'
-      },
-
-      {
-        path:'profile',
-        component:ProfileComponent,
-        title:'Angular Profile Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path:'form-elements',
-        component:FormElementsComponent,
-        title:'Angular Form Elements Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path:'basic-tables',
-        component:BasicTablesComponent,
-        title:'Angular Basic Tables Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path:'blank',
-        component:BlankComponent,
-        title:'Angular Blank Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      // support tickets
-      {
-        path:'invoice',
-        component:InvoicesComponent,
-        title:'Angular Invoice Details Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path:'line-chart',
-        component:LineChartComponent,
-        title:'Angular Line Chart Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path:'bar-chart',
-        component:BarChartComponent,
-        title:'Angular Bar Chart Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path:'alerts',
-        component:AlertsComponent,
-        title:'Angular Alerts Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path:'avatars',
-        component:AvatarElementComponent,
-        title:'Angular Avatars Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path:'badge',
-        component:BadgesComponent,
-        title:'Angular Badges Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path:'buttons',
-        component:ButtonsComponent,
-        title:'Angular Buttons Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path:'images',
-        component:ImagesComponent,
-        title:'Angular Images Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path:'videos',
-        component:VideosComponent,
-        title:'Angular Videos Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-    ]
+            loadComponent: () => import('./dashboard/pages/calender/calender.component').then(m => m.CalenderComponent),
+            title:'Angular Calender | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'profile',
+            loadComponent: () => import('./dashboard/pages/profile/profile.component').then(m => m.ProfileComponent),
+            title:'Angular Profile Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'form-elements',
+            loadComponent: () => import('./features/pages/forms/form-elements/form-elements.component').then(m => m.FormElementsComponent),
+            title:'Angular Form Elements Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'basic-tables',
+            loadComponent: () => import('./features/pages/tables/basic-tables/basic-tables.component').then(m => m.BasicTablesComponent),
+            title:'Angular Basic Tables Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'blank',
+            loadComponent: () => import('./features/pages/blank/blank.component').then(m => m.BlankComponent),
+            title:'Angular Blank Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'invoice',
+            loadComponent: () => import('./features/pages/invoices/invoices.component').then(m => m.InvoicesComponent),
+            title:'Angular Invoice Details Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'line-chart',
+            loadComponent: () => import('./features/pages/charts/line-chart/line-chart.component').then(m => m.LineChartComponent),
+            title:'Angular Line Chart Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'bar-chart',
+            loadComponent: () => import('./features/pages/charts/bar-chart/bar-chart.component').then(m => m.BarChartComponent),
+            title:'Angular Bar Chart Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'alerts',
+            loadComponent: () => import('./ui-elements/pages/alerts/alerts.component').then(m => m.AlertsComponent),
+            title:'Angular Alerts Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'avatars',
+            loadComponent: () => import('./ui-elements/pages/avatar-element/avatar-element.component').then(m => m.AvatarElementComponent),
+            title:'Angular Avatars Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'badge',
+            loadComponent: () => import('./ui-elements/pages/badges/badges.component').then(m => m.BadgesComponent),
+            title:'Angular Badges Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'buttons',
+            loadComponent: () => import('./ui-elements/pages/buttons/buttons.component').then(m => m.ButtonsComponent),
+            title:'Angular Buttons Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'images',
+            loadComponent: () => import('./ui-elements/pages/images/images.component').then(m => m.ImagesComponent),
+            title:'Angular Images Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path:'videos',
+            loadComponent: () => import('./ui-elements/pages/videos/videos.component').then(m => m.VideosComponent),
+            title:'Angular Videos Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+      ]
   },
   // auth pages
   {
     path:'signin',
-    component:SignInComponent,
+    loadComponent: () => import('./auth/pages/sign-in/sign-in.component').then(m => m.SignInComponent),
     title:'Sign In | eDOB'
   },
   {
     path:'forgot-password',
-    component:ForgotPasswordComponent,
+    loadComponent: () => import('./auth/pages/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
     title:'Forgot Password | eDOB'
   },
   {
     path:'forgot-passwordcheck',
-    component:ForgotPasswordcheckComponent,
+    loadComponent: () => import('./auth/pages/forgot-passwordcheck/forgot-passwordcheck.component').then(m => m.ForgotPasswordcheckComponent),
     title:'Forgot Password | eDOB'
   },
   {
     path:'confirm-password',
-    component:ConfirmPasswordComponent,
+    loadComponent: () => import('./auth/pages/confirm-password/confirm-password.component').then(m => m.ConfirmPasswordComponent),
     title:'Confirm Password | eDOB'
-  },  
+  },
   {
     path:'reset-password',
-    component:NewPasswordComponent,
+    loadComponent: () => import('./auth/pages/new-password/new-password.component').then(m => m.NewPasswordComponent),
     title:'Reset Password | eDOB'
   },
   {
     path:'verification',
-    component:VerificationComponent,
+    loadComponent: () => import('./auth/pages/verification/verification.component').then(m => m.VerificationComponent),
     title:'Verification | eDOB'
   },
   {
     path:'subscription-plan',
-    component:SubscriptionPlanComponent,
+    loadComponent: () => import('./auth/pages/subscription-plan/subscription-plan.component').then(m => m.SubscriptionPlanComponent),
     title:'Choose Plan | eDOB'
   },
   {
     path:'signup',
-    component:SignUpComponent,
+    loadComponent: () => import('./auth/pages/sign-up/sign-up.component').then(m => m.SignUpComponent),
     title:'Sign Up | eDOB'
   },
   // error pages
   {
     path:'**',
-    component:NotFoundComponent,
+    loadComponent: () => import('./features/pages/other-page/not-found/not-found.component').then(m => m.NotFoundComponent),
     title:'Angular NotFound Dashboard | TailAdmin - Angular Admin Dashboard Template'
   },
 ];

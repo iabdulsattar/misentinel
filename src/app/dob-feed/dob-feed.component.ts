@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { EdobService } from '../core/services/edob.service';
 import { AuthService } from '../core/services/auth.service';
 import { Entry, ListEntriesRequest, ListEntriesResponse, EntryType, OrgUser, Category, EntryStatus, EntryPriority } from '../core/models/edob.models';
@@ -19,6 +20,7 @@ export class DobFeedComponent implements OnInit {
   loading = false;
   selectedEntry: any = null;
   rawEntries: Entry[] = [];
+  isDetailPanelOpen = false;
 
   search = '';
   typeFilter = '';
@@ -64,7 +66,7 @@ export class DobFeedComponent implements OnInit {
     { label: 'Completed (This Month)', value: '156', note: 'View all completed', tone: 'bg-success-50 text-success-600', icon: this.icon('M20 6 9 17l-5-5') },
   ];
 
-  constructor(private edobService: EdobService, private authService: AuthService) {}
+  constructor(private edobService: EdobService, private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     this.ensureOrgId().then((orgId) => {
@@ -192,7 +194,7 @@ export class DobFeedComponent implements OnInit {
 
       return {
         ...entry,
-        entryNumber: entry.id,
+        entryNumber: entry.entryNumber || entry.id,
         type: typeName,
         typeCode: entry.entryTypeCode,
         title: entry.title,
@@ -292,6 +294,17 @@ export class DobFeedComponent implements OnInit {
 
   selectEntry(entry: any): void {
     this.selectedEntry = entry;
+    this.isDetailPanelOpen = true;
+  }
+
+  editEntry(entry: any): void {
+    if (!entry?.id) return;
+    this.router.navigate(['/create-entry'], { queryParams: { id: entry.id } });
+  }
+
+  closeDetailPanel(): void {
+    this.isDetailPanelOpen = false;
+    this.selectedEntry = null;
   }
 
   private icon(path: string): string {

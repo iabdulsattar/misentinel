@@ -45,10 +45,10 @@ export class EdobService {
     return this.api.post<EntryType>(`${this.basePath(orgId)}/entry-types`, payload, headers);
   }
 
-  // PUT /api/v1/edob/organizations/{orgId}/entry-types/{entryTypeId}
+  // PATCH /api/v1/edob/organizations/{orgId}/entry-types/{entryTypeId}
   updateEntryType(orgId: string, entryTypeId: string, payload: UpdateEntryTypeRequest): Observable<EntryType> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.api.put<EntryType>(`${this.basePath(orgId)}/entry-types/${entryTypeId}`, payload, headers);
+    return this.api.patch<EntryType>(`${this.basePath(orgId)}/entry-types/${entryTypeId}`, payload, headers);
   }
 
   // DELETE /api/v1/edob/organizations/{orgId}/entry-types/{entryTypeId}
@@ -69,10 +69,10 @@ export class EdobService {
     return this.api.post<Category>(`${this.basePath(orgId)}/categories`, payload, headers);
   }
 
-  // PUT /api/v1/edob/organizations/{orgId}/categories/{categoryId}
+  // PATCH /api/v1/edob/organizations/{orgId}/categories/{categoryId}
   updateCategory(orgId: string, categoryId: string, payload: UpdateCategoryRequest): Observable<Category> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.api.put<Category>(`${this.basePath(orgId)}/categories/${categoryId}`, payload, headers);
+    return this.api.patch<Category>(`${this.basePath(orgId)}/categories/${categoryId}`, payload, headers);
   }
 
   // DELETE /api/v1/edob/organizations/{orgId}/categories/{categoryId}
@@ -116,7 +116,9 @@ export class EdobService {
 
   // GET /api/v1/edob/organizations/{orgId}/entries/{entryId}
   getEntry(orgId: string, entryId: string): Observable<Entry> {
-    return this.api.get<Entry>(`${this.basePath(orgId)}/entries/${entryId}`);
+    return this.api.get<ApiWrapper<Entry>>(`${this.basePath(orgId)}/entries/${entryId}`).pipe(
+      map(res => (res && res.data) ? res.data : (res as unknown as Entry))
+    );
   }
 
   // PATCH /api/v1/edob/organizations/{orgId}/entries/{entryId} (multipart)
@@ -154,16 +156,16 @@ export class EdobService {
     return this.api.post<Role>(`${this.basePath(orgId)}/roles`, payload, headers);
   }
 
-  // PUT /api/v1/edob/organizations/{orgId}/roles/{roleId}
+  // PATCH /api/v1/edob/organizations/{orgId}/roles/{roleId}
   updateRole(orgId: string, roleId: string, payload: UpdateRoleRequest): Observable<Role> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.api.put<Role>(`${this.basePath(orgId)}/roles/${roleId}`, payload, headers);
+    return this.api.patch<Role>(`${this.basePath(orgId)}/roles/${roleId}`, payload, headers);
   }
 
-  // PUT /api/v1/edob/organizations/{orgId}/users/{userId}/roles
+  // PATCH /api/v1/edob/organizations/{orgId}/users/{userId}/roles
   assignRolesToUser(orgId: string, userId: string, payload: AssignRolesRequest): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.api.put(`${this.basePath(orgId)}/users/${userId}/roles`, payload, headers);
+    return this.api.patch(`${this.basePath(orgId)}/users/${userId}/roles`, payload, headers);
   }
 
   // ==================== Users ====================

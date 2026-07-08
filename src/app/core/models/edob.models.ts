@@ -71,6 +71,7 @@ export type EntryPriority = 'LOW' | 'NORMAL' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export interface Entry {
   id: string;
+  entryNumber?: string;
   organizationId: string;
   entryTypeCode: string;
   entryTypeId?: string;

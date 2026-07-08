@@ -33,16 +33,43 @@ export class SigninFormComponent {
 
   isLoading = false;
   errorMessage = '';
+  emailError = '';
+  passwordError = '';
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
   }
 
+  private validateForm(): boolean {
+    let isValid = true;
+    this.emailError = '';
+    this.passwordError = '';
+
+    if (!this.email.trim()) {
+      this.emailError = 'Email is required';
+      isValid = false;
+    }
+
+    if (!this.password) {
+      this.passwordError = 'Password is required';
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
   onSignIn() {
     this.isLoading = true;
     this.errorMessage = '';
+    this.emailError = '';
+    this.passwordError = '';
 
-     this.authService.login({ email: this.email, password: this.password }).subscribe({
+    if (!this.validateForm()) {
+      this.isLoading = false;
+      return;
+    }
+
+    this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: (res) => {
         console.log('Login successful:', res);
         const data = res as any;
@@ -57,6 +84,15 @@ export class SigninFormComponent {
 
         localStorage.setItem('access_token_saas', accessToken);
         localStorage.setItem('refresh_token', refreshToken ?? '');
+
+        if (this.isChecked) {
+          localStorage.setItem('remember_device', 'true');
+          const expiresInMs = (data?.tokens?.expires_in || 24 * 60 * 60) * 1000;
+          localStorage.setItem('session_expires_at', String(Date.now() + expiresInMs));
+        } else {
+          localStorage.removeItem('remember_device');
+          localStorage.removeItem('session_expires_at');
+        }
 
         const orgs = data?.tokens?.organizations ?? data?.organizations ?? [];
         if (orgs?.length > 0) {

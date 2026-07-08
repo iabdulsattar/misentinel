@@ -1,8 +1,10 @@
 import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-faq-item-one',
   standalone: true,
+  imports: [CommonModule],
   template: `
     <div class="rounded-xl border border-gray-200 dark:border-gray-800">
       <button type="button" class="w-full flex items-center justify-between px-5 py-4 text-left">
