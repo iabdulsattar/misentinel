@@ -83,34 +83,40 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg> 
           </span>
                 
-          <app-input-field
-            type="email"
-            placeholder="info@gmail.com"
-            [(value)]="email"
-            name="email"
-            class="form-input"
-            className="pl-[62px]"
-            required
-          />
-          </div>
-        </div> 
-        
-        <div>
-          <app-label>Password <span class="text-error-500">*</span></app-label>
-          <div class="relative">
-            <span class="absolute z-10 left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-keyhole-icon lucide-lock-keyhole"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
-            </span>
-           
-            <app-input-field
-              [type]="showPassword ? 'text' : 'password'"
-              placeholder="Enter your password"
-              [(value)]="password"
-              name="password"
-              class="form-input"
-              className="pl-[62px]"            
-              required
-            />
+           <app-input-field
+             type="email"
+             placeholder="info@gmail.com"
+             [(value)]="email"
+             name="email"
+             class="form-input"
+             className="pl-[62px]"
+             required
+           />
+           @if (emailError) {
+           <p class="mt-1 text-xs text-error-500">{{ emailError }}</p>
+           }
+           </div>
+         </div>
+         
+         <div>
+           <app-label>Password <span class="text-error-500">*</span></app-label>
+           <div class="relative">
+             <span class="absolute z-10 left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-keyhole-icon lucide-lock-keyhole"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
+             </span>
+            
+             <app-input-field
+               [type]="showPassword ? 'text' : 'password'"
+               placeholder="Enter your password"
+               [(value)]="password"
+               name="password"
+               class="form-input"
+               className="pl-[62px]"            
+               required
+             />
+             @if (passwordError) {
+             <p class="mt-1 text-xs text-error-500">{{ passwordError }}</p>
+             }
             <span
               (click)="togglePasswordVisibility()"
               class="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"

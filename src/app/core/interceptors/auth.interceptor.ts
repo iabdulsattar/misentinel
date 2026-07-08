@@ -15,6 +15,7 @@ import { AuthService } from '../services/auth.service';
 export class AuthInterceptor implements HttpInterceptor {
   private isRefreshing = false;
   private refreshQueue: Array<(token: string) => void> = [];
+  private refreshSupported = true;
 
   constructor(private router: Router, private authService: AuthService) {}
 
@@ -71,7 +72,7 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   private handle401(req: HttpRequest<unknown>, next: HttpHandler) {
-    if (!this.isRefreshing) {
+    if (!this.isRefreshing && this.refreshSupported) {
       this.isRefreshing = true;
       const refreshToken = this.getRefreshToken();
 
@@ -98,13 +99,23 @@ export class AuthInterceptor implements HttpInterceptor {
             setHeaders: { Authorization: `Bearer ${newToken}` }
           }));
         }),
-        catchError(() => {
+        catchError((err) => {
           this.isRefreshing = false;
+          if (err instanceof HttpErrorResponse && err.status === 404) {
+            this.refreshSupported = false;
+          }
+          this.flushRefreshQueue(null);
           this.clearTokens();
           this.router.navigate(['/signin']);
           return from([new HttpErrorResponse({ status: 401, statusText: 'Unauthorized' })]);
         })
       );
+    }
+
+    if (!this.refreshSupported) {
+      this.clearTokens();
+      this.router.navigate(['/signin']);
+      return from([new HttpErrorResponse({ status: 401, statusText: 'Unauthorized' })]);
     }
 
     return new Observable<HttpEvent<unknown>>((observer) => {
@@ -120,8 +131,8 @@ export class AuthInterceptor implements HttpInterceptor {
     });
   }
 
-  private flushRefreshQueue(token: string) {
-    this.refreshQueue.forEach((callback) => callback(token));
+  private flushRefreshQueue(token: string | null) {
+    this.refreshQueue.forEach((callback) => callback(token || ''));
     this.refreshQueue = [];
   }
 
@@ -130,7 +141,7 @@ export class AuthInterceptor implements HttpInterceptor {
     if (remember === 'true') {
       return localStorage.getItem('access_token_saas');
     }
-    return localStorage.getItem('access_token_saas') || sessionStorage.getItem('access_token_saas');
+    return sessionStorage.getItem('access_token_saas') || localStorage.getItem('access_token_saas');
   }
 
   private getRefreshToken(): string | null {
@@ -138,7 +149,7 @@ export class AuthInterceptor implements HttpInterceptor {
     if (remember === 'true') {
       return localStorage.getItem('refresh_token');
     }
-    return localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
+    return sessionStorage.getItem('refresh_token') || localStorage.getItem('refresh_token');
   }
 
   private setAccessToken(token: string) {

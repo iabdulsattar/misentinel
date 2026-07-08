@@ -1,0 +1,64 @@
+<div class=" border-l border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] h-[570px] overflow-y-auto">
+  @if (!entry) {
+    <div class="flex h-full items-center justify-center text-center text-theme-xs text-gray-400">
+      Select an entry to view its details.
+    </div>
+  } @else {
+    <div class="mb-2">
+      <app-badge color="warning" size="sm">Follow-Up</app-badge>
+    </div>
+
+    <div class="mb-2">
+      <p class="font-semibold text-gray-800 text-theme-xs dark:text-white/90">
+        {{ entry.id }}
+      </p>
+      <p class="font-semibold text-[10px] dark:text-white/90 mb-2">
+        {{ entry.title }}
+      </p>
+    </div>
+
+    <div class="border-b border-gray-200 dark:border-gray-800 pb-1">
+      <div class="flex items-center justify-between mb-[5px]">
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">Type</span>
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">{{ entry.type }}</span>
+      </div>
+      <div class="flex items-center justify-between mb-[5px]">
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">Status</span>
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">{{ entry.status }}</span>
+      </div>
+      <div class="flex items-center justify-between mb-[5px]">
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">Priority</span>
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">{{ entry.priority }}</span>
+      </div>
+      <div class="flex items-center justify-between mb-[5px]">
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">Created By</span>
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">{{ entry.userName }}</span>
+      </div>
+      <div class="flex items-center justify-between mb-[5px]">
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">Assigned To</span>
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">{{ entry.assignedTo }}</span>
+      </div>
+      <div class="flex items-center justify-between mb-[5px]">
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">Created Date</span>
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">{{ formatDateTime(entry.raw?.createdAt) }}</span>
+      </div>
+      <div class="flex items-center justify-between mb-1">
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">Last Updated</span>
+        <span class="block text-gray-500 text-[10px] dark:text-gray-400">{{ formatDateTime(entry.raw?.updatedAt) }}</span>
+      </div>
+    </div>
+
+    @if (entry.raw?.description) {
+      <div class="border-b border-gray-200 dark:border-gray-800 pb-1 pt-2">
+        <p class="font-semibold text-gray-800 text-[10px] dark:text-white/90 mb-1">Description</p>
+        <p class="text-gray-500 text-[10px] dark:text-gray-400">{{ entry.raw.description }}</p>
+      </div>
+    }
+
+    <div class="pt-2">
+      <app-button className="w-full mb-1 !py-2 text-theme-xs" size="sm" variant="outline" (btnClick)="onEdit()">
+        Edit Entry
+      </app-button>
+    </div>
+  }
+</div>

@@ -1,1231 +1,572 @@
-<main class="flex-1">
+<main class="min-h-screen  text-gray-900">
+
+  <div class="w-full">
 
     <!-- Header -->
-
-    <header class="bg-white border-b border-gray-200 px-10 py-8">
-
-        <div class="flex justify-between items-center">
-
-            <div>
-
-                <h1 class="text-4xl font-bold">
-
-                    Create Entry
-
-                </h1>
-
-                <p class="mt-2 text-gray-500">
-
-                    Record an observation, activity, note, or occurrence.
-
-                </p>
-
-            </div>
-
-            <div class="flex gap-6 text-2xl">
-
-                🔔
-
-                ❔
-
-            </div>
-
-        </div>
-
+    <header class="flex items-start justify-between">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">
+          {{ editMode ? 'Edit Entry' : 'Create Entry' }}
+        </h1>
+        <p class="text-sm text-gray-400 mt-1">Record an observation, activity, note, or occurrence.</p>
+      </div>
+    
     </header>
 
-<div class="grid grid-cols-12 gap-8">
+    <div class="mt-6 grid grid-cols-12 gap-6 items-start">
 
-    <!-- Left Content -->
-    <div class="col-span-9">
+      <!-- ================= MAIN COLUMN ================= -->
+      <div class="space-y-6" [ngClass]="aiDrawerOpen ? 'col-span-12 xl:col-span-9' : 'col-span-12'">
 
-        <!-- Entry Type Tabs -->
-        <div class="grid grid-cols-4 gap-4">
-
-            @for (tab of tabs; track tab.id; let i = $index) {
-              <button
-                (click)="setActiveTab(i)"
-                [ngClass]="activeTab === i 
-                  ? 'flex items-center justify-center gap-3 h-14 rounded-xl bg-black text-white font-semibold shadow-sm' 
-                  : 'h-14 rounded-xl border border-gray-200 bg-white hover:border-indigo-500 transition flex items-center justify-center gap-3 font-medium'">
-
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     class="w-5 h-5"
-                     fill="none"
-                     viewBox="0 0 24 24"
-                     stroke="currentColor"
-                     stroke-width="2">
-
-                    <circle cx="12" cy="12" r="9"/>
-                    <path d="M12 8v8M8 12h8"/>
-
-                </svg>
-
-                {{ tab.label }}
-
-              </button>
-            }
-
-        </div>
-
-
-        <!-- AI Banner -->
-
-        <div
-            class="mt-6 rounded-2xl border border-indigo-300 bg-gradient-to-r from-indigo-50 via-white to-indigo-50 p-5 flex justify-between items-center">
-
-            <div class="flex items-center gap-4">
-
-                <div
-                    class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
-
-                    ✨
-
-                </div>
-
-                <div>
-
-                    <h3 class="font-semibold text-indigo-700">
-
-                        Generate an entry draft with AI
-
-                    </h3>
-
-                    <p class="text-gray-500 text-sm">
-
-                        Save time and write smarter.
-
-                    </p>
-
-                </div>
-
-            </div>
-
+        <!-- Entry type tabs -->
+        <div class="grid grid-cols-4 gap-3">
+          @for (tab of tabs; track tab.id; let i = $index) {
             <button
-            (click)="toggleAiDrawer()"
-                class="px-8 h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
-
-                ✨ Generate with AI
-
+              (click)="setActiveTab(i)"
+              [ngClass]="activeTab === i
+                ? 'flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold bg-gray-900 text-white'
+                : 'flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'">
+              @switch (i) {
+                @case (0) {
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+                }
+                @case (1) {
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+                }
+                @case (2) {
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                }
+                @case (3) {
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 5-5"/></svg>
+                }
+              }
+              {{ tab.label }}
             </button>
-
+          }
         </div>
 
-
-        <!-- Section Title -->
-
-        <div class="mt-10">
-
-            <h2 class="text-xl font-bold">
-
-                1. Entry Information
-            </h2>
-
-        </div>
-
-        @if (activeTab === 0) {
-          <!-- Basic Entry Form -->
-          <form class="grid grid-cols-3 gap-6 mt-6" (ngSubmit)="onSubmitEntry()">
-
-              <div>
-
-                  <label class="font-medium">
-
-                      Title <span class="text-red-500">*</span>
-
-                  </label>
-
-                  <input
-                  [(ngModel)]="title" name="title"
-                      class="mt-3 h-14 w-full rounded-xl border border-gray-200 px-5 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                      placeholder="Enter a concise title">
-
-              </div>
-
-              <div>
-
-                  <label class="font-medium">
-
-                      Category <span class="text-red-500">*</span>
-
-                  </label>
-
-                  <select
-                  [(ngModel)]="categoryId" name="category"
-                  (ngModelChange)="onCategoryChange($event)"
-                  [disabled]="isLoadingData"
-                      class="mt-3 h-14 w-full rounded-xl border border-gray-200 px-5 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                      <option value="" disabled>Select category</option>
-                      @if (isLoadingData) {
-                        <option value="" disabled>Loading categories...</option>
-                      } @else if (categories.length === 0) {
-                        <option value="" disabled>No categories available</option>
-                      } @else {
-                        @for (cat of categories; track cat.id) {
-                          <option [value]="cat.id">{{ cat.name }}</option>
-                        }
-                      }
-                      <option value="__create_new__">+ Create new category</option>
-                  </select>
-
-                  @if (showCreateCategoryForm) {
-                    <div class="mt-3 flex gap-2">
-                      <input
-                        type="text"
-                        [(ngModel)]="newCategoryName"
-                        name="newCategoryName"
-                        placeholder="New category name"
-                        class="flex-1 h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:border-indigo-500"
-                      />
-                      <button
-                        type="button"
-                        (click)="createNewCategory()"
-                        [disabled]="isCreatingCategory"
-                        class="h-11 px-4 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
-                        {{ isCreatingCategory ? 'Saving...' : 'Save' }}
-                      </button>
-                    </div>
-                    @if (categoryCreateError) {
-                      <p class="mt-1 text-xs text-red-500">{{ categoryCreateError }}</p>
-                    }
-                  }
-
-              </div>
-
-              <div>
-
-                  <label class="font-medium">
-
-                      Priority <span class="text-red-500">*</span>
-
-                  </label>
-
-                  <select
-                  [(ngModel)]="priority" name="priority"
-                      class="mt-3 h-14 w-full rounded-xl border border-gray-200 px-5 focus:ring-2 focus:ring-indigo-500">
-                      <option value="" disabled>Select priority</option>
-                      @for (p of priorities; track p.value) {
-                        <option [value]="p.value">{{ p.label }}</option>
-                      }
-                  </select>
-
-              </div>
-
-          </form>
-
-          <!-- Description -->
-
-<div class="mt-10">
-
-    <label class="text-lg font-semibold">
-        2. Description <span class="text-red-500">*</span>
-    </label>
-
-    <div class="mt-4 bg-white border border-gray-200 rounded-2xl overflow-hidden">
-
-        <!-- Editor Toolbar -->
-
-        <div
-            class="flex items-center justify-between px-5 py-4 border-b bg-gray-50">
-
-            <div class="flex items-center gap-6">
-
-                <select
-                    class="text-sm border-0 bg-transparent font-medium focus:ring-0">
-
-                    <option>Normal</option>
-
-                </select>
-
-                <button class="font-bold hover:text-indigo-600">
-                    B
-                </button>
-
-                <button class="italic hover:text-indigo-600">
-                    I
-                </button>
-
-                <button class="underline hover:text-indigo-600">
-                    U
-                </button>
-
-                <button class="hover:text-indigo-600">
-                    • List
-                </button>
-
-                <button class="hover:text-indigo-600">
-                    1. List
-                </button>
-
-                <button class="hover:text-indigo-600">
-                    🔗
-                </button>
-
-            </div>
-
-            <div class="flex gap-4">
-
-                <button class="hover:text-indigo-600">
-                    ↶
-                </button>
-
-                <button class="hover:text-indigo-600">
-                    ↷
-                </button>
-
-            </div>
-
-        </div>
-
-        <!-- Textarea -->
-
-        <div class="relative">
-
-            <textarea
-                rows="10"
-                [(ngModel)]="description" (ngModelChange)="onDescriptionInput($event)" name="description"
-                class="w-full resize-none border-0 focus:ring-0 p-6 text-gray-700 placeholder-gray-400"
-                placeholder="Describe the occurrence in detail..."></textarea>
-
-            <!-- Voice Button -->
-
-            <button
-                class="absolute bottom-6 right-6 w-12 h-12 rounded-xl border border-gray-200 bg-white hover:bg-indigo-50 shadow">
-
-                🎤
-
-            </button>
-
-        </div>
-
-        <!-- Footer -->
-
-        <div
-            class="flex justify-end px-6 py-3 border-t bg-gray-50">
-
-            <span class="text-sm text-gray-400">
-
-                {{ descriptionLength }} / {{ maxChars }}
-
-            </span>
-
-        </div>
-
-    </div>
-
-</div>
-
-        } @else if (activeTab === 1) {
-          <!-- Incident Entry Form -->
-          <form class="grid grid-cols-3 gap-6 mt-6" (ngSubmit)="onSubmitEntry()">
-
-              <div>
-
-                  <label class="block mb-2 text-sm font-semibold text-gray-800">
-                      Incident Title
-                      <span class="text-red-500">*</span>
-                  </label>
-
-                  <input
-                      type="text"
-                      [(ngModel)]="incidentTitle" name="incidentTitle"
-                      placeholder="Enter incident title"
-                      class="w-full h-14 rounded-xl border border-gray-200 bg-white px-5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
-
-              </div>
-
-              <div>
-
-                  <label class="block mb-2 text-sm font-semibold text-gray-800">
-                      Incident Type
-                      <span class="text-red-500">*</span>
-                  </label>
-
-                  <div class="relative">
-
-                      <svg xmlns="http://www.w3.org/2000/svg"
-                           class="absolute left-4 top-4 w-5 h-5 text-indigo-700"
-                           fill="none"
-                           stroke="currentColor"
-                           stroke-width="2"
-                           viewBox="0 0 24 24">
-
-                          <path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/>
-
-                      </svg>
-
-                      <select
-                      [(ngModel)]="incidentType" name="incidentType"
-                          class="w-full h-14 rounded-xl border border-gray-200 pl-12 pr-10 appearance-none bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
-                          <option value="">Select incident type</option>
-                          <option value="SAFETY">Safety</option>
-                          <option value="SECURITY">Security</option>
-                          <option value="MEDICAL">Medical</option>
-                          <option value="PROPERTY">Property</option>
-                          <option value="OTHER">Other</option>
-                      </select>
-
-                      <svg xmlns="http://www.w3.org/2000/svg"
-                           class="absolute right-4 top-5 w-4 h-4 text-gray-500"
-                           fill="none"
-                           stroke="currentColor"
-                           stroke-width="2"
-                           viewBox="0 0 24 24">
-
-                          <path d="M6 9l6 6 6-6"/>
-
-                      </svg>
-
-                  </div>
-
-              </div>
-
-              <div>
-
-                  <label class="block mb-2 text-sm font-semibold text-gray-800">
-                      Priority
-                      <span class="text-red-500">*</span>
-                  </label>
-
-                  <div class="relative">
-
-                      <svg xmlns="http://www.w3.org/2000/svg"
-                           class="absolute left-4 top-4 w-5 h-5 text-indigo-700"
-                           fill="none"
-                           stroke="currentColor"
-                           stroke-width="2"
-                           viewBox="0 0 24 24">
-
-                          <path d="M5 4v16"/>
-                          <path d="M5 4h10l-2 4 2 4H5"/>
-
-                      </svg>
-
-                      <select
-                      [(ngModel)]="priority" name="priority"
-                          class="w-full h-14 rounded-xl border border-gray-200 pl-12 pr-10 appearance-none bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
-                          <option value="" disabled>Select priority</option>
-                          @for (p of priorities; track p.value) {
-                            <option [value]="p.value">{{ p.label }}</option>
-                          }
-                      </select>
-
-                      <svg xmlns="http://www.w3.org/2000/svg"
-                           class="absolute right-4 top-5 w-4 h-4 text-gray-500"
-                           fill="none"
-                           stroke="currentColor"
-                           stroke-width="2"
-                           viewBox="0 0 24 24">
-
-                          <path d="M6 9l6 6 6-6"/>
-
-                      </svg>
-
-                  </div>
-
-              </div>
-
-          </form>
-
-          <!-- Row 2 -->
-
-          <div class="grid grid-cols-3 gap-6 mt-6">
-
-              <div>
-
-                  <label class="block mb-2 text-sm font-semibold text-gray-800">
-                      Incident Date & Time
-                      <span class="text-red-500">*</span>
-                  </label>
-
-                  <div class="relative">
-
-                      <svg xmlns="http://www.w3.org/2000/svg"
-                           class="absolute left-4 top-4 w-5 h-5 text-indigo-700"
-                           fill="none"
-                           stroke="currentColor"
-                           stroke-width="2"
-                           viewBox="0 0 24 24">
-
-                          <rect x="3" y="5" width="18" height="16" rx="2"/>
-                          <path d="M16 3v4M8 3v4M3 10h18"/>
-
-                      </svg>
-
-                      <input
-                          type="text"
-                          [(ngModel)]="incidentDate" name="incidentDate"
-                          placeholder="Select date & time"
-                          class="w-full h-14 rounded-xl border border-gray-200 pl-12 pr-12 focus:ring-2 focus:ring-indigo-500 outline-none">
-
-                      <svg xmlns="http://www.w3.org/2000/svg"
-                           class="absolute right-4 top-4 w-5 h-5 text-indigo-700"
-                           fill="none"
-                           stroke="currentColor"
-                           stroke-width="2"
-                           viewBox="0 0 24 24">
-
-                          <rect x="3" y="5" width="18" height="16" rx="2"/>
-                          <path d="M16 3v4M8 3v4M3 10h18"/>
-
-                      </svg>
-
-                  </div>
-
-              </div>
-
-              <div>
-
-                  <label class="block mb-2 text-sm font-semibold">
-                      Location
-                      <span class="text-red-500">*</span>
-                  </label>
-
-                  <div class="relative">
-
-                      <svg xmlns="http://www.w3.org/2000/svg"
-                           class="absolute left-4 top-4 w-5 h-5 text-indigo-700"
-                           fill="none"
-                           stroke="currentColor"
-                           stroke-width="2"
-                           viewBox="0 0 24 24">
-
-                          <path d="M12 21s-6-5.4-6-11a6 6 0 1112 0c0 5.6-6 11-6 11z"/>
-                          <circle cx="12" cy="10" r="2"/>
-
-                      </svg>
-
-                      <input
-                          type="text"
-                          [(ngModel)]="location" name="location"
-                          placeholder="Select location"
-                          class="w-full h-14 rounded-xl border border-gray-200 pl-12 focus:ring-2 focus:ring-indigo-500 outline-none">
-
-                  </div>
-
-              </div>
-
-              <div>
-
-                  <label class="block mb-2 text-sm font-semibold">
-                      People Involved
-                  </label>
-
-                  <div class="relative">
-
-                      <svg xmlns="http://www.w3.org/2000/svg"
-                           class="absolute left-4 top-4 w-5 h-5 text-indigo-700"
-                           fill="none"
-                           stroke="currentColor"
-                           stroke-width="2"
-                           viewBox="0 0 24 24">
-
-                          <circle cx="9" cy="8" r="3"/>
-                          <path d="M3 20c0-3 2-5 6-5s6 2 6 5"/>
-                          <circle cx="18" cy="9" r="2"/>
-
-                      </svg>
-
-                      <input
-                          type="text"
-                          [(ngModel)]="peopleInvolved" name="peopleInvolved"
-                          placeholder="Add people involved"
-                          class="w-full h-14 rounded-xl border border-gray-200 pl-12 focus:ring-2 focus:ring-indigo-500 outline-none">
-
-                  </div>
-
-              </div>
-
+        <!-- AI banner -->
+        <div class="flex items-center justify-between gap-4 rounded-xl px-5 py-4 border border-indigo-100 bg-gradient-to-r from-indigo-50 via-violet-50 to-indigo-50">
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 text-indigo-500 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 5.6L19 9l-5.4 1.4L12 16l-1.6-5.6L5 9l5.4-1.4L12 2z"/><path d="M19 14l.8 2.6L22 17.5l-2.2.9L19 21l-.8-2.6-2.2-.9 2.2-.9L19 14z"/></svg>
+            <p class="text-sm font-medium text-gray-700">Generate an entry draft with AI. Save time and write smarter.</p>
           </div>
-        } @else {
-          <!-- Default Basic Entry Form (for Handover, Follow-Up, etc.) -->
-          <form class="grid grid-cols-3 gap-6 mt-6" (ngSubmit)="onSubmitEntry()">
+          <button (click)="toggleAiDrawer()" class="flex items-center gap-2 shrink-0 bg-indigo-600 text-white rounded-lg px-4 py-2.5 text-sm font-semibold hover:bg-indigo-700">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 5.6L19 9l-5.4 1.4L12 16l-1.6-5.6L5 9l5.4-1.4L12 2z"/></svg>
+            Generate with AI
+          </button>
+        </div>
 
+        <!-- 1. Entry information -->
+        <section>
+          <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">1.</span> Entry Information</h2>
+
+          @if (activeTab === 0 || activeTab === 3) {
+            <div class="grid grid-cols-3 gap-4 mt-3">
               <div>
-
-                  <label class="font-medium">
-
-                      Title <span class="text-red-500">*</span>
-
-                  </label>
-
-                  <input
+                <label class="text-sm font-medium text-gray-700">Title <span class="text-red-500">*</span></label>
+                <input
                   [(ngModel)]="title" name="title"
-                      class="mt-3 h-14 w-full rounded-xl border border-gray-200 px-5 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                      placeholder="Enter a concise title">
-
+                  class="mt-1.5 w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                  placeholder="Enter a concise title">
               </div>
-
               <div>
-
-                  <label class="font-medium">
-
-                      Category <span class="text-red-500">*</span>
-
-                  </label>
-
+                <label class="text-sm font-medium text-gray-700">Category <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
                   <select
-                  [(ngModel)]="categoryId" name="category"
-                  (ngModelChange)="onCategoryChange($event)"
-                  [disabled]="isLoadingData"
-                      class="mt-3 h-14 w-full rounded-xl border border-gray-200 px-5 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                      <option value="" disabled>Select category</option>
-                      @if (isLoadingData) {
-                        <option value="" disabled>Loading categories...</option>
-                      } @else if (categories.length === 0) {
-                        <option value="" disabled>No categories available</option>
-                      } @else {
-                        @for (cat of categories; track cat.id) {
-                          <option [value]="cat.id">{{ cat.name }}</option>
-                        }
+                    [(ngModel)]="categoryId" name="category"
+                    (ngModelChange)="onCategoryChange($event)"
+                    [disabled]="isLoadingData"
+                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <option value="" disabled>Select category</option>
+                    @if (isLoadingData) {
+                      <option value="" disabled>Loading categories...</option>
+                    } @else if (categories.length === 0) {
+                      <option value="" disabled>No categories available</option>
+                    } @else {
+                      @for (cat of categories; track cat.id) {
+                        <option [value]="cat.id">{{ cat.name }}</option>
                       }
-                      <option value="__create_new__">+ Create new category</option>
-                  </select>
-
-                  @if (showCreateCategoryForm) {
-                    <div class="mt-3 flex gap-2">
-                      <input
-                        type="text"
-                        [(ngModel)]="newCategoryName"
-                        name="newCategoryName"
-                        placeholder="New category name"
-                        class="flex-1 h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:border-indigo-500"
-                      />
-                      <button
-                        type="button"
-                        (click)="createNewCategory()"
-                        [disabled]="isCreatingCategory"
-                        class="h-11 px-4 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
-                        {{ isCreatingCategory ? 'Saving...' : 'Save' }}
-                      </button>
-                    </div>
-                    @if (categoryCreateError) {
-                      <p class="mt-1 text-xs text-red-500">{{ categoryCreateError }}</p>
                     }
-                  }
-
-              </div>
-
-              <div>
-
-                  <label class="font-medium">
-
-                      Priority <span class="text-red-500">*</span>
-
-                  </label>
-
-                  <select
-                  [(ngModel)]="priority" name="priority"
-                      class="mt-3 h-14 w-full rounded-xl border border-gray-200 px-5 focus:ring-2 focus:ring-indigo-500">
-                      <option value="" disabled>Select priority</option>
-                      @for (p of priorities; track p.value) {
-                        <option [value]="p.value">{{ p.label }}</option>
-                      }
+                    <option value="__create_new__">+ Create new category</option>
                   </select>
-
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/><path d="M12 8v4M12 15h.01"/></svg>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+                @if (showCreateCategoryForm) {
+                  <div class="mt-2 flex gap-2">
+                    <input
+                      type="text"
+                      [(ngModel)]="newCategoryName"
+                      name="newCategoryName"
+                      placeholder="New category name"
+                      class="flex-1 h-10 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:border-indigo-500">
+                    <button
+                      type="button"
+                      (click)="createNewCategory()"
+                      [disabled]="isCreatingCategory"
+                      class="h-10 px-4 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
+                      {{ isCreatingCategory ? 'Saving...' : 'Save' }}
+                    </button>
+                  </div>
+                  @if (categoryCreateError) {
+                    <p class="mt-1 text-xs text-red-500">{{ categoryCreateError }}</p>
+                  }
+                }
               </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700">Priority <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
+                  <select
+                    [(ngModel)]="priority" name="priority"
+                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400">
+                    <option value="" disabled>Select priority</option>
+                    @for (p of priorities; track p.value) {
+                      <option [value]="p.value">{{ p.label }}</option>
+                    }
+                  </select>
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 3.5L17 11H4"/></svg>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+              </div>
+            </div>
+          } @else if (activeTab === 2) {
+            <!-- Handover: Title / Type / Date / From / To / Location -->
+            <div class="grid grid-cols-3 gap-4 mt-3">
+              <div>
+                <label class="text-sm font-medium text-gray-700">Handover Title <span class="text-red-500">*</span></label>
+                <input
+                  [(ngModel)]="handoverTitle" name="handoverTitle"
+                  class="mt-1.5 w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                  placeholder="Enter handover title">
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700">Handover Type <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
+                  <select
+                    [(ngModel)]="handoverType" name="handoverType"
+                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400">
+                    <option value="">Select type</option>
+                    <option value="SHIFT_CHANGE">Shift Change</option>
+                    <option value="END_OF_DAY">End of Day</option>
+                    <option value="DEPARTMENT">Department</option>
+                    <option value="EMERGENCY">Emergency</option>
+                  </select>
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/></svg>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700">Date &amp; Time <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                  <input
+                    type="datetime-local"
+                    [(ngModel)]="handoverDateTime" name="handoverDateTime"
+                    class="w-full border border-gray-200 rounded-lg pl-10 pr-3 py-2.5 text-sm text-gray-700 outline-none focus:border-gray-400">
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mt-4">
+              <div>
+                <label class="text-sm font-medium text-gray-700">Handover From <span class="text-red-500">*</span></label>
+                <input
+                  [(ngModel)]="handoverFrom" name="handoverFrom"
+                  class="mt-1.5 w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                  placeholder="Person handing over">
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700">Handover To <span class="text-red-500">*</span></label>
+                <input
+                  [(ngModel)]="handoverTo" name="handoverTo"
+                  class="mt-1.5 w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                  placeholder="Person receiving">
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700">Handover Location</label>
+                <div class="relative mt-1.5">
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <input
+                    [(ngModel)]="handoverLocation" name="handoverLocation"
+                    class="w-full border border-gray-200 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                    placeholder="e.g., Main Entrance, Building A">
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mt-4">
+              <div>
+                <label class="text-sm font-medium text-gray-700">Category</label>
+                <div class="relative mt-1.5">
+                  <select
+                    [(ngModel)]="categoryId" name="category"
+                    (ngModelChange)="onCategoryChange($event)"
+                    [disabled]="isLoadingData"
+                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <option value="" disabled>Select category</option>
+                    @if (isLoadingData) {
+                      <option value="" disabled>Loading categories...</option>
+                    } @else if (categories.length === 0) {
+                      <option value="" disabled>No categories available</option>
+                    } @else {
+                      @for (cat of categories; track cat.id) {
+                        <option [value]="cat.id">{{ cat.name }}</option>
+                      }
+                    }
+                    <option value="__create_new__">+ Create new category</option>
+                  </select>
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/><path d="M12 8v4M12 15h.01"/></svg>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+                @if (showCreateCategoryForm) {
+                  <div class="mt-2 flex gap-2">
+                    <input
+                      type="text"
+                      [(ngModel)]="newCategoryName"
+                      name="newCategoryName"
+                      placeholder="New category name"
+                      class="flex-1 h-10 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:border-indigo-500">
+                    <button
+                      type="button"
+                      (click)="createNewCategory()"
+                      [disabled]="isCreatingCategory"
+                      class="h-10 px-4 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
+                      {{ isCreatingCategory ? 'Saving...' : 'Save' }}
+                    </button>
+                  </div>
+                  @if (categoryCreateError) {
+                    <p class="mt-1 text-xs text-red-500">{{ categoryCreateError }}</p>
+                  }
+                }
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700">Priority <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
+                  <select
+                    [(ngModel)]="priority" name="priority"
+                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400">
+                    <option value="" disabled>Select priority</option>
+                    @for (p of priorities; track p.value) {
+                      <option [value]="p.value">{{ p.label }}</option>
+                    }
+                  </select>
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 3.5L17 11H4"/></svg>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+              </div>
+            </div>
+          } @else if (activeTab === 1) {
+            <!-- Incident: Title / Type / Priority -->
+            <div class="grid grid-cols-3 gap-4 mt-3">
+              <div>
+                <label class="text-sm font-medium text-gray-700">Incident Title <span class="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  [(ngModel)]="incidentTitle" name="incidentTitle"
+                  placeholder="Enter incident title"
+                  class="mt-1.5 w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700">Incident Type <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
+                  <select
+                    [(ngModel)]="incidentType" name="incidentType"
+                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400">
+                    <option value="">Select incident type</option>
+                    <option value="SAFETY">Safety</option>
+                    <option value="SECURITY">Security</option>
+                    <option value="MEDICAL">Medical</option>
+                    <option value="PROPERTY">Property</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700">Priority <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
+                  <select
+                    [(ngModel)]="priority" name="priority"
+                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400">
+                    <option value="" disabled>Select priority</option>
+                    @for (p of priorities; track p.value) {
+                      <option [value]="p.value">{{ p.label }}</option>
+                    }
+                  </select>
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 3.5L17 11H4"/></svg>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+              </div>
+            </div>
+          }
+        </section>
 
-          </form>
+        @if (activeTab === 1) {
+          <!-- Incident details row -->
+          <div class="grid grid-cols-3 gap-4 mt-4">
+            <div>
+              <label class="text-sm font-medium text-gray-700">Incident Date &amp; Time <span class="text-red-500">*</span></label>
+              <div class="relative mt-1.5">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                <input
+                  type="text"
+                  [(ngModel)]="incidentDate" name="incidentDate"
+                  placeholder="Select date & time"
+                  class="w-full border border-gray-200 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+              </div>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700">Location <span class="text-red-500">*</span></label>
+              <div class="relative mt-1.5">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.4-6-11a6 6 0 1112 0c0 5.6-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>
+                <input
+                  type="text"
+                  [(ngModel)]="location" name="location"
+                  placeholder="Select location"
+                  class="w-full border border-gray-200 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+              </div>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700">People Involved</label>
+              <div class="relative mt-1.5">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2-5 6-5s6 2 6 5"/><circle cx="18" cy="9" r="2"/></svg>
+                <input
+                  type="text"
+                  [(ngModel)]="peopleInvolved" name="peopleInvolved"
+                  placeholder="Add people involved"
+                  class="w-full border border-gray-200 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- 2. Operational Summary (Handover) -->
+        @if (activeTab === 2) {
+          <section class="mt-6">
+            <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">2.</span> Operational Summary <span class="text-red-500">*</span></h2>
+            <div class="mt-3 border border-gray-200 rounded-xl bg-white overflow-hidden">
+              <div class="flex items-center gap-1 px-3 py-2 border-b border-gray-100 text-gray-500">
+                <button type="button" class="px-2 py-1 rounded text-sm font-medium hover:bg-gray-50">Normal
+                  <svg class="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+                <div class="w-px h-5 bg-gray-200 mx-1"></div>
+                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50 font-bold text-[13px]">B</button>
+                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50 italic text-[13px]">I</button>
+                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50 underline text-[13px]">U</button>
+                <div class="w-px h-5 bg-gray-200 mx-1"></div>
+                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
+                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.07 0l1.93-1.93a5 5 0 00-7.07-7.07L10.5 5.5"/><path d="M14 11a5 5 0 00-7.07 0l-1.93 1.93a5 5 0 007.07 7.07L13.5 18.5"/></svg></button>
+              </div>
+              <textarea
+                rows="4"
+                [(ngModel)]="operationalSummary" (ngModelChange)="onOperationalSummaryInput($event)" name="operationalSummary"
+                class="w-full px-4 py-3.5 text-sm outline-none resize-none placeholder:text-gray-400"
+                placeholder="Summarise the shift operations in detail..."></textarea>
+              <div class="flex justify-end px-4 py-3 border-t border-gray-100">
+                <span class="text-[11px] text-gray-400">{{ operationalSummaryLength }} / 5000</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3-5. Outstanding Issues / Actions / Important Information -->
+          <div class="grid grid-cols-3 gap-4 mt-6">
+            <section>
+              <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">3.</span> Outstanding Issues</h2>
+              <div class="mt-3 border border-gray-200 rounded-xl bg-white p-4">
+                <textarea
+                  rows="6"
+                  [(ngModel)]="outstandingIssues" name="outstandingIssues"
+                  class="w-full text-sm outline-none resize-none placeholder:text-gray-400"
+                  placeholder="Note any outstanding issues..."></textarea>
+              </div>
+            </section>
+            <section>
+              <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">4.</span> Outstanding Actions / Tasks</h2>
+              <div class="mt-3 border border-gray-200 rounded-xl bg-white p-4">
+                <textarea
+                  rows="6"
+                  [(ngModel)]="outstandingActions" name="outstandingActions"
+                  class="w-full text-sm outline-none resize-none placeholder:text-gray-400"
+                  placeholder="List actions or tasks to follow up..."></textarea>
+              </div>
+            </section>
+            <section>
+              <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">5.</span> Important Information</h2>
+              <div class="mt-3 border border-gray-200 rounded-xl bg-white p-4">
+                <textarea
+                  rows="6"
+                  [(ngModel)]="importantInfo" name="importantInfo"
+                  class="w-full text-sm outline-none resize-none placeholder:text-gray-400"
+                  placeholder="Any other important information..."></textarea>
+              </div>
+            </section>
+          </div>
+        } @else if (activeTab === 0 || activeTab === 3) {
+          <!-- 2. Description (Basic / Follow-Up) -->
+          <section>
+            <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">2.</span> Description <span class="text-red-500">*</span></h2>
+            <div class="mt-3 border border-gray-200 rounded-xl bg-white overflow-hidden">
+              <textarea
+                rows="6"
+                [(ngModel)]="description" (ngModelChange)="onDescriptionInput($event)" name="description"
+                class="w-full px-4 py-3.5 text-sm outline-none resize-none placeholder:text-gray-400"
+                placeholder="Describe the occurrence in detail..."></textarea>
+              <div class="flex justify-end px-4 py-3 border-t border-gray-100">
+                <span class="text-[11px] text-gray-400">{{ descriptionLength }} / {{ maxChars }}</span>
+              </div>
+            </div>
+          </section>
         }
 
         @if (activeTab === 1) {
-        <!-- Description Section Starts Here -->
-         <!-- ============================= -->
-<!-- 2. Description of Incident -->
-<!-- ============================= -->
-
-<div class="mt-8">
-
-    <h2 class="text-xl font-bold text-gray-900">
-        2. Description of Incident
-        <span class="text-red-500">*</span>
-    </h2>
-
-    <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white">
-
-        <!-- Toolbar -->
-
-        <div class="flex items-center justify-between border-b border-gray-200 px-5 py-3 bg-gray-50">
-
-            <div class="flex items-center gap-6 text-sm">
-
-                <select class="border-0 bg-transparent font-semibold focus:ring-0">
-                    <option>Normal</option>
-                </select>
-
-                <button class="font-bold hover:text-indigo-600">B</button>
-
-                <button class="italic hover:text-indigo-600">I</button>
-
-                <button class="underline hover:text-indigo-600">U</button>
-
-                <button class="hover:text-indigo-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
-                    </svg>
-                </button>
-
-                <button class="hover:text-indigo-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M9 12h11M9 6h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>
-                    </svg>
-                </button>
-
-                <button class="hover:text-indigo-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M10 13a5 5 0 007.07 0l2.83-2.83a5 5 0 00-7.07-7.07L10 6"/>
-                        <path d="M14 11a5 5 0 00-7.07 0L4.1 13.83a5 5 0 107.07 7.07L14 18"/>
-                    </svg>
-                </button>
-
-            </div>
-
-            <div class="flex gap-4">
-
-                <button class="hover:text-indigo-600">
-                    ↶
-                </button>
-
-                <button class="hover:text-indigo-600">
-                    ↷
-                </button>
-
-            </div>
-
-        </div>
-
-        <!-- Textarea -->
-
-        <div class="relative">
-
-            <textarea
-                rows="7"
-                [(ngModel)]="incidentDescription" (ngModelChange)="onDescriptionInput($event)" name="incidentDescription"
-                placeholder="Provide a detailed description of the incident..."
-                class="w-full resize-none border-0 p-5 focus:ring-0 text-gray-700 placeholder:text-gray-400"></textarea>
-
-            <!-- Voice -->
-
-            <button
-                class="absolute bottom-5 right-5 flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 bg-white hover:bg-indigo-50">
-
-                <svg class="w-6 h-6 text-indigo-700"
-                     fill="none"
-                     stroke="currentColor"
-                     stroke-width="2"
-                     viewBox="0 0 24 24">
-
-                    <path d="M12 3a3 3 0 013 3v6a3 3 0 11-6 0V6a3 3 0 013-3z"/>
-                    <path d="M19 11a7 7 0 01-14 0"/>
-                    <path d="M12 18v3"/>
-                    <path d="M8 21h8"/>
-
-                </svg>
-
-            </button>
-
-        </div>
-
-        <!-- Footer -->
-
-        <div class="border-t border-gray-200 bg-gray-50 px-5 py-3 text-right text-sm text-gray-500">
-
-            {{ descriptionLength }} / 5000
-
-        </div>
-
-    </div>
-
-</div>
-
-<!-- ============================= -->
-<!-- 3. Immediate Actions Taken -->
-<!-- ============================= -->
-
-<div class="mt-8">
-
-    <h2 class="text-xl font-bold text-gray-900">
-
-        3. Immediate Actions Taken
-
-        <span class="text-red-500">*</span>
-
-    </h2>
-
-    <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white">
-
-        <!-- Toolbar -->
-
-        <div class="flex items-center justify-between border-b border-gray-200 px-5 py-3 bg-gray-50">
-
-            <div class="flex items-center gap-6 text-sm">
-
-                <select class="border-0 bg-transparent font-semibold focus:ring-0">
-                    <option>Normal</option>
-                </select>
-
-                <button class="font-bold">B</button>
-
-                <button class="italic">I</button>
-
-                <button class="underline">U</button>
-
-                <button>•</button>
-
-                <button>≡</button>
-
-                <button>🔗</button>
-
-            </div>
-
-            <div class="flex gap-4">
-
-                <button>↶</button>
-
-                <button>↷</button>
-
-            </div>
-
-        </div>
-
-        <!-- Textarea -->
-
-        <div class="relative">
-
-            <textarea
+          <!-- 2. Description of Incident -->
+          <section class="mt-6">
+            <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">2.</span> Description of Incident <span class="text-red-500">*</span></h2>
+            <div class="mt-3 border border-gray-200 rounded-xl bg-white overflow-hidden">
+              <textarea
                 rows="6"
+                [(ngModel)]="incidentDescription" (ngModelChange)="onDescriptionInput($event)" name="incidentDescription"
+                class="w-full px-4 py-3.5 text-sm outline-none resize-none placeholder:text-gray-400"
+                placeholder="Provide a detailed description of the incident..."></textarea>
+              <div class="flex justify-end px-4 py-3 border-t border-gray-100">
+                <span class="text-[11px] text-gray-400">{{ descriptionLength }} / 5000</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. Immediate Actions Taken -->
+          <section class="mt-6">
+            <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">3.</span> Immediate Actions Taken <span class="text-red-500">*</span></h2>
+            <div class="mt-3 border border-gray-200 rounded-xl bg-white overflow-hidden">
+              <textarea
+                rows="5"
                 [(ngModel)]="immediateActionsTaken" name="immediateActionsTaken"
-                placeholder="Describe the immediate actions taken..."
-                class="w-full resize-none border-0 p-5 focus:ring-0 placeholder:text-gray-400"></textarea>
-
-            <button
-                class="absolute bottom-5 right-5 flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 bg-white hover:bg-indigo-50">
-
-                <svg class="w-6 h-6 text-indigo-700"
-                     fill="none"
-                     stroke="currentColor"
-                     stroke-width="2"
-                     viewBox="0 0 24 24">
-
-                    <path d="M12 3a3 3 0 013 3v6a3 3 0 11-6 0V6a3 3 0 013-3z"/>
-                    <path d="M19 11a7 7 0 01-14 0"/>
-                    <path d="M12 18v3"/>
-                    <path d="M8 21h8"/>
-
-                </svg>
-
-            </button>
-
-        </div>
-
-        <div class="border-t border-gray-200 bg-gray-50 px-5 py-3 text-right text-sm text-gray-500">
-
-            {{ immediateActionsTaken.length }} / 2000
-
-        </div>
-
-    </div>
-
-</div>
-
-<!-- ============================= -->
-<!-- 4. Attachments -->
-<!-- ============================= -->
-
-<div class="mt-10">
-
-    <div class="flex items-center justify-between">
-
-        <h2 class="text-xl font-bold text-gray-900">
-            4. Attachments
-            <span class="text-gray-400 font-normal">(Optional)</span>
-        </h2>
-
-        <span class="text-sm text-gray-500">
-            Maximum file size: 100 MB
-        </span>
-
-    </div>
-
-    <div class="grid grid-cols-3 gap-6 mt-6">
-
-        <!-- Upload Document -->
-
-        <div
-            class="rounded-2xl border border-gray-200 bg-white p-8 hover:border-indigo-500 hover:shadow-lg transition duration-300">
-
-            <div class="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center">
-
-                <svg class="w-8 h-8 text-indigo-700"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24">
-
-                    <path d="M7 3h7l5 5v13H7z"/>
-                    <path d="M14 3v5h5"/>
-
-                </svg>
-
+                class="w-full px-4 py-3.5 text-sm outline-none resize-none placeholder:text-gray-400"
+                placeholder="Describe the immediate actions taken..."></textarea>
+              <div class="flex justify-end px-4 py-3 border-t border-gray-100">
+                <span class="text-[11px] text-gray-400">{{ immediateActionsTaken.length }} / 2000</span>
+              </div>
             </div>
-
-            <h3 class="mt-6 font-semibold text-lg">
-                Upload File
-            </h3>
-
-            <p class="mt-2 text-sm text-gray-500 leading-6">
-                Attach reports, PDFs, Word documents or spreadsheets.
-            </p>
-
-            <button
-                class="mt-8 w-full h-12 rounded-xl border border-indigo-600 text-indigo-700 font-semibold hover:bg-indigo-600 hover:text-white transition"
-                (click)="fileInput.click()">
-
-                Browse Files
-
-            </button>
-
-            <input #fileInput id="file-upload" type="file" class="hidden" (change)="onFileSelected($event)" />
-
-        </div>
-
-        <!-- Upload Images -->
-
-        <div
-            class="rounded-2xl border border-gray-200 bg-white p-8 hover:border-green-500 hover:shadow-lg transition">
-
-            <div class="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center">
-
-                <svg class="w-8 h-8 text-green-700"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24">
-
-                    <rect x="3" y="4" width="18" height="16" rx="2"/>
-
-                    <circle cx="9" cy="10" r="2"/>
-
-                    <path d="M21 16l-5-5-8 8"/>
-
-                </svg>
-
-            </div>
-
-            <h3 class="mt-6 font-semibold text-lg">
-                Upload Photos
-            </h3>
-
-            <p class="mt-2 text-sm text-gray-500 leading-6">
-                Add photos taken during the incident.
-            </p>
-
-            <button
-                class="mt-8 w-full h-12 rounded-xl border border-green-600 text-green-700 font-semibold hover:bg-green-600 hover:text-white transition"
-                (click)="photoInput.click()">
-
-                Select Photos
-
-            </button>
-
-            <input #photoInput id="photo-upload" type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)" />
-
-        </div>
-
-        <!-- Audio -->
-
-        <div
-            class="rounded-2xl border border-gray-200 bg-white p-8 hover:border-purple-500 hover:shadow-lg transition">
-
-            <div class="w-16 h-16 rounded-2xl bg-purple-100 flex items-center justify-center">
-
-                <svg class="w-8 h-8 text-purple-700"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24">
-
-                    <path d="M12 3a3 3 0 013 3v6a3 3 0 11-6 0V6a3 3 0 013-3z"/>
-
-                    <path d="M19 11a7 7 0 01-14 0"/>
-
-                    <path d="M12 18v3"/>
-
-                    <path d="M8 21h8"/>
-
-                </svg>
-
-            </div>
-
-            <h3 class="mt-6 font-semibold text-lg">
-                Record Audio
-            </h3>
-
-            <p class="mt-2 text-sm text-gray-500 leading-6">
-                Capture a voice note describing the incident.
-            </p>
-
-            <button
-                class="mt-8 w-full h-12 rounded-xl border border-purple-600 text-purple-700 font-semibold hover:bg-purple-600 hover:text-white transition"
-                (click)="audioInput.click()">
-
-                Start Recording
-
-            </button>
-
-            <input #audioInput id="audio-upload" type="file" accept="audio/*" class="hidden" (change)="onFileSelected($event)" />
-
-        </div>
-
-    </div>
-
-    <!-- Supported Types -->
-
-    <div
-        class="mt-6 rounded-xl border border-gray-200 bg-gray-50 px-6 py-4">
-
-        <span class="font-semibold">
-            Supported Formats:
-        </span>
-
-        <span class="text-gray-500 ml-2">
-            PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG, MP3, WAV, M4A
-        </span>
-
-    </div>
-
-</div>
+          </section>
         }
 
-    </div>
-
-
-    <!-- Right Sidebar -->
-
-    <div class="col-span-3">
-
-        <!-- Summary -->
-
-        <div class="bg-white rounded-2xl border border-gray-200 p-7">
-
-            <h3 class="text-xl font-bold">
-
-                Entry Summary
-
-            </h3>
-
-            <div
-                class="mt-8 w-14 h-14 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-2xl">
-
-                📄
-
+        <!-- 3/4. Attachments -->
+        <section class="mt-6">
+          <h2 class="text-[15px] font-bold flex items-center gap-2">
+            <span class="text-gray-400 font-semibold">{{ activeTab === 1 ? '4.' : '3.' }}</span>
+            Attachments <span class="text-gray-400 font-medium">(Optional)</span>
+          </h2>
+          <div class="mt-3 border border-gray-200 rounded-xl bg-white p-4">
+            <div class="grid grid-cols-3 gap-4">
+              <button (click)="fileInput.click()" class="text-left border border-gray-200 rounded-xl p-4 hover:border-gray-300 hover:bg-gray-50">
+                <div class="w-11 h-11 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                </div>
+                <div class="mt-3 text-sm font-semibold text-indigo-600">Upload File</div>
+                <p class="text-xs text-gray-500 mt-1 leading-relaxed">Attach PDF, Word, Excel, or other documents</p>
+                <p class="text-[11px] text-gray-400 mt-2">Max size: 100MB per file</p>
+              </button>
+              <button (click)="photoInput.click()" class="text-left border border-gray-200 rounded-xl p-4 hover:border-gray-300 hover:bg-gray-50">
+                <div class="w-11 h-11 rounded-full bg-green-50 text-green-500 flex items-center justify-center">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                </div>
+                <div class="mt-3 text-sm font-semibold text-green-600">Upload Photo</div>
+                <p class="text-xs text-gray-500 mt-1 leading-relaxed">Attach photos in PNG, JPEG, or JPG format</p>
+                <p class="text-[11px] text-gray-400 mt-2">Max size: 100MB per file</p>
+              </button>
+              <button (click)="audioInput.click()" class="text-left border border-gray-200 rounded-xl p-4 hover:border-gray-300 hover:bg-gray-50">
+                <div class="w-11 h-11 rounded-full bg-violet-50 text-violet-500 flex items-center justify-center">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0"/><path d="M12 17v5M9 22h6"/></svg>
+                </div>
+                <div class="mt-3 text-sm font-semibold text-violet-600">Record Audio</div>
+                <p class="text-xs text-gray-500 mt-1 leading-relaxed">Record and attach audio note</p>
+                <p class="text-[11px] text-gray-400 mt-2">Max duration: 10 minutes</p>
+              </button>
             </div>
-
-            <div class="space-y-6 mt-8">
-
-                <div class="flex justify-between">
-
-                    <span class="text-gray-500">
-
-                        Entry ID
-
-                    </span>
-
-                    <span>-</span>
-
-                </div>
-
-                <div class="flex justify-between">
-
-                    <span class="text-gray-500">
-
-                        Created By
-
-                    </span>
-
-                    <span>-</span>
-
-                </div>
-
-                <div class="flex justify-between">
-
-                    <span class="text-gray-500">
-
-                        Created On
-
-                    </span>
-
-                    <span>-</span>
-
-                </div>
-
-                <div class="flex justify-between">
-
-                    <span class="text-gray-500">
-
-                        Category
-
-                    </span>
-
-                    <span>{{ categories.find(c => c.id === categoryId)?.name || '-' }}</span>
-
-                </div>
-
-                <div class="flex justify-between">
-
-                    <span class="text-gray-500">
-
-                        Priority
-
-                    </span>
-
-                    <span>{{ priorities.find(p => p.value === priority)?.label || '-' }}</span>
-
-                </div>
-
+            <div class="border-t border-gray-100 mt-4 pt-3">
+              <p class="text-xs text-gray-400">Supported: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, PNG, JPEG, JPG, MP3, M4A, WAV</p>
             </div>
+          </div>
+          <input #fileInput id="file-upload" type="file" class="hidden" (change)="onFileSelected($event)" />
+          <input #photoInput id="photo-upload" type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)" />
+          <input #audioInput id="audio-upload" type="file" accept="audio/*" class="hidden" (change)="onFileSelected($event)" />
+        </section>
 
+        <!-- Actions -->
+        <div class="flex items-center justify-end gap-3 pt-1 pb-4">
+          <button type="button" (click)="onCancel()" class="border border-gray-200 rounded-lg px-5 py-2.5 text-sm font-semibold bg-white hover:bg-gray-50">Cancel</button>
+          <button type="button" (click)="onSaveDraft()" class="border border-gray-200 rounded-lg px-5 py-2.5 text-sm font-semibold bg-white hover:bg-gray-50">Save Draft</button>
+          <button
+            type="button"
+            (click)="onSubmitEntry()"
+            class="bg-gray-900 text-white rounded-lg px-5 py-2.5 text-sm font-semibold hover:bg-gray-800"
+            [disabled]="(activeTab === 0 && (!title || !categoryId || !priority)) || (activeTab === 1 && (!incidentTitle || !incidentType || !priority)) || (activeTab === 2 && (!handoverTitle || !priority)) || isSubmitting || isLoadingEntry">
+            {{ isSubmitting ? (editMode ? 'Updating...' : 'Submitting...') : (editMode ? 'Update Entry' : 'Submit Entry') }}
+          </button>
         </div>
+      </div>
 
-
-        <!-- Help -->
-
-        <div
-            class="mt-6 bg-white rounded-2xl border border-gray-200 p-7">
-
-            <div class="flex items-center gap-3">
-
-                <div
-                    class="w-12 h-12 rounded-full border-2 border-indigo-600 flex items-center justify-center text-indigo-600 font-bold">
-
-                    ?
-
-                </div>
-
-                <h3 class="text-xl font-semibold">
-
-                    Help
-
-                </h3>
-
+      <!-- AI Generation Panel (docks from the right and squeezes content, like the follow-up section) -->
+      @if (aiDrawerOpen) {
+        <div class="col-span-12 xl:col-span-3">
+          <div class="sticky top-6 max-h-[calc(100vh-3rem)] overflow-hidden border border-gray-200 rounded-xl bg-white flex flex-col">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+              <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-indigo-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 5.6L19 9l-5.4 1.4L12 16l-1.6-5.6L5 9l5.4-1.4L12 2z"/></svg>
+                <h2 class="text-base font-semibold text-gray-900">AI Entry Generator</h2>
+              </div>
+              <button (click)="toggleAiDrawer()" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500 text-xl">✕</button>
             </div>
 
-            <p class="mt-6 text-gray-500">
+            <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Describe the entry you want to create
+                </label>
+                <textarea
+                  rows="5"
+                  [(ngModel)]="aiPrompt"
+                  name="aiPrompt"
+                  placeholder="e.g., A minor slip-and-fall near the east warehouse ramp during morning delivery..."
+                  class="w-full px-4 py-3 border border-gray-300 bg-white text-gray-900 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-1 focus:border-purple-500 placeholder:text-gray-400 transition-colors resize-y min-h-[120px]"></textarea>
+                <button
+                  (click)="onGenerateEntry()"
+                  [disabled]="!aiPrompt.trim() || isAiGenerating"
+                  class="mt-3 w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors text-sm">
+                  <span *ngIf="isAiGenerating" class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <span>{{ isAiGenerating ? 'Generating...' : 'Generate Entry' }}</span>
+                </button>
+              </div>
 
-                Need help creating an entry?
+              <div *ngIf="aiError" class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">
+                {{ aiError }}
+              </div>
 
-            </p>
-
-            <button
-                class="mt-5 text-indigo-600 font-semibold hover:underline">
-
-                View User Guide →
-
-            </button>
-
+              <div *ngIf="aiHistory.length > 0" class="border-t border-gray-200 pt-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-sm font-semibold text-gray-900">Prompt History</h3>
+                  <button (click)="clearAiHistory()" class="text-xs text-red-500 hover:text-red-600">Clear</button>
+                </div>
+                <div class="space-y-3">
+                  <div *ngFor="let item of aiHistory" class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <div class="text-xs text-gray-500 mb-1">
+                      {{ item.timestamp | date: 'short' }}
+                    </div>
+                    <div class="text-sm text-gray-700 mb-1">
+                      <span class="font-semibold">Prompt:</span> {{ item.prompt }}
+                    </div>
+                    <div class="text-sm text-gray-900 line-clamp-3">
+                      <span class="font-semibold">Result:</span> {{ item.result }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      }
 
     </div>
-
-</div>
-
-<!-- Footer Buttons -->
-
-<div class="flex justify-center gap-5 mt-12 pb-10">
-
-    <button
-        type="button"
-        (click)="onCancel()"
-        class="w-40 h-14 rounded-xl border border-gray-300 bg-white font-semibold hover:bg-gray-100">
-
-        Cancel
-
-    </button>
-
-    <button
-        type="button"
-        (click)="onSaveDraft()"
-        class="w-44 h-14 rounded-xl border border-gray-300 bg-white font-semibold hover:bg-gray-100">
-
-        Save Draft
-
-    </button>
-
-    <button
-        type="button"
-        (click)="onSubmitEntry()"
-        class="w-52 h-14 rounded-xl bg-black text-white font-semibold hover:bg-gray-900"
-        [disabled]="(activeTab === 0 && (!title || !categoryId || !priority)) || (activeTab === 1 && (!incidentTitle || !incidentType || !priority)) || isSubmitting">
-
-        {{ isSubmitting ? 'Submitting...' : 'Submit Entry' }}
-
-    </button>
-
-</div>
+  </div>
 
 </main>
-
-<!-- AI Generation Drawer -->
-<!-- Backdrop -->
-<div *ngIf="aiDrawerOpen" class="fixed inset-0 bg-black/40 z-40 transition-opacity" (click)="toggleAiDrawer()"></div>
-
-<!-- Drawer Panel -->
-<div *ngIf="aiDrawerOpen" class="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-gray-900 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col">
-  <!-- Header -->
-  <div class="flex items-center justify-between px-6 py-5 border-b border-gray-200 dark:border-gray-800">
-    <div class="flex items-center gap-3">
-      <span class="text-2xl">✨</span>
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">AI Entry Generator</h2>
-    </div>
-    <button (click)="toggleAiDrawer()" class="w-8 h-8 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xl">✕</button>
-  </div>
-
-  <!-- Body -->
-  <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-    <!-- Prompt -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Describe the entry you want to create
-      </label>
-      <textarea
-        rows="5"
-        [(ngModel)]="aiPrompt"
-        name="aiPrompt"
-        placeholder="e.g., A minor slip-and-fall near the east warehouse ramp during morning delivery..."
-        class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:border-purple-500 focus:ring-1 focus:border-purple-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-colors resize-y min-h-[120px]"></textarea>
-      <button
-        (click)="onGenerateEntry()"
-        [disabled]="!aiPrompt.trim() || isAiGenerating"
-        class="mt-3 w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-3 rounded-2xl font-medium flex items-center justify-center gap-2 transition-colors text-sm">
-        <span *ngIf="isAiGenerating" class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-        <span>{{ isAiGenerating ? 'Generating...' : '✨ Generate Entry' }}</span>
-      </button>
-    </div>
-
-    <!-- Error -->
-    <div *ngIf="aiError" class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm px-4 py-3 rounded-2xl">
-      {{ aiError }}
-    </div>
-
-    <!-- History -->
-    <div *ngIf="aiHistory.length > 0" class="border-t border-gray-200 dark:border-gray-800 pt-4">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-200">Prompt History</h3>
-        <button (click)="clearAiHistory()" class="text-xs text-red-500 hover:text-red-600 dark:text-red-400">Clear</button>
-      </div>
-      <div class="space-y-3">
-        <div *ngFor="let item of aiHistory" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl p-4">
-          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
-            {{ item.timestamp | date: 'short' }}
-          </div>
-          <div class="text-sm text-gray-700 dark:text-gray-300 mb-1">
-            <span class="font-semibold">Prompt:</span> {{ item.prompt }}
-          </div>
-          <div class="text-sm text-gray-900 dark:text-gray-100 line-clamp-3">
-            <span class="font-semibold">Result:</span> {{ item.result }}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>

@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { EdobService } from '../../core/services/edob.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AIGenerationService, AIMessage } from '../../core/services/ai-generation.service';
-import { EntryType, Category } from '../../core/models/edob.models';
+import { Entry, EntryType, Category } from '../../core/models/edob.models';
 
 interface AIHistoryItem {
   prompt: string;
@@ -23,7 +23,11 @@ export class CreateEntryComponent implements OnInit {
   activeTab = 0;
   isSubmitting = false;
   isSavingDraft = false;
+  isLoadingEntry = false;
   errorMessage = '';
+
+  editMode = false;
+  editEntryId: string | null = null;
 
   tabs = [
     { id: 'basic', label: 'Basic Entry', icon: '✚', entryTypeCode: 'BASIC' },
@@ -50,6 +54,19 @@ export class CreateEntryComponent implements OnInit {
   peopleInvolved = '';
   incidentDescription = '';
   immediateActionsTaken = '';
+
+  // Handover fields
+  handoverTitle = '';
+  handoverType = '';
+  handoverDateTime = '';
+  handoverFrom = '';
+  handoverTo = '';
+  handoverLocation = '';
+  operationalSummary = '';
+  operationalSummaryLength = 0;
+  outstandingIssues = '';
+  outstandingActions = '';
+  importantInfo = '';
 
   // API-loaded data
   entryTypes: EntryType[] = [];
@@ -79,10 +96,17 @@ export class CreateEntryComponent implements OnInit {
   constructor(
     private edobService: EdobService,
     private router: Router,
+    private route: ActivatedRoute,
     private aiService: AIGenerationService
   ) {}
 
   ngOnInit(): void {
+    const entryId = this.route.snapshot.queryParamMap.get('id');
+    if (entryId) {
+      this.editMode = true;
+      this.editEntryId = entryId;
+      this.loadEntryForEdit(entryId);
+    }
     this.loadFormData();
   }
 
@@ -112,6 +136,54 @@ export class CreateEntryComponent implements OnInit {
     });
   }
 
+  private loadEntryForEdit(entryId: string): void {
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+
+    this.isLoadingEntry = true;
+    this.edobService.getEntry(orgId, entryId).subscribe({
+      next: (entry: Entry) => {
+        this.prefillForm(entry);
+        this.isLoadingEntry = false;
+      },
+      error: (err) => {
+        this.errorMessage = err?.error?.message || 'Failed to load entry.';
+        this.isLoadingEntry = false;
+      }
+    });
+  }
+
+  private prefillForm(entry: Entry): void {
+    const typeIndexMap: Record<string, number> = { BASIC: 0, INCIDENT: 1, HANDOVER: 2, FOLLOW_UP: 3 };
+    this.activeTab = typeIndexMap[entry.entryTypeCode] ?? 0;
+    this.title = entry.title || '';
+    this.incidentTitle = entry.title || '';
+    this.categoryId = entry.categoryId || '';
+    this.priority = entry.priority || '';
+    this.description = entry.description || '';
+    this.incidentDescription = entry.description || '';
+    this.assignedToUserId = entry.assignedToUserId || '';
+
+    const data = entry.data || {};
+    this.location = data['location'] || '';
+    this.incidentType = data['incidentType'] || '';
+    this.incidentDate = data['incidentDate'] || '';
+    this.incidentTime = data['incidentTime'] || '';
+    this.peopleInvolved = data['peopleInvolved'] || '';
+    this.immediateActionsTaken = data['immediateActionsTaken'] || '';
+    this.handoverType = data['handoverType'] || '';
+    this.handoverDateTime = data['shiftDateTime'] || '';
+    this.handoverFrom = data['handoverFrom'] || '';
+    this.handoverTo = data['handoverTo'] || '';
+    this.handoverLocation = data['handoverLocation'] || '';
+    this.outstandingIssues = data['outstandingIssues'] || '';
+    this.outstandingActions = data['outstandingActions'] || '';
+    this.importantInfo = data['importantInformation'] || '';
+    this.operationalSummary = entry.description || '';
+    this.operationalSummaryLength = this.operationalSummary.length;
+    this.descriptionLength = this.description.length;
+  }
+
   private getOrgId(): string | null {
     const remember = localStorage.getItem('remember_device');
     if (remember === 'true') {
@@ -129,6 +201,11 @@ export class CreateEntryComponent implements OnInit {
   onDescriptionInput(value: string): void {
     this.description = value;
     this.descriptionLength = value.length;
+  }
+
+  onOperationalSummaryInput(value: string): void {
+    this.operationalSummary = value;
+    this.operationalSummaryLength = value.length;
   }
 
   onFileSelected(event: Event): void {
@@ -159,6 +236,17 @@ export class CreateEntryComponent implements OnInit {
     this.peopleInvolved = '';
     this.incidentDescription = '';
     this.immediateActionsTaken = '';
+    this.handoverTitle = '';
+    this.handoverType = '';
+    this.handoverDateTime = '';
+    this.handoverFrom = '';
+    this.handoverTo = '';
+    this.handoverLocation = '';
+    this.operationalSummary = '';
+    this.operationalSummaryLength = 0;
+    this.outstandingIssues = '';
+    this.outstandingActions = '';
+    this.importantInfo = '';
     this.showCreateCategoryForm = false;
     this.newCategoryName = '';
     this.categoryCreateError = '';
@@ -208,55 +296,52 @@ export class CreateEntryComponent implements OnInit {
   onSaveDraft(): void {
     const hasBasic = this.title && this.categoryId && this.priority;
     const hasIncident = this.incidentTitle && this.incidentType && this.priority;
-    if (!hasBasic && !hasIncident) return;
+    const hasHandover = this.handoverTitle && this.priority;
+    if (!hasBasic && !hasIncident && !hasHandover) return;
     this.isSavingDraft = true;
     this.errorMessage = '';
 
-    const orgId = this.getOrgId();
-    if (!orgId) {
-      this.errorMessage = 'Organization not found. Please sign in again.';
-      this.isSavingDraft = false;
-      return;
-    }
-
     const formData = this.buildFormData();
-    this.edobService.createEntry(orgId, formData).subscribe({
-      next: () => {
-        this.isSavingDraft = false;
-        this.router.navigate(['/dob-feed']);
-      },
-      error: (err) => {
-        this.isSavingDraft = false;
-        this.errorMessage = err?.error?.message || 'Failed to save draft. Please try again.';
-      },
-    });
+    this.persistEntry(formData);
   }
 
   onSubmitEntry(): void {
     const hasBasic = this.title && this.categoryId && this.priority;
     const hasIncident = this.incidentTitle && this.incidentType && this.priority;
-    if (!hasBasic && !hasIncident) return;
+    const hasHandover = this.handoverTitle && this.priority;
+    if (!hasBasic && !hasIncident && !hasHandover) return;
     this.isSubmitting = true;
     this.errorMessage = '';
 
+    const formData = this.buildFormData();
+    this.persistEntry(formData);
+  }
+
+  private persistEntry(formData: FormData): void {
     const orgId = this.getOrgId();
     if (!orgId) {
       this.errorMessage = 'Organization not found. Please sign in again.';
       this.isSubmitting = false;
+      this.isSavingDraft = false;
       return;
     }
 
-    const formData = this.buildFormData();
-    this.edobService.createEntry(orgId, formData).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.router.navigate(['/dob-feed']);
-      },
-      error: (err) => {
-        this.isSubmitting = false;
-        this.errorMessage = err?.error?.message || 'Failed to create entry. Please try again.';
-      },
-    });
+    const done = () => {
+      this.isSubmitting = false;
+      this.isSavingDraft = false;
+      this.router.navigate(['/entries']);
+    };
+    const fail = (err: any) => {
+      this.isSubmitting = false;
+      this.isSavingDraft = false;
+      this.errorMessage = err?.error?.message || 'Failed to save entry. Please try again.';
+    };
+
+    if (this.editMode && this.editEntryId) {
+      this.edobService.updateEntry(orgId, this.editEntryId, formData).subscribe({ next: done, error: fail });
+    } else {
+      this.edobService.createEntry(orgId, formData).subscribe({ next: done, error: fail });
+    }
   }
 
   private buildFormData(): FormData {
@@ -269,9 +354,6 @@ export class CreateEntryComponent implements OnInit {
 
     if (this.categoryId) entryPayload['categoryId'] = this.categoryId;
     if (this.assignedToUserId) entryPayload['assignedToUserId'] = this.assignedToUserId;
-    if (this.location) {
-      entryPayload['data'] = { location: this.location };
-    }
 
     if (this.tabs[this.activeTab].entryTypeCode === 'INCIDENT') {
       if (this.incidentTitle) entryPayload['title'] = this.incidentTitle;
@@ -281,6 +363,19 @@ export class CreateEntryComponent implements OnInit {
       if (this.peopleInvolved) entryPayload['data'] = { ...(entryPayload['data'] || {}), peopleInvolved: this.peopleInvolved };
       if (this.incidentDescription) entryPayload['description'] = this.incidentDescription;
       if (this.immediateActionsTaken) entryPayload['data'] = { ...(entryPayload['data'] || {}), immediateActionsTaken: this.immediateActionsTaken };
+    } else if (this.tabs[this.activeTab].entryTypeCode === 'HANDOVER') {
+      if (this.handoverTitle) entryPayload['title'] = this.handoverTitle;
+      if (this.operationalSummary) entryPayload['description'] = this.operationalSummary;
+      const data: Record<string, any> = {};
+      if (this.handoverType) data['handoverType'] = this.handoverType;
+      if (this.handoverDateTime) data['shiftDateTime'] = this.handoverDateTime;
+      if (this.handoverFrom) data['handoverFrom'] = this.handoverFrom;
+      if (this.handoverTo) data['handoverTo'] = this.handoverTo;
+      if (this.handoverLocation) data['handoverLocation'] = this.handoverLocation;
+      if (this.outstandingIssues) data['outstandingIssues'] = this.outstandingIssues;
+      if (this.outstandingActions) data['outstandingActions'] = this.outstandingActions;
+      if (this.importantInfo) data['importantInformation'] = this.importantInfo;
+      entryPayload['data'] = data;
     }
 
     const formData = new FormData();
@@ -355,6 +450,14 @@ export class CreateEntryComponent implements OnInit {
       const match = this.categories.find(c => c.name.toLowerCase() === String(parsed.category).toLowerCase());
       if (match) {
         this.categoryId = match.id;
+      }
+    }
+
+    if (this.tabs[this.activeTab].entryTypeCode === 'HANDOVER') {
+      if (parsed.title) this.handoverTitle = parsed.title;
+      if (parsed.description) {
+        this.operationalSummary = parsed.description;
+        this.operationalSummaryLength = parsed.description.length;
       }
     }
   }
