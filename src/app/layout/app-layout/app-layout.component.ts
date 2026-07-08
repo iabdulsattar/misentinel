@@ -13,7 +13,8 @@ import { AppHeaderComponent } from '../app-header/app-header.component';
     RouterModule,
     AppHeaderComponent,
     AppSidebarComponent,
-    BackdropComponent
+    BackdropComponent,
+    AppHeaderComponent
   ],
   templateUrl: './app-layout.component.html',
 })

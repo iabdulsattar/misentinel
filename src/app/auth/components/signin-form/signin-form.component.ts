@@ -58,9 +58,22 @@ export class SigninFormComponent {
         localStorage.setItem('access_token_saas', accessToken);
         localStorage.setItem('refresh_token', refreshToken ?? '');
 
-        const orgs = data?.organizations ?? [];
+        const orgs = data?.tokens?.organizations ?? data?.organizations ?? [];
         if (orgs?.length > 0) {
           localStorage.setItem('org_id', orgs[0].id);
+          localStorage.setItem('organizationId', orgs[0].id);
+        } else {
+          this.authService.me(accessToken).subscribe({
+            next: (profile: any) => {
+              const profileOrgs = profile?.organizations ?? [];
+              if (profileOrgs?.length > 0) {
+                localStorage.setItem('org_id', profileOrgs[0].id);
+                localStorage.setItem('organizationId', profileOrgs[0].id);
+              }
+            },
+            error: () => {
+            }
+          });
         }
 
         this.isLoading = false;
