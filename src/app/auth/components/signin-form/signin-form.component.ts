@@ -40,6 +40,19 @@ export class SigninFormComponent {
     this.showPassword = !this.showPassword;
   }
 
+  private decodeExp(token: string): number | null {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        return null;
+      }
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+    } catch {
+      return null;
+    }
+  }
+
   private validateForm(): boolean {
     let isValid = true;
     this.emailError = '';
@@ -82,16 +95,21 @@ export class SigninFormComponent {
           return;
         }
 
+        const exp = this.decodeExp(accessToken);
+        const expiresAt = String(exp ?? Date.now() + 24 * 60 * 60 * 1000);
+
         localStorage.setItem('access_token_saas', accessToken);
         localStorage.setItem('refresh_token', refreshToken ?? '');
 
         if (this.isChecked) {
           localStorage.setItem('remember_device', 'true');
-          const expiresInMs = (data?.tokens?.expires_in || 24 * 60 * 60) * 1000;
-          localStorage.setItem('session_expires_at', String(Date.now() + expiresInMs));
+          localStorage.setItem('session_expires_at', expiresAt);
         } else {
           localStorage.removeItem('remember_device');
           localStorage.removeItem('session_expires_at');
+          sessionStorage.setItem('access_token_saas', accessToken);
+          sessionStorage.setItem('refresh_token', refreshToken ?? '');
+          sessionStorage.setItem('session_expires_at', expiresAt);
         }
 
         const orgs = data?.tokens?.organizations ?? data?.organizations ?? [];

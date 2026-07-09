@@ -13,6 +13,13 @@ interface AIHistoryItem {
   timestamp: Date;
 }
 
+interface SelectedFile {
+  file: File;
+  previewUrl?: string;
+}
+
+type AttachmentType = 'pdf' | 'image' | 'audio';
+
 @Component({
   selector: 'app-create-entry',
   standalone: true,
@@ -45,7 +52,14 @@ export class CreateEntryComponent implements OnInit {
   location = '';
   descriptionLength = 0;
   maxChars = 5000;
-  attachments: File[] = [];
+
+  // Per-type attachment state (max 2 each)
+  pdfFiles: SelectedFile[] = [];
+  imageFiles: SelectedFile[] = [];
+  audioFiles: SelectedFile[] = [];
+  fileError = '';
+  readonly maxFilesPerType = 2;
+  readonly maxFileSize = 100 * 1024 * 1024;
 
   incidentTitle = '';
   incidentType = '';
@@ -208,15 +222,90 @@ export class CreateEntryComponent implements OnInit {
     this.operationalSummaryLength = value.length;
   }
 
-  onFileSelected(event: Event): void {
+  onFileSelected(event: Event, type: AttachmentType): void {
     const input = event.target as HTMLInputElement;
-    if (input.files) {
-      this.attachments = Array.from(input.files);
+    if (!input.files || input.files.length === 0) return;
+
+    const list = this.getFileList(type);
+    const remaining = this.maxFilesPerType - list.length;
+    if (remaining <= 0) {
+      this.fileError = `You can attach a maximum of ${this.maxFilesPerType} ${type} file(s).`;
+      input.value = '';
+      return;
+    }
+
+    const incoming = Array.from(input.files).slice(0, remaining);
+    for (const file of incoming) {
+      if (!this.validateFile(file, type)) continue;
+      const item: SelectedFile = { file };
+      if ((type === 'image' || type === 'audio') && file.type.startsWith(type + '/')) {
+        item.previewUrl = URL.createObjectURL(file);
+      }
+      list.push(item);
+    }
+
+    this.fileError = '';
+    input.value = '';
+  }
+
+  private validateFile(file: File, type: AttachmentType): boolean {
+    if (file.size > this.maxFileSize) {
+      this.fileError = `"${file.name}" exceeds the 100MB limit.`;
+      return false;
+    }
+    if (!this.acceptsType(file, type)) {
+      this.fileError = `"${file.name}" is not a valid ${type} file.`;
+      return false;
+    }
+    return true;
+  }
+
+  private acceptsType(file: File, type: AttachmentType): boolean {
+    const name = file.name.toLowerCase();
+    if (type === 'pdf') {
+      return file.type === 'application/pdf' || name.endsWith('.pdf');
+    }
+    if (type === 'image') {
+      return file.type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp)$/.test(name);
+    }
+    return file.type.startsWith('audio/') || /\.(mp3|m4a|wav|ogg|aac|flac)$/.test(name);
+  }
+
+  private getFileList(type: AttachmentType): SelectedFile[] {
+    switch (type) {
+      case 'pdf': return this.pdfFiles;
+      case 'image': return this.imageFiles;
+      case 'audio': return this.audioFiles;
     }
   }
 
-  removeAttachment(index: number): void {
-    this.attachments.splice(index, 1);
+  removeFile(type: AttachmentType, index: number): void {
+    const list = this.getFileList(type);
+    const item = list[index];
+    if (item?.previewUrl) {
+      URL.revokeObjectURL(item.previewUrl);
+    }
+    list.splice(index, 1);
+    this.fileError = '';
+  }
+
+  clearFiles(): void {
+    for (const list of [this.pdfFiles, this.imageFiles, this.audioFiles]) {
+      for (const item of list) {
+        if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+      }
+      list.length = 0;
+    }
+  }
+
+  allFiles(): File[] {
+    return [...this.pdfFiles, ...this.imageFiles, ...this.audioFiles].map(i => i.file);
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
   onCancel(): void {
@@ -227,7 +316,8 @@ export class CreateEntryComponent implements OnInit {
     this.assignedToUserId = '';
     this.location = '';
     this.descriptionLength = 0;
-    this.attachments = [];
+    this.clearFiles();
+    this.fileError = '';
     this.errorMessage = '';
     this.incidentTitle = '';
     this.incidentType = '';
@@ -381,7 +471,7 @@ export class CreateEntryComponent implements OnInit {
     const formData = new FormData();
     formData.append('entry', new Blob([JSON.stringify(entryPayload)], { type: 'application/json' }));
 
-    for (const file of this.attachments) {
+    for (const file of this.allFiles()) {
       formData.append('attachments', file);
     }
 
