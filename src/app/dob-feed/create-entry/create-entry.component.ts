@@ -14,8 +14,12 @@ interface AIHistoryItem {
 }
 
 interface SelectedFile {
-  file: File;
+  file?: File;
   previewUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  isExisting?: boolean;
+  attachmentId?: string;
 }
 
 type AttachmentType = 'pdf' | 'image' | 'audio';
@@ -257,6 +261,31 @@ export class CreateEntryComponent implements OnInit {
     this.operationalSummaryLength = this.operationalSummary.length;
     this.descriptionLength = (this.description || '').length;
     this.parentEntryId = data['parentEntryId'] || '';
+    
+    if (entry.attachments && entry.attachments.length > 0) {
+      this.clearFiles();
+      for (const att of entry.attachments) {
+        const fileName = att.fileName || (att as any)['filename'] || 'Unknown';
+        const fileSize = att.fileSize || (att as any)['sizeBytes'] || 0;
+        const mimeType = ((att.mimeType || (att as any)['contentType'] || '') as string).toLowerCase();
+        const item: SelectedFile = {
+          fileName,
+          fileSize,
+          previewUrl: att.url,
+          isExisting: true,
+          attachmentId: att.id,
+        };
+        if (mimeType.startsWith('image/') || att.type === 'image' || (att as any)['kind'] === 'PHOTO') {
+          this.imageFiles.push(item);
+        } else if (mimeType.startsWith('audio/') || att.type === 'audio' || (att as any)['kind'] === 'AUDIO') {
+          this.audioFiles.push(item);
+        } else if (mimeType === 'application/pdf' || att.type === 'document' || (att as any)['kind'] === 'DOCUMENT') {
+          this.pdfFiles.push(item);
+        } else {
+          this.pdfFiles.push(item);
+        }
+      }
+    }
   }
 
   private getOrgId(): string | null {
@@ -449,30 +478,55 @@ export class CreateEntryComponent implements OnInit {
   removeFile(type: AttachmentType, index: number): void {
     const list = this.getFileList(type);
     const item = list[index];
-    if (item?.previewUrl) {
-      URL.revokeObjectURL(item.previewUrl);
+    if (!item) return;
+
+    if (item.isExisting && item.attachmentId && this.editMode && this.editEntryId) {
+      const orgId = this.getOrgId();
+      if (orgId) {
+        this.edobService.deleteAttachment(orgId, this.editEntryId, item.attachmentId).subscribe({
+          next: () => list.splice(index, 1),
+          error: () => list.splice(index, 1),
+        });
+      } else {
+        list.splice(index, 1);
+      }
+    } else {
+      if (item.previewUrl && item.isExisting !== true) {
+        URL.revokeObjectURL(item.previewUrl);
+      }
+      list.splice(index, 1);
     }
-    list.splice(index, 1);
     this.fileError = '';
   }
 
   clearFiles(): void {
     for (const list of [this.pdfFiles, this.imageFiles, this.audioFiles]) {
       for (const item of list) {
-        if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+        if (item.previewUrl && item.isExisting !== true) {
+          URL.revokeObjectURL(item.previewUrl);
+        }
       }
       list.length = 0;
     }
   }
 
   allFiles(): File[] {
-    return [...this.pdfFiles, ...this.imageFiles, ...this.audioFiles].map(i => i.file);
+    return [...this.pdfFiles, ...this.imageFiles, ...this.audioFiles].filter(i => i.file).map(i => i.file as File);
   }
 
   formatFileSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  }
+
+  getFileDisplayName(item: SelectedFile): string {
+    return item.fileName || item.file?.name || 'Unknown';
+  }
+
+  getFileSizeBytes(item: SelectedFile): number {
+    if (item.fileSize != null) return item.fileSize;
+    return item.file?.size || 0;
   }
 
   // ==================== Cancel / Category ====================

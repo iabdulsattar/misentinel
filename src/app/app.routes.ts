@@ -30,6 +30,11 @@ export const routes: Routes = [
             title: 'Entries | eDOB'
           },
           {
+            path: 'entries/:id',
+            loadComponent: () => import('./dob-feed/entry-detail/entry-detail.component').then(m => m.EntryDetailComponent),
+            title: 'Entry Detail | eDOB'
+          },
+          {
             path: 'create-entry',
             loadComponent: () => import('./dob-feed/create-entry/create-entry.component').then(m => m.CreateEntryComponent),
             title: 'Create Entry | eDOB'
@@ -60,9 +65,14 @@ export const routes: Routes = [
             title:'Angular Blank Dashboard | TailAdmin - Angular Admin Dashboard Template'
           },
           {
-            path:'invoice',
+            path: 'invoice',
             loadComponent: () => import('./features/pages/invoices/invoices.component').then(m => m.InvoicesComponent),
-            title:'Angular Invoice Details Dashboard | TailAdmin - Angular Admin Dashboard Template'
+            title: 'Angular Invoice Details Dashboard | TailAdmin - Angular Admin Dashboard Template'
+          },
+          {
+            path: 'user-management',
+            loadComponent: () => import('./features/pages/user-management/user-management.component').then(m => m.UserManagementComponent),
+            title: 'User Management | eDOB'
           },
           {
             path:'line-chart',

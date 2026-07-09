@@ -133,82 +133,51 @@
                       <option [value]="p.value">{{ p.label }}</option>
                     }
                   </select>
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 3.5L17 11H4"/></svg>
-                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                </div>
-                @if (priorityError) {
-                  <p class="mt-1 text-xs text-red-500">{{ priorityError }}</p>
-                }
-              </div>
-            </div>
-          } @else if (activeTab === 3) {
-            <!-- Follow-Up: Title / Parent Entry / Category / Priority -->
-            <div class="grid grid-cols-4 gap-4 mt-3">
+                   <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 3.5L17 11H4"/></svg>
+                   <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                 </div>
+                 @if (priorityError) {
+                   <p class="mt-1 text-xs text-red-500">{{ priorityError }}</p>
+                 }
+               </div>
+             </div>
+           } @else if (activeTab === 1) {
+             <!-- Incident: Title / Type / Priority -->
+            <div class="grid grid-cols-3 gap-4 mt-3">
               <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Follow-Up Title <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Incident Title <span class="text-red-500">*</span></label>
                 <input
-                  [(ngModel)]="followUpTitle" name="followUpTitle"
-                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
-                  placeholder="Enter follow-up title">
-                @if (followUpTitleError) {
-                  <p class="mt-1 text-xs text-red-500">{{ followUpTitleError }}</p>
+                  type="text"
+                  [(ngModel)]="incidentTitle" name="incidentTitle"
+                  placeholder="Enter incident title"
+                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+                @if (incidentTitleError) {
+                  <p class="mt-1 text-xs text-red-500">{{ incidentTitleError }}</p>
                 }
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Parent Entry ID</label>
-                <input
-                  [(ngModel)]="parentEntryId" name="parentEntryId"
-                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
-                  placeholder="ID of the entry being followed up">
-                @if (parentEntryIdError) {
-                  <p class="mt-1 text-xs text-red-500">{{ parentEntryIdError }}</p>
-                }
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Category <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Incident Type <span class="text-red-500">*</span></label>
                 <div class="relative mt-1.5">
                   <select
-                    [(ngModel)]="categoryId" name="category"
-                    (ngModelChange)="onCategoryChange($event)"
+                    [(ngModel)]="incidentTypeId" name="incidentTypeId"
                     [disabled]="isLoadingData"
                     class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <option value="" disabled>Select category</option>
+                    <option value="" disabled>Select incident type</option>
                     @if (isLoadingData) {
-                      <option value="" disabled>Loading categories...</option>
-                    } @else if (categories.length === 0) {
-                      <option value="" disabled>No categories available</option>
+                      <option value="" disabled>Loading types...</option>
+                    } @else if (incidentTypes.length === 0) {
+                      <option value="" disabled>No types available</option>
                     } @else {
-                      @for (cat of categories; track cat.id) {
-                        <option [value]="cat.id">{{ cat.name }}</option>
+                      @for (t of incidentTypes; track t.id) {
+                        <option [value]="t.id">{{ t.name }}</option>
                       }
                     }
-                    <option value="__create_new__">+ Create new category</option>
                   </select>
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/><path d="M12 8v4M12 15h.01"/></svg>
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>
                   <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
                 </div>
-                @if (categoryError) {
-                  <p class="mt-1 text-xs text-red-500">{{ categoryError }}</p>
-                }
-                @if (showCreateCategoryForm) {
-                  <div class="mt-2 flex gap-2">
-                    <input
-                      type="text"
-                      [(ngModel)]="newCategoryName"
-                      name="newCategoryName"
-                      placeholder="New category name"
-                      class="flex-1 h-10 rounded-lg border border-gray-200 dark:border-gray-700 px-3 text-sm focus:outline-none focus:border-indigo-500">
-                    <button
-                      type="button"
-                      (click)="createNewCategory()"
-                      [disabled]="isCreatingCategory"
-                      class="h-10 px-4 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
-                      {{ isCreatingCategory ? 'Saving...' : 'Save' }}
-                    </button>
-                  </div>
-                  @if (categoryCreateError) {
-                    <p class="mt-1 text-xs text-red-500">{{ categoryCreateError }}</p>
-                  }
+                @if (incidentTypeError) {
+                  <p class="mt-1 text-xs text-red-500">{{ incidentTypeError }}</p>
                 }
               </div>
               <div>
@@ -230,8 +199,67 @@
                 }
               </div>
             </div>
-          } @else if (activeTab === 2) {
-            <!-- Handover: Title / Type / Date / From / To / Location -->
+          }
+
+          @if (activeTab === 1) {
+            <!-- Incident details row -->
+            <div class="grid grid-cols-4 gap-4 mt-4">
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Incident Date &amp; Time <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                  <input
+                    type="datetime-local"
+                    [(ngModel)]="occurredAt" name="occurredAt"
+                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+                </div>
+                @if (occurredAtError) {
+                  <p class="mt-1 text-xs text-red-500">{{ occurredAtError }}</p>
+                }
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Location <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.4-6-11a6 6 0 1112 0c0 5.6-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>
+                  <input
+                    type="text"
+                    [(ngModel)]="location" name="location"
+                    placeholder="Select location"
+                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+                </div>
+                @if (locationIncidentError) {
+                  <p class="mt-1 text-xs text-red-500">{{ locationIncidentError }}</p>
+                }
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">People Involved</label>
+                <div class="relative mt-1.5">
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2-5 6-5s6 2 6 5"/><circle cx="18" cy="9" r="2"/></svg>
+                  <input
+                    type="text"
+                    [(ngModel)]="peopleInvolved" name="peopleInvolved"
+                    placeholder="Add people involved"
+                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Severity Score</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  [(ngModel)]="severityScore" name="severityScore"
+                  placeholder="1 - 10"
+                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+              </div>
+            </div>
+          }
+        </section>
+
+        <!-- 1. Entry Information (Handover) -->
+        @if (activeTab === 2) {
+          <section>
+            <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">1.</span> Entry Information</h2>
             <div class="grid grid-cols-3 gap-4 mt-3">
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Handover Title <span class="text-red-500">*</span></label>
@@ -358,60 +386,8 @@
                     <p class="mt-1 text-xs text-red-500">{{ categoryCreateError }}</p>
                   }
                 }
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority <span class="text-red-500">*</span></label>
-                <div class="relative mt-1.5">
-                  <select
-                    [(ngModel)]="priority" name="priority"
-                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400">
-                    <option value="" disabled>Select priority</option>
-                    @for (p of priorities; track p.value) {
-                      <option [value]="p.value">{{ p.label }}</option>
-                    }
-                  </select>
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 3.5L17 11H4"/></svg>
-                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                </div>
-              </div>
-            </div>
-          } @else if (activeTab === 1) {
-            <!-- Incident: Title / Type / Priority -->
-            <div class="grid grid-cols-3 gap-4 mt-3">
-              <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Incident Title <span class="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  [(ngModel)]="incidentTitle" name="incidentTitle"
-                  placeholder="Enter incident title"
-                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
-                @if (incidentTitleError) {
-                  <p class="mt-1 text-xs text-red-500">{{ incidentTitleError }}</p>
-                }
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Incident Type <span class="text-red-500">*</span></label>
-                <div class="relative mt-1.5">
-                  <select
-                    [(ngModel)]="incidentTypeId" name="incidentTypeId"
-                    [disabled]="isLoadingData"
-                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <option value="" disabled>Select incident type</option>
-                    @if (isLoadingData) {
-                      <option value="" disabled>Loading types...</option>
-                    } @else if (incidentTypes.length === 0) {
-                      <option value="" disabled>No types available</option>
-                    } @else {
-                      @for (t of incidentTypes; track t.id) {
-                        <option [value]="t.id">{{ t.name }}</option>
-                      }
-                    }
-                  </select>
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>
-                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                </div>
-                @if (incidentTypeError) {
-                  <p class="mt-1 text-xs text-red-500">{{ incidentTypeError }}</p>
+                @if (categoryError) {
+                  <p class="mt-1 text-xs text-red-500">{{ categoryError }}</p>
                 }
               </div>
               <div>
@@ -433,62 +409,8 @@
                 }
               </div>
             </div>
-          }
-
-          @if (activeTab === 1) {
-            <!-- Incident details row -->
-            <div class="grid grid-cols-4 gap-4 mt-4">
-              <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Incident Date &amp; Time <span class="text-red-500">*</span></label>
-                <div class="relative mt-1.5">
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                  <input
-                    type="datetime-local"
-                    [(ngModel)]="occurredAt" name="occurredAt"
-                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
-                </div>
-                @if (occurredAtError) {
-                  <p class="mt-1 text-xs text-red-500">{{ occurredAtError }}</p>
-                }
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Location <span class="text-red-500">*</span></label>
-                <div class="relative mt-1.5">
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.4-6-11a6 6 0 1112 0c0 5.6-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>
-                  <input
-                    type="text"
-                    [(ngModel)]="location" name="location"
-                    placeholder="Select location"
-                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
-                </div>
-                @if (locationIncidentError) {
-                  <p class="mt-1 text-xs text-red-500">{{ locationIncidentError }}</p>
-                }
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">People Involved</label>
-                <div class="relative mt-1.5">
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2-5 6-5s6 2 6 5"/><circle cx="18" cy="9" r="2"/></svg>
-                  <input
-                    type="text"
-                    [(ngModel)]="peopleInvolved" name="peopleInvolved"
-                    placeholder="Add people involved"
-                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
-                </div>
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Severity Score</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  [(ngModel)]="severityScore" name="severityScore"
-                  placeholder="1 - 10"
-                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
-              </div>
-            </div>
-          }
-        </section>
+          </section>
+        }
 
         <!-- 2. Operational Summary (Handover) -->
         @if (activeTab === 2) {
@@ -655,14 +577,14 @@
                           <div class="w-9 h-9 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
                           </div>
-                          <div class="min-w-0">
-                            <div class="text-xs font-medium text-gray-800 dark:text-white/90 truncate">{{ item.file.name }}</div>
-                            <div class="text-[11px] text-gray-400">{{ formatFileSize(item.file.size) }}</div>
-                          </div>
-                        </div>
-                      </div>
-                    }
-                    @if (pdfFiles.length < maxFilesPerType) {
+                           <div class="min-w-0">
+                             <div class="text-xs font-medium text-gray-800 dark:text-white/90 truncate">{{ getFileDisplayName(item) }}</div>
+                             <div class="text-[11px] text-gray-400">{{ formatFileSize(getFileSizeBytes(item)) }}</div>
+                           </div>
+                         </div>
+                       </div>
+                     }
+                     @if (pdfFiles.length < maxFilesPerType) {
                       <button (click)="pdfInput.click()" class="flex items-center justify-center gap-2 w-full border border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-3 text-xs font-medium text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                         Add another file
@@ -694,10 +616,10 @@
                         <button (click)="removeFile('image', $index)" class="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-red-500 hover:border-red-200">
                           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                         </button>
-                        <img [src]="item.previewUrl" [alt]="item.file.name" class="w-full h-28 object-cover">
+                        <img [src]="item.previewUrl" [alt]="getFileDisplayName(item)" class="w-full h-28 object-cover">
                         <div class="px-3 py-2">
-                          <div class="text-xs font-medium text-gray-800 dark:text-white/90 truncate">{{ item.file.name }}</div>
-                          <div class="text-[11px] text-gray-400">{{ formatFileSize(item.file.size) }}</div>
+                            <div class="text-xs font-medium text-gray-800 dark:text-white/90 truncate">{{ getFileDisplayName(item) }}</div>
+                            <div class="text-[11px] text-gray-400">{{ formatFileSize(getFileSizeBytes(item)) }}</div>
                         </div>
                       </div>
                     }
@@ -737,14 +659,14 @@
                           <div class="w-9 h-9 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0"/><path d="M12 17v5M9 22h6"/></svg>
                           </div>
-                          <div class="min-w-0">
-                            <div class="text-xs font-medium text-gray-800 dark:text-white/90 truncate">{{ item.file.name }}</div>
-                            <div class="text-[11px] text-gray-400">{{ formatFileSize(item.file.size) }}</div>
-                          </div>
-                        </div>
-                        @if (item.previewUrl) {
-                          <audio [src]="item.previewUrl" controls class="w-full mt-2 h-8"></audio>
-                        }
+                           <div class="min-w-0">
+                             <div class="text-xs font-medium text-gray-800 dark:text-white/90 truncate">{{ getFileDisplayName(item) }}</div>
+                             <div class="text-[11px] text-gray-400">{{ formatFileSize(getFileSizeBytes(item)) }}</div>
+                           </div>
+                         </div>
+                         @if (item.previewUrl) {
+                           <audio [src]="item.previewUrl" controls class="w-full mt-2 h-8"></audio>
+                         }
                       </div>
                     }
                     @if (audioFiles.length < maxFilesPerType) {
@@ -779,7 +701,7 @@
             type="button"
             (click)="onSubmitEntry()"
             class="bg-gray-900 text-white rounded-lg px-5 py-2.5 text-sm font-semibold hover:bg-gray-800"
-            [disabled]="(activeTab === 0 && (!title || !categoryId || !priority || !description)) || (activeTab === 1 && (!incidentTitle || !incidentTypeId || !priority || !occurredAt || !location || !incidentDescription || !immediateActionsTaken)) || (activeTab === 2 && (!handoverTitle || !handoverTypeId || !handoverDateTime || !handoverFrom || !handoverTo || !priority || !operationalSummary || !outstandingIssues || !outstandingActions || !importantInfo)) || (activeTab === 3 && (!followUpTitle || !priority || !description)) || isSubmitting || isLoadingEntry">
+            [disabled]="isSubmitting || isLoadingEntry">
             {{ isSubmitting ? (editMode ? 'Updating...' : 'Submitting...') : (editMode ? 'Update Entry' : 'Submit Entry') }}
           </button>
         </div>

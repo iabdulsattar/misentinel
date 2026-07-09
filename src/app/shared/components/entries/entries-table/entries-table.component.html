@@ -58,7 +58,7 @@
                     [checked]="selectedRows.includes(row.entryId)"
                     (checkedChange)="handleRowSelect(row.entryId)"
                   />
-                  <span (click)="onIdClick(row)" class="block cursor-pointer font-medium text-brand-600 hover:underline text-theme-sm dark:text-brand-400">
+                  <span [routerLink]="['/entries', row.entryId]" class="block cursor-pointer font-medium text-brand-600 hover:underline text-theme-sm dark:text-brand-400">
                     {{ row.id }}
                   </span>
                 </div>
@@ -94,9 +94,9 @@
                 <p class="text-gray-700 text-theme-sm dark:text-gray-400">{{ row.assignedTo }}</p>
               </td>
               <td class="px-4 sm:px-6 py-3.5">
-                <button (click)="onIdClick(row)" title="View">
+                <a [routerLink]="['/entries', row.entryId]" title="View" class="inline-flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-icon lucide-eye text-gray-700 dark:text-gray-400"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
+                </a>
               </td>
             </tr>
           }
