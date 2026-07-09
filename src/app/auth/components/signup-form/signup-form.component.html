@@ -14,21 +14,21 @@
     
     <!-- Divider -->
     
-    <!-- Success Message -->
-    @if (successMessage) {
-    <div class="mb-5 p-4 rounded-lg bg-success-50 border border-success-200">
-      <p class="text-sm text-success-700">{{ successMessage }}</p>
-    </div>
-    }
+     <!-- Success Message -->
+     @if (successMessage) {
+     <div class="mb-5 p-4 rounded-lg bg-success-50 border border-success-200">
+       <p class="text-sm text-success-700">{{ successMessage }}</p>
+     </div>
+     }
 
-    <!-- Error Message -->
-    @if (errorMessage) {
-    <div class="mb-5 p-4 rounded-lg bg-error-50 border border-error-200">
-      <p class="text-sm text-error-700">{{ errorMessage }}</p>
-    </div>
-    }
+     <!-- Error Message -->
+     @if (errorMessage) {
+     <div class="mb-5 p-4 rounded-lg bg-error-50 border border-error-200">
+       <p class="text-sm text-error-700">{{ errorMessage }}</p>
+     </div>
+     }
 
-    <form (ngSubmit)="onSignUp()">
+     <form (ngSubmit)="onSignUp()">
       <div class="space-y-5">
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <!-- First Name -->

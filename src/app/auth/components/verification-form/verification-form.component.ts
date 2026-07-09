@@ -44,6 +44,7 @@ export class VerificationFormComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   digitError = false;
+  isSigningInAfterVerification = false;
 
   constructor(
     private authService: AuthService,
@@ -75,6 +76,19 @@ export class VerificationFormComponent implements OnInit {
   isEmailValid(email: string): boolean {
     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     return emailRegex.test(email);
+  }
+
+  private decodeExp(token: string): number | null {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        return null;
+      }
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+    } catch {
+      return null;
+    }
   }
 
   onVerify() {
@@ -114,17 +128,76 @@ export class VerificationFormComponent implements OnInit {
 
     this.authService.verifySignupOtp({ email, code: otp }).subscribe({
       next: (res) => {
-        this.isLoading = false;
+        this.isSigningInAfterVerification = true;
         this.successMessage = res?.message || 'Email verified successfully.';
 
-        const orgId = localStorage.getItem('org_id');
-        setTimeout(() => {
-          if (orgId) {
-            this.router.navigate(['/subscription-plan']);
-          } else {
-            this.router.navigate(['/signin']);
+        const tempPassword = sessionStorage.getItem('verification_password');
+        if (!tempPassword) {
+          this.isSigningInAfterVerification = false;
+          this.isLoading = false;
+          const orgId = localStorage.getItem('org_id');
+          setTimeout(() => {
+            if (orgId) {
+              this.router.navigate(['/subscription-plan']);
+            } else {
+              this.router.navigate(['/signin']);
+            }
+          }, 600);
+          return;
+        }
+
+        this.authService.login({ email, password: tempPassword }).subscribe({
+          next: (loginRes: any) => {
+            const accessToken = loginRes?.tokens?.access_token ?? loginRes?.access_token;
+            const refreshToken = loginRes?.tokens?.refresh_token ?? loginRes?.refresh_token;
+
+            if (!accessToken) {
+              this.isSigningInAfterVerification = false;
+              this.isLoading = false;
+              this.errorMessage = 'Verification succeeded but automatic sign-in failed. Please sign in manually.';
+              this.router.navigate(['/signin']);
+              return;
+            }
+
+            const exp = this.decodeExp(accessToken);
+            const expiresAt = String(exp ?? Date.now() + 24 * 60 * 60 * 1000);
+
+            localStorage.setItem('access_token_saas', accessToken);
+            localStorage.setItem('refresh_token', refreshToken ?? '');
+
+            localStorage.removeItem('remember_device');
+            localStorage.removeItem('session_expires_at');
+            sessionStorage.setItem('access_token_saas', accessToken);
+            sessionStorage.setItem('refresh_token', refreshToken ?? '');
+            sessionStorage.setItem('session_expires_at', expiresAt);
+
+            const orgs = loginRes?.tokens?.organizations ?? loginRes?.organizations ?? [];
+            if (orgs?.length > 0) {
+              localStorage.setItem('org_id', orgs[0].id);
+              localStorage.setItem('organizationId', orgs[0].id);
+            }
+
+            sessionStorage.removeItem('verification_password');
+
+            this.isSigningInAfterVerification = false;
+            this.isLoading = false;
+            this.router.navigate(['/']);
+          },
+          error: (loginErr) => {
+            console.error('Auto-login after verification error:', loginErr);
+            sessionStorage.removeItem('verification_password');
+            this.isSigningInAfterVerification = false;
+            this.isLoading = false;
+            const orgId = localStorage.getItem('org_id');
+            setTimeout(() => {
+              if (orgId) {
+                this.router.navigate(['/subscription-plan']);
+              } else {
+                this.router.navigate(['/signin']);
+              }
+            }, 600);
           }
-        }, 600);
+        });
       },
       error: (err) => {
         this.isLoading = false;

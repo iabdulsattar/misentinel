@@ -36,6 +36,70 @@ export interface UpdateEntryTypeRequest {
   active?: boolean;
 }
 
+// -------- Incident Types --------
+export interface IncidentType {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  color?: string;
+  sortOrder: number;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: any;
+}
+
+export interface CreateIncidentTypeRequest {
+  code: string;
+  name: string;
+  description?: string;
+  color?: string;
+  sortOrder?: number;
+  active?: boolean;
+}
+
+export interface UpdateIncidentTypeRequest {
+  code?: string;
+  name?: string;
+  description?: string;
+  color?: string;
+  sortOrder?: number;
+  active?: boolean;
+}
+
+// -------- Handover Types --------
+export interface HandoverType {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  color?: string;
+  sortOrder: number;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: any;
+}
+
+export interface CreateHandoverTypeRequest {
+  code: string;
+  name: string;
+  description?: string;
+  color?: string;
+  sortOrder?: number;
+  active?: boolean;
+}
+
+export interface UpdateHandoverTypeRequest {
+  code?: string;
+  name?: string;
+  description?: string;
+  color?: string;
+  sortOrder?: number;
+  active?: boolean;
+}
+
 // -------- Categories --------
 export interface Category {
   id: string;
@@ -86,6 +150,10 @@ export interface Entry {
   createdAt: string;
   updatedAt: string;
   attachments?: EntryAttachment[];
+  occurredAt?: string;
+  incidentTypeId?: string;
+  handoverTypeId?: string;
+  location?: string;
   [key: string]: any;
 }
 
@@ -98,6 +166,10 @@ export interface CreateEntryRequest {
   description?: string;
   assignedToUserId?: string;
   data?: Record<string, any>;
+  occurredAt?: string;
+  incidentTypeId?: string;
+  handoverTypeId?: string;
+  location?: string;
 }
 
 export interface UpdateEntryRequest {
@@ -109,6 +181,10 @@ export interface UpdateEntryRequest {
   description?: string;
   assignedToUserId?: string;
   data?: Record<string, any>;
+  occurredAt?: string;
+  incidentTypeId?: string;
+  handoverTypeId?: string;
+  location?: string;
 }
 
 export interface ListEntriesRequest {

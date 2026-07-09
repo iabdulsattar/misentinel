@@ -8,6 +8,12 @@ import {
   EntryType,
   CreateEntryTypeRequest,
   UpdateEntryTypeRequest,
+  IncidentType,
+  CreateIncidentTypeRequest,
+  UpdateIncidentTypeRequest,
+  HandoverType,
+  CreateHandoverTypeRequest,
+  UpdateHandoverTypeRequest,
   Category,
   CreateCategoryRequest,
   UpdateCategoryRequest,
@@ -54,6 +60,54 @@ export class EdobService {
   // DELETE /api/v1/edob/organizations/{orgId}/entry-types/{entryTypeId}
   disableEntryType(orgId: string, entryTypeId: string): Observable<any> {
     return this.api.delete(`${this.basePath(orgId)}/entry-types/${entryTypeId}`);
+  }
+
+  // ==================== Incident Types ====================
+
+  // GET /api/v1/edob/organizations/{orgId}/incident-types
+  listIncidentTypes(orgId: string): Observable<IncidentType[]> {
+    return this.api.get<ApiWrapper<IncidentType[]>>(`${this.basePath(orgId)}/incident-types`).pipe(map(res => res.data));
+  }
+
+  // POST /api/v1/edob/organizations/{orgId}/incident-types
+  createIncidentType(orgId: string, payload: CreateIncidentTypeRequest): Observable<IncidentType> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.post<IncidentType>(`${this.basePath(orgId)}/incident-types`, payload, headers);
+  }
+
+  // PUT /api/v1/edob/organizations/{orgId}/incident-types/{incidentTypeId}
+  updateIncidentType(orgId: string, incidentTypeId: string, payload: UpdateIncidentTypeRequest): Observable<IncidentType> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.put<IncidentType>(`${this.basePath(orgId)}/incident-types/${incidentTypeId}`, payload, headers);
+  }
+
+  // DELETE /api/v1/edob/organizations/{orgId}/incident-types/{incidentTypeId}
+  disableIncidentType(orgId: string, incidentTypeId: string): Observable<any> {
+    return this.api.delete(`${this.basePath(orgId)}/incident-types/${incidentTypeId}`);
+  }
+
+  // ==================== Handover Types ====================
+
+  // GET /api/v1/edob/organizations/{orgId}/handover-types
+  listHandoverTypes(orgId: string): Observable<HandoverType[]> {
+    return this.api.get<ApiWrapper<HandoverType[]>>(`${this.basePath(orgId)}/handover-types`).pipe(map(res => res.data));
+  }
+
+  // POST /api/v1/edob/organizations/{orgId}/handover-types
+  createHandoverType(orgId: string, payload: CreateHandoverTypeRequest): Observable<HandoverType> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.post<HandoverType>(`${this.basePath(orgId)}/handover-types`, payload, headers);
+  }
+
+  // PUT /api/v1/edob/organizations/{orgId}/handover-types/{handoverTypeId}
+  updateHandoverType(orgId: string, handoverTypeId: string, payload: UpdateHandoverTypeRequest): Observable<HandoverType> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.put<HandoverType>(`${this.basePath(orgId)}/handover-types/${handoverTypeId}`, payload, headers);
+  }
+
+  // DELETE /api/v1/edob/organizations/{orgId}/handover-types/{handoverTypeId}
+  disableHandoverType(orgId: string, handoverTypeId: string): Observable<any> {
+    return this.api.delete(`${this.basePath(orgId)}/handover-types/${handoverTypeId}`);
   }
 
   // ==================== Categories ====================

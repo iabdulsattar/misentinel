@@ -11,7 +11,6 @@ import { AppHeaderComponent } from '../app-header/app-header.component';
   imports: [
     CommonModule,
     RouterModule,
-    AppHeaderComponent,
     AppSidebarComponent,
     BackdropComponent,
     AppHeaderComponent

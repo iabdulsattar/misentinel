@@ -289,6 +289,7 @@ export class SignupFormComponent implements OnInit {
 
         try {
           localStorage.setItem('verification_email', userEmail);
+          sessionStorage.setItem('verification_password', this.password);
         } catch {
         }
         this.isLoading = false;

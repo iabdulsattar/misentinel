@@ -104,7 +104,7 @@ export class AuthService {
     if (remember === 'true') {
       return localStorage.getItem('access_token_saas');
     }
-    return localStorage.getItem('access_token_saas') || sessionStorage.getItem('access_token_saas');
+    return sessionStorage.getItem('access_token_saas') || localStorage.getItem('access_token_saas');
   }
 
   inviteMember(orgId: string, payload: InviteMemberRequest, token?: string): Observable<InviteMemberResponse> {
@@ -138,7 +138,14 @@ export class AuthService {
 
   refresh(payload: RefreshTokenRequest): Observable<RefreshTokenResponse> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.api.post('/api/v1/auth/refresh', payload, headers);
+    return this.api.post<ApiWrapper<RefreshTokenResponse> | RefreshTokenResponse>('/api/v1/auth/refresh', payload, headers).pipe(
+      map((res: any) => {
+        if (res && typeof res === 'object' && 'data' in res) {
+          return res.data as RefreshTokenResponse;
+        }
+        return res as RefreshTokenResponse;
+      })
+    );
   }
 
   logout(payload: LogoutRequest): Observable<void> {

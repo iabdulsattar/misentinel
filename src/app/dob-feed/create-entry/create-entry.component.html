@@ -1,23 +1,22 @@
-<main class="min-h-screen  text-gray-900">
+<main class="min-h-screen  text-gray-900 dark:text-white">
 
   <div class="w-full">
 
     <!-- Header -->
+    <header class="flex items-start justify-between">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">
+          {{ editMode ? 'Edit Entry' : 'Create Entry' }}
+        </h1>
+        <p class="text-sm text-gray-400 mt-1">Record an observation, activity, note, or occurrence.</p>
+      </div>
     
-    <div class="grid grid-cols-12 gap-6 items-start">
+    </header>
+
+    <div class="mt-6 grid grid-cols-12 gap-6 items-start">
 
       <!-- ================= MAIN COLUMN ================= -->
-      <div class="space-y-6" [ngClass]="aiDrawerOpen ? 'col-span-12 xl:col-span-8' : 'col-span-12'">
-
-        <header class="flex items-start justify-between">
-          <div>
-            <h1 class="text-2xl font-bold tracking-tight">
-              {{ editMode ? 'Edit Entry' : 'Create Entry' }}
-            </h1>
-            <p class="text-sm text-gray-400 mt-1">Record an observation, activity, note, or occurrence.</p>
-          </div>
-        
-        </header>
+      <div class="space-y-6" [ngClass]="aiDrawerOpen ? 'col-span-12 xl:col-span-9' : 'col-span-12'">
 
         <!-- Entry type tabs -->
         <div class="grid grid-cols-4 gap-3">
@@ -26,7 +25,7 @@
               (click)="setActiveTab(i)"
               [ngClass]="activeTab === i
                 ? 'flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold bg-gray-900 text-white'
-                : 'flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'">
+                : 'flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/[0.03] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800'">
               @switch (i) {
                 @case (0) {
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
@@ -50,7 +49,7 @@
         <div class="flex items-center justify-between gap-4 rounded-xl px-5 py-4 border border-indigo-100 bg-gradient-to-r from-indigo-50 via-violet-50 to-indigo-50">
           <div class="flex items-center gap-3">
             <svg class="w-5 h-5 text-indigo-500 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 5.6L19 9l-5.4 1.4L12 16l-1.6-5.6L5 9l5.4-1.4L12 2z"/><path d="M19 14l.8 2.6L22 17.5l-2.2.9L19 21l-.8-2.6-2.2-.9 2.2-.9L19 14z"/></svg>
-            <p class="text-sm font-medium text-gray-700">Generate an entry draft with AI. Save time and write smarter.</p>
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Generate an entry draft with AI. Save time and write smarter.</p>
           </div>
           <button (click)="toggleAiDrawer()" class="flex items-center gap-2 shrink-0 bg-indigo-600 text-white rounded-lg px-4 py-2.5 text-sm font-semibold hover:bg-indigo-700">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 5.6L19 9l-5.4 1.4L12 16l-1.6-5.6L5 9l5.4-1.4L12 2z"/></svg>
@@ -62,23 +61,27 @@
         <section>
           <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">1.</span> Entry Information</h2>
 
-          @if (activeTab === 0 || activeTab === 3) {
+          @if (activeTab === 0) {
+            <!-- Basic: Title / Category / Priority -->
             <div class="grid grid-cols-3 gap-4 mt-3">
               <div>
-                <label class="text-sm font-medium text-gray-700">Title <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Title <span class="text-red-500">*</span></label>
                 <input
                   [(ngModel)]="title" name="title"
-                  class="mt-1.5 w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
                   placeholder="Enter a concise title">
+                @if (titleError) {
+                  <p class="mt-1 text-xs text-red-500">{{ titleError }}</p>
+                }
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700">Category <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Category <span class="text-red-500">*</span></label>
                 <div class="relative mt-1.5">
                   <select
                     [(ngModel)]="categoryId" name="category"
                     (ngModelChange)="onCategoryChange($event)"
                     [disabled]="isLoadingData"
-                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
                     <option value="" disabled>Select category</option>
                     @if (isLoadingData) {
                       <option value="" disabled>Loading categories...</option>
@@ -94,6 +97,9 @@
                   <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/><path d="M12 8v4M12 15h.01"/></svg>
                   <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
                 </div>
+                @if (categoryError) {
+                  <p class="mt-1 text-xs text-red-500">{{ categoryError }}</p>
+                }
                 @if (showCreateCategoryForm) {
                   <div class="mt-2 flex gap-2">
                     <input
@@ -101,7 +107,7 @@
                       [(ngModel)]="newCategoryName"
                       name="newCategoryName"
                       placeholder="New category name"
-                      class="flex-1 h-10 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:border-indigo-500">
+                      class="flex-1 h-10 rounded-lg border border-gray-200 dark:border-gray-700 px-3 text-sm focus:outline-none focus:border-indigo-500">
                     <button
                       type="button"
                       (click)="createNewCategory()"
@@ -116,11 +122,11 @@
                 }
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700">Priority <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority <span class="text-red-500">*</span></label>
                 <div class="relative mt-1.5">
                   <select
                     [(ngModel)]="priority" name="priority"
-                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400">
+                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400">
                     <option value="" disabled>Select priority</option>
                     @for (p of priorities; track p.value) {
                       <option [value]="p.value">{{ p.label }}</option>
@@ -129,80 +135,193 @@
                   <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 3.5L17 11H4"/></svg>
                   <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
                 </div>
+                @if (priorityError) {
+                  <p class="mt-1 text-xs text-red-500">{{ priorityError }}</p>
+                }
+              </div>
+            </div>
+          } @else if (activeTab === 3) {
+            <!-- Follow-Up: Title / Parent Entry / Category / Priority -->
+            <div class="grid grid-cols-4 gap-4 mt-3">
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Follow-Up Title <span class="text-red-500">*</span></label>
+                <input
+                  [(ngModel)]="followUpTitle" name="followUpTitle"
+                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                  placeholder="Enter follow-up title">
+                @if (followUpTitleError) {
+                  <p class="mt-1 text-xs text-red-500">{{ followUpTitleError }}</p>
+                }
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Parent Entry ID</label>
+                <input
+                  [(ngModel)]="parentEntryId" name="parentEntryId"
+                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                  placeholder="ID of the entry being followed up">
+                @if (parentEntryIdError) {
+                  <p class="mt-1 text-xs text-red-500">{{ parentEntryIdError }}</p>
+                }
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Category <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
+                  <select
+                    [(ngModel)]="categoryId" name="category"
+                    (ngModelChange)="onCategoryChange($event)"
+                    [disabled]="isLoadingData"
+                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <option value="" disabled>Select category</option>
+                    @if (isLoadingData) {
+                      <option value="" disabled>Loading categories...</option>
+                    } @else if (categories.length === 0) {
+                      <option value="" disabled>No categories available</option>
+                    } @else {
+                      @for (cat of categories; track cat.id) {
+                        <option [value]="cat.id">{{ cat.name }}</option>
+                      }
+                    }
+                    <option value="__create_new__">+ Create new category</option>
+                  </select>
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/><path d="M12 8v4M12 15h.01"/></svg>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+                @if (categoryError) {
+                  <p class="mt-1 text-xs text-red-500">{{ categoryError }}</p>
+                }
+                @if (showCreateCategoryForm) {
+                  <div class="mt-2 flex gap-2">
+                    <input
+                      type="text"
+                      [(ngModel)]="newCategoryName"
+                      name="newCategoryName"
+                      placeholder="New category name"
+                      class="flex-1 h-10 rounded-lg border border-gray-200 dark:border-gray-700 px-3 text-sm focus:outline-none focus:border-indigo-500">
+                    <button
+                      type="button"
+                      (click)="createNewCategory()"
+                      [disabled]="isCreatingCategory"
+                      class="h-10 px-4 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
+                      {{ isCreatingCategory ? 'Saving...' : 'Save' }}
+                    </button>
+                  </div>
+                  @if (categoryCreateError) {
+                    <p class="mt-1 text-xs text-red-500">{{ categoryCreateError }}</p>
+                  }
+                }
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
+                  <select
+                    [(ngModel)]="priority" name="priority"
+                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400">
+                    <option value="" disabled>Select priority</option>
+                    @for (p of priorities; track p.value) {
+                      <option [value]="p.value">{{ p.label }}</option>
+                    }
+                  </select>
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 3.5L17 11H4"/></svg>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+                @if (priorityError) {
+                  <p class="mt-1 text-xs text-red-500">{{ priorityError }}</p>
+                }
               </div>
             </div>
           } @else if (activeTab === 2) {
             <!-- Handover: Title / Type / Date / From / To / Location -->
             <div class="grid grid-cols-3 gap-4 mt-3">
               <div>
-                <label class="text-sm font-medium text-gray-700">Handover Title <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Handover Title <span class="text-red-500">*</span></label>
                 <input
                   [(ngModel)]="handoverTitle" name="handoverTitle"
-                  class="mt-1.5 w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
                   placeholder="Enter handover title">
+                @if (handoverTitleError) {
+                  <p class="mt-1 text-xs text-red-500">{{ handoverTitleError }}</p>
+                }
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700">Handover Type <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Handover Type <span class="text-red-500">*</span></label>
                 <div class="relative mt-1.5">
                   <select
-                    [(ngModel)]="handoverType" name="handoverType"
-                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400">
-                    <option value="">Select type</option>
-                    <option value="SHIFT_CHANGE">Shift Change</option>
-                    <option value="END_OF_DAY">End of Day</option>
-                    <option value="DEPARTMENT">Department</option>
-                    <option value="EMERGENCY">Emergency</option>
+                    [(ngModel)]="handoverTypeId" name="handoverTypeId"
+                    [disabled]="isLoadingData"
+                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <option value="" disabled>Select type</option>
+                    @if (isLoadingData) {
+                      <option value="" disabled>Loading types...</option>
+                    } @else if (handoverTypes.length === 0) {
+                      <option value="" disabled>No types available</option>
+                    } @else {
+                      @for (t of handoverTypes; track t.id) {
+                        <option [value]="t.id">{{ t.name }}</option>
+                      }
+                    }
                   </select>
                   <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/></svg>
                   <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
                 </div>
+                @if (handoverTypeError) {
+                  <p class="mt-1 text-xs text-red-500">{{ handoverTypeError }}</p>
+                }
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700">Date &amp; Time <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Date &amp; Time <span class="text-red-500">*</span></label>
                 <div class="relative mt-1.5">
                   <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                   <input
                     type="datetime-local"
                     [(ngModel)]="handoverDateTime" name="handoverDateTime"
-                    class="w-full border border-gray-200 rounded-lg pl-10 pr-3 py-2.5 text-sm text-gray-700 outline-none focus:border-gray-400">
+                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none focus:border-gray-400">
                 </div>
+                @if (handoverDateTimeError) {
+                  <p class="mt-1 text-xs text-red-500">{{ handoverDateTimeError }}</p>
+                }
               </div>
             </div>
             <div class="grid grid-cols-3 gap-4 mt-4">
               <div>
-                <label class="text-sm font-medium text-gray-700">Handover From <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Handover From <span class="text-red-500">*</span></label>
                 <input
                   [(ngModel)]="handoverFrom" name="handoverFrom"
-                  class="mt-1.5 w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
                   placeholder="Person handing over">
+                @if (handoverFromError) {
+                  <p class="mt-1 text-xs text-red-500">{{ handoverFromError }}</p>
+                }
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700">Handover To <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Handover To <span class="text-red-500">*</span></label>
                 <input
                   [(ngModel)]="handoverTo" name="handoverTo"
-                  class="mt-1.5 w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
                   placeholder="Person receiving">
+                @if (handoverToError) {
+                  <p class="mt-1 text-xs text-red-500">{{ handoverToError }}</p>
+                }
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700">Handover Location</label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Handover Location</label>
                 <div class="relative mt-1.5">
                   <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
                   <input
                     [(ngModel)]="handoverLocation" name="handoverLocation"
-                    class="w-full border border-gray-200 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
                     placeholder="e.g., Main Entrance, Building A">
                 </div>
               </div>
             </div>
             <div class="grid grid-cols-3 gap-4 mt-4">
               <div>
-                <label class="text-sm font-medium text-gray-700">Category</label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
                 <div class="relative mt-1.5">
                   <select
                     [(ngModel)]="categoryId" name="category"
                     (ngModelChange)="onCategoryChange($event)"
                     [disabled]="isLoadingData"
-                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
                     <option value="" disabled>Select category</option>
                     @if (isLoadingData) {
                       <option value="" disabled>Loading categories...</option>
@@ -225,7 +344,7 @@
                       [(ngModel)]="newCategoryName"
                       name="newCategoryName"
                       placeholder="New category name"
-                      class="flex-1 h-10 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:border-indigo-500">
+                      class="flex-1 h-10 rounded-lg border border-gray-200 dark:border-gray-700 px-3 text-sm focus:outline-none focus:border-indigo-500">
                     <button
                       type="button"
                       (click)="createNewCategory()"
@@ -240,11 +359,11 @@
                 }
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700">Priority <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority <span class="text-red-500">*</span></label>
                 <div class="relative mt-1.5">
                   <select
                     [(ngModel)]="priority" name="priority"
-                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400">
+                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400">
                     <option value="" disabled>Select priority</option>
                     @for (p of priorities; track p.value) {
                       <option [value]="p.value">{{ p.label }}</option>
@@ -259,36 +378,47 @@
             <!-- Incident: Title / Type / Priority -->
             <div class="grid grid-cols-3 gap-4 mt-3">
               <div>
-                <label class="text-sm font-medium text-gray-700">Incident Title <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Incident Title <span class="text-red-500">*</span></label>
                 <input
                   type="text"
                   [(ngModel)]="incidentTitle" name="incidentTitle"
                   placeholder="Enter incident title"
-                  class="mt-1.5 w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+                @if (incidentTitleError) {
+                  <p class="mt-1 text-xs text-red-500">{{ incidentTitleError }}</p>
+                }
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700">Incident Type <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Incident Type <span class="text-red-500">*</span></label>
                 <div class="relative mt-1.5">
                   <select
-                    [(ngModel)]="incidentType" name="incidentType"
-                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400">
-                    <option value="">Select incident type</option>
-                    <option value="SAFETY">Safety</option>
-                    <option value="SECURITY">Security</option>
-                    <option value="MEDICAL">Medical</option>
-                    <option value="PROPERTY">Property</option>
-                    <option value="OTHER">Other</option>
+                    [(ngModel)]="incidentTypeId" name="incidentTypeId"
+                    [disabled]="isLoadingData"
+                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <option value="" disabled>Select incident type</option>
+                    @if (isLoadingData) {
+                      <option value="" disabled>Loading types...</option>
+                    } @else if (incidentTypes.length === 0) {
+                      <option value="" disabled>No types available</option>
+                    } @else {
+                      @for (t of incidentTypes; track t.id) {
+                        <option [value]="t.id">{{ t.name }}</option>
+                      }
+                    }
                   </select>
                   <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>
                   <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
                 </div>
+                @if (incidentTypeError) {
+                  <p class="mt-1 text-xs text-red-500">{{ incidentTypeError }}</p>
+                }
               </div>
               <div>
-                <label class="text-sm font-medium text-gray-700">Priority <span class="text-red-500">*</span></label>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority <span class="text-red-500">*</span></label>
                 <div class="relative mt-1.5">
                   <select
                     [(ngModel)]="priority" name="priority"
-                    class="w-full appearance-none border border-gray-200 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white outline-none focus:border-gray-400">
+                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400">
                     <option value="" disabled>Select priority</option>
                     @for (p of priorities; track p.value) {
                       <option [value]="p.value">{{ p.label }}</option>
@@ -297,125 +427,158 @@
                   <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 3.5L17 11H4"/></svg>
                   <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
                 </div>
+                @if (priorityError) {
+                  <p class="mt-1 text-xs text-red-500">{{ priorityError }}</p>
+                }
+              </div>
+            </div>
+          }
+
+          @if (activeTab === 1) {
+            <!-- Incident details row -->
+            <div class="grid grid-cols-4 gap-4 mt-4">
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Incident Date &amp; Time <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                  <input
+                    type="datetime-local"
+                    [(ngModel)]="occurredAt" name="occurredAt"
+                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+                </div>
+                @if (occurredAtError) {
+                  <p class="mt-1 text-xs text-red-500">{{ occurredAtError }}</p>
+                }
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Location <span class="text-red-500">*</span></label>
+                <div class="relative mt-1.5">
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.4-6-11a6 6 0 1112 0c0 5.6-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>
+                  <input
+                    type="text"
+                    [(ngModel)]="location" name="location"
+                    placeholder="Select location"
+                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+                </div>
+                @if (locationIncidentError) {
+                  <p class="mt-1 text-xs text-red-500">{{ locationIncidentError }}</p>
+                }
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">People Involved</label>
+                <div class="relative mt-1.5">
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2-5 6-5s6 2 6 5"/><circle cx="18" cy="9" r="2"/></svg>
+                  <input
+                    type="text"
+                    [(ngModel)]="peopleInvolved" name="peopleInvolved"
+                    placeholder="Add people involved"
+                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+                </div>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Severity Score</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  [(ngModel)]="severityScore" name="severityScore"
+                  placeholder="1 - 10"
+                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
               </div>
             </div>
           }
         </section>
 
-        @if (activeTab === 1) {
-          <!-- Incident details row -->
-          <div class="grid grid-cols-3 gap-4 mt-4">
-            <div>
-              <label class="text-sm font-medium text-gray-700">Incident Date &amp; Time <span class="text-red-500">*</span></label>
-              <div class="relative mt-1.5">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                <input
-                  type="text"
-                  [(ngModel)]="incidentDate" name="incidentDate"
-                  placeholder="Select date & time"
-                  class="w-full border border-gray-200 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
-              </div>
-            </div>
-            <div>
-              <label class="text-sm font-medium text-gray-700">Location <span class="text-red-500">*</span></label>
-              <div class="relative mt-1.5">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.4-6-11a6 6 0 1112 0c0 5.6-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>
-                <input
-                  type="text"
-                  [(ngModel)]="location" name="location"
-                  placeholder="Select location"
-                  class="w-full border border-gray-200 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
-              </div>
-            </div>
-            <div>
-              <label class="text-sm font-medium text-gray-700">People Involved</label>
-              <div class="relative mt-1.5">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2-5 6-5s6 2 6 5"/><circle cx="18" cy="9" r="2"/></svg>
-                <input
-                  type="text"
-                  [(ngModel)]="peopleInvolved" name="peopleInvolved"
-                  placeholder="Add people involved"
-                  class="w-full border border-gray-200 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
-              </div>
-            </div>
-          </div>
-        }
-
         <!-- 2. Operational Summary (Handover) -->
         @if (activeTab === 2) {
           <section class="mt-6">
             <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">2.</span> Operational Summary <span class="text-red-500">*</span></h2>
-            <div class="mt-3 border border-gray-200 rounded-xl bg-white overflow-hidden">
-              <div class="flex items-center gap-1 px-3 py-2 border-b border-gray-100 text-gray-500">
-                <button type="button" class="px-2 py-1 rounded text-sm font-medium hover:bg-gray-50">Normal
+            <div class="mt-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-white/[0.03] overflow-hidden">
+              <div class="flex items-center gap-1 px-3 py-2 border-b border-gray-100 dark:border-gray-800 text-gray-500 dark:text-gray-400">
+                <button type="button" class="px-2 py-1 rounded text-sm font-medium hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800">Normal
                   <svg class="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
                 </button>
                 <div class="w-px h-5 bg-gray-200 mx-1"></div>
-                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50 font-bold text-[13px]">B</button>
-                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50 italic text-[13px]">I</button>
-                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50 underline text-[13px]">U</button>
+                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800 font-bold text-[13px]">B</button>
+                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800 italic text-[13px]">I</button>
+                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800 underline text-[13px]">U</button>
                 <div class="w-px h-5 bg-gray-200 mx-1"></div>
-                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
-                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.07 0l1.93-1.93a5 5 0 00-7.07-7.07L10.5 5.5"/><path d="M14 11a5 5 0 00-7.07 0l-1.93 1.93a5 5 0 007.07 7.07L13.5 18.5"/></svg></button>
+                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
+                <button type="button" class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.07 0l1.93-1.93a5 5 0 00-7.07-7.07L10.5 5.5"/><path d="M14 11a5 5 0 00-7.07 0l-1.93 1.93a5 5 0 007.07 7.07L13.5 18.5"/></svg></button>
               </div>
               <textarea
                 rows="4"
                 [(ngModel)]="operationalSummary" (ngModelChange)="onOperationalSummaryInput($event)" name="operationalSummary"
                 class="w-full px-4 py-3.5 text-sm outline-none resize-none placeholder:text-gray-400"
                 placeholder="Summarise the shift operations in detail..."></textarea>
-              <div class="flex justify-end px-4 py-3 border-t border-gray-100">
+              <div class="flex justify-end px-4 py-3 border-t border-gray-100 dark:border-t-gray-800 dark:border-gray-800">
                 <span class="text-[11px] text-gray-400">{{ operationalSummaryLength }} / 5000</span>
               </div>
             </div>
+            @if (operationalSummaryError) {
+              <p class="mt-1 text-xs text-red-500">{{ operationalSummaryError }}</p>
+            }
           </section>
 
           <!-- 3-5. Outstanding Issues / Actions / Important Information -->
           <div class="grid grid-cols-3 gap-4 mt-6">
             <section>
               <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">3.</span> Outstanding Issues</h2>
-              <div class="mt-3 border border-gray-200 rounded-xl bg-white p-4">
+              <div class="mt-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-white/[0.03] p-4">
                 <textarea
                   rows="6"
                   [(ngModel)]="outstandingIssues" name="outstandingIssues"
                   class="w-full text-sm outline-none resize-none placeholder:text-gray-400"
                   placeholder="Note any outstanding issues..."></textarea>
               </div>
+              @if (outstandingIssuesError) {
+                <p class="mt-1 text-xs text-red-500">{{ outstandingIssuesError }}</p>
+              }
             </section>
             <section>
               <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">4.</span> Outstanding Actions / Tasks</h2>
-              <div class="mt-3 border border-gray-200 rounded-xl bg-white p-4">
+              <div class="mt-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-white/[0.03] p-4">
                 <textarea
                   rows="6"
                   [(ngModel)]="outstandingActions" name="outstandingActions"
                   class="w-full text-sm outline-none resize-none placeholder:text-gray-400"
                   placeholder="List actions or tasks to follow up..."></textarea>
               </div>
+              @if (outstandingActionsError) {
+                <p class="mt-1 text-xs text-red-500">{{ outstandingActionsError }}</p>
+              }
             </section>
             <section>
               <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">5.</span> Important Information</h2>
-              <div class="mt-3 border border-gray-200 rounded-xl bg-white p-4">
+              <div class="mt-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-white/[0.03] p-4">
                 <textarea
                   rows="6"
                   [(ngModel)]="importantInfo" name="importantInfo"
                   class="w-full text-sm outline-none resize-none placeholder:text-gray-400"
                   placeholder="Any other important information..."></textarea>
               </div>
+              @if (importantInfoError) {
+                <p class="mt-1 text-xs text-red-500">{{ importantInfoError }}</p>
+              }
             </section>
           </div>
         } @else if (activeTab === 0 || activeTab === 3) {
           <!-- 2. Description (Basic / Follow-Up) -->
           <section>
             <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">2.</span> Description <span class="text-red-500">*</span></h2>
-            <div class="mt-3 border border-gray-200 rounded-xl bg-white overflow-hidden">
+            <div class="mt-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-white/[0.03] overflow-hidden">
               <textarea
                 rows="6"
                 [(ngModel)]="description" (ngModelChange)="onDescriptionInput($event)" name="description"
                 class="w-full px-4 py-3.5 text-sm outline-none resize-none placeholder:text-gray-400"
                 placeholder="Describe the occurrence in detail..."></textarea>
-              <div class="flex justify-end px-4 py-3 border-t border-gray-100">
+              <div class="flex justify-end px-4 py-3 border-t border-gray-100 dark:border-t-gray-800 dark:border-gray-800">
                 <span class="text-[11px] text-gray-400">{{ descriptionLength }} / {{ maxChars }}</span>
               </div>
             </div>
+            @if (descriptionError) {
+              <p class="mt-1 text-xs text-red-500">{{ descriptionError }}</p>
+            }
           </section>
         }
 
@@ -423,32 +586,38 @@
           <!-- 2. Description of Incident -->
           <section class="mt-6">
             <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">2.</span> Description of Incident <span class="text-red-500">*</span></h2>
-            <div class="mt-3 border border-gray-200 rounded-xl bg-white overflow-hidden">
+            <div class="mt-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-white/[0.03] overflow-hidden">
               <textarea
                 rows="6"
                 [(ngModel)]="incidentDescription" (ngModelChange)="onDescriptionInput($event)" name="incidentDescription"
                 class="w-full px-4 py-3.5 text-sm outline-none resize-none placeholder:text-gray-400"
                 placeholder="Provide a detailed description of the incident..."></textarea>
-              <div class="flex justify-end px-4 py-3 border-t border-gray-100">
-                <span class="text-[11px] text-gray-400">{{ descriptionLength }} / 5000</span>
+                <div class="flex justify-end px-4 py-3 border-t border-gray-100 dark:border-t-gray-800 dark:border-gray-800">
+                  <span class="text-[11px] text-gray-400">{{ descriptionLength }} / 5000</span>
+                </div>
               </div>
-            </div>
-          </section>
+              @if (incidentDescriptionError) {
+                <p class="mt-1 text-xs text-red-500">{{ incidentDescriptionError }}</p>
+              }
+            </section>
 
-          <!-- 3. Immediate Actions Taken -->
-          <section class="mt-6">
-            <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">3.</span> Immediate Actions Taken <span class="text-red-500">*</span></h2>
-            <div class="mt-3 border border-gray-200 rounded-xl bg-white overflow-hidden">
-              <textarea
-                rows="5"
-                [(ngModel)]="immediateActionsTaken" name="immediateActionsTaken"
-                class="w-full px-4 py-3.5 text-sm outline-none resize-none placeholder:text-gray-400"
-                placeholder="Describe the immediate actions taken..."></textarea>
-              <div class="flex justify-end px-4 py-3 border-t border-gray-100">
-                <span class="text-[11px] text-gray-400">{{ immediateActionsTaken.length }} / 2000</span>
+            <!-- 3. Immediate Actions Taken -->
+            <section class="mt-6">
+              <h2 class="text-[15px] font-bold flex items-center gap-2"><span class="text-gray-400 font-semibold">3.</span> Immediate Actions Taken <span class="text-red-500">*</span></h2>
+              <div class="mt-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-white/[0.03] overflow-hidden">
+                <textarea
+                  rows="5"
+                  [(ngModel)]="immediateActionsTaken" name="immediateActionsTaken"
+                  class="w-full px-4 py-3.5 text-sm outline-none resize-none placeholder:text-gray-400"
+                  placeholder="Describe the immediate actions taken..."></textarea>
+                <div class="flex justify-end px-4 py-3 border-t border-gray-100 dark:border-t-gray-800 dark:border-gray-800">
+                  <span class="text-[11px] text-gray-400">{{ immediateActionsTaken.length }} / 2000</span>
+                </div>
               </div>
-            </div>
-          </section>
+              @if (immediateActionsError) {
+                <p class="mt-1 text-xs text-red-500">{{ immediateActionsError }}</p>
+              }
+            </section>
         }
 
         <!-- 3/4. Attachments -->
@@ -457,28 +626,28 @@
             <span class="text-gray-400 font-semibold">{{ activeTab === 1 ? '4.' : '3.' }}</span>
             Attachments <span class="text-gray-400 font-medium">(Optional)</span>
           </h2>
-          <div class="mt-3 border border-gray-200 rounded-xl bg-white p-4">
+          <div class="mt-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-white/[0.03] p-4">
             <div class="grid grid-cols-3 gap-4">
               <!-- Documents -->
               <div class="flex flex-col">
                 <div class="flex items-center justify-between mb-3">
-                  <h3 class="text-sm font-semibold text-gray-800">Documents</h3>
+                  <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Documents</h3>
                   <span class="text-[11px] text-gray-400">{{ pdfFiles.length }} / {{ maxFilesPerType }}</span>
                 </div>
                 @if (pdfFiles.length === 0) {
-                  <button (click)="pdfInput.click()" class="text-left w-full border border-gray-200 rounded-xl p-4 hover:border-gray-300 hover:bg-gray-50">
+                  <button (click)="pdfInput.click()" class="text-left w-full border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-gray-300 dark:hover:border-gray-700 dark:border-gray-700 hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800">
                     <div class="w-11 h-11 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center">
                       <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
                     </div>
                     <div class="mt-3 text-sm font-semibold text-indigo-600">Upload File</div>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Attach PDF, Word, Excel, or other documents</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Attach PDF, Word, Excel, or other documents</p>
                     <p class="text-[11px] text-gray-400 mt-2">Max size: 100MB per file</p>
                   </button>
                 } @else {
                   <div class="space-y-3">
                     @for (item of pdfFiles; track $index) {
-                      <div class="relative border border-gray-200 rounded-xl p-3 bg-gray-50">
-                        <button (click)="removeFile('pdf', $index)" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-red-500 hover:border-red-200">
+                      <div class="relative border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-900/50">
+                        <button (click)="removeFile('pdf', $index)" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-red-500 hover:border-red-200">
                           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                         </button>
                         <div class="flex items-center gap-3 pr-6">
@@ -486,14 +655,14 @@
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
                           </div>
                           <div class="min-w-0">
-                            <div class="text-xs font-medium text-gray-800 truncate">{{ item.file.name }}</div>
+                            <div class="text-xs font-medium text-gray-800 dark:text-white/90 truncate">{{ item.file.name }}</div>
                             <div class="text-[11px] text-gray-400">{{ formatFileSize(item.file.size) }}</div>
                           </div>
                         </div>
                       </div>
                     }
                     @if (pdfFiles.length < maxFilesPerType) {
-                      <button (click)="pdfInput.click()" class="flex items-center justify-center gap-2 w-full border border-dashed border-gray-300 rounded-xl p-3 text-xs font-medium text-gray-500 hover:border-gray-400 hover:text-gray-700">
+                      <button (click)="pdfInput.click()" class="flex items-center justify-center gap-2 w-full border border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-3 text-xs font-medium text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                         Add another file
                       </button>
@@ -505,34 +674,34 @@
               <!-- Photos -->
               <div class="flex flex-col">
                 <div class="flex items-center justify-between mb-3">
-                  <h3 class="text-sm font-semibold text-gray-800">Photos</h3>
+                  <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Photos</h3>
                   <span class="text-[11px] text-gray-400">{{ imageFiles.length }} / {{ maxFilesPerType }}</span>
                 </div>
                 @if (imageFiles.length === 0) {
-                  <button (click)="photoInput.click()" class="text-left w-full border border-gray-200 rounded-xl p-4 hover:border-gray-300 hover:bg-gray-50">
+                  <button (click)="photoInput.click()" class="text-left w-full border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-gray-300 dark:hover:border-gray-700 dark:border-gray-700 hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800">
                     <div class="w-11 h-11 rounded-full bg-green-50 text-green-500 flex items-center justify-center">
                       <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                     </div>
                     <div class="mt-3 text-sm font-semibold text-green-600">Upload Photo</div>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Attach photos in PNG, JPEG, or JPG format</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Attach photos in PNG, JPEG, or JPG format</p>
                     <p class="text-[11px] text-gray-400 mt-2">Max size: 100MB per file</p>
                   </button>
                 } @else {
                   <div class="space-y-3">
                     @for (item of imageFiles; track $index) {
-                      <div class="relative border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
-                        <button (click)="removeFile('image', $index)" class="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-red-500 hover:border-red-200">
+                      <div class="relative border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900/50">
+                        <button (click)="removeFile('image', $index)" class="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-red-500 hover:border-red-200">
                           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                         </button>
                         <img [src]="item.previewUrl" [alt]="item.file.name" class="w-full h-28 object-cover">
                         <div class="px-3 py-2">
-                          <div class="text-xs font-medium text-gray-800 truncate">{{ item.file.name }}</div>
+                          <div class="text-xs font-medium text-gray-800 dark:text-white/90 truncate">{{ item.file.name }}</div>
                           <div class="text-[11px] text-gray-400">{{ formatFileSize(item.file.size) }}</div>
                         </div>
                       </div>
                     }
                     @if (imageFiles.length < maxFilesPerType) {
-                      <button (click)="photoInput.click()" class="flex items-center justify-center gap-2 w-full border border-dashed border-gray-300 rounded-xl p-3 text-xs font-medium text-gray-500 hover:border-gray-400 hover:text-gray-700">
+                      <button (click)="photoInput.click()" class="flex items-center justify-center gap-2 w-full border border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-3 text-xs font-medium text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                         Add another file
                       </button>
@@ -544,23 +713,23 @@
               <!-- Audio -->
               <div class="flex flex-col">
                 <div class="flex items-center justify-between mb-3">
-                  <h3 class="text-sm font-semibold text-gray-800">Audio</h3>
+                  <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Audio</h3>
                   <span class="text-[11px] text-gray-400">{{ audioFiles.length }} / {{ maxFilesPerType }}</span>
                 </div>
                 @if (audioFiles.length === 0) {
-                  <button (click)="audioInput.click()" class="text-left w-full border border-gray-200 rounded-xl p-4 hover:border-gray-300 hover:bg-gray-50">
+                  <button (click)="audioInput.click()" class="text-left w-full border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-gray-300 dark:hover:border-gray-700 dark:border-gray-700 hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800">
                     <div class="w-11 h-11 rounded-full bg-violet-50 text-violet-500 flex items-center justify-center">
                       <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0"/><path d="M12 17v5M9 22h6"/></svg>
                     </div>
                     <div class="mt-3 text-sm font-semibold text-violet-600">Record Audio</div>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Record and attach audio note</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Record and attach audio note</p>
                     <p class="text-[11px] text-gray-400 mt-2">Max duration: 10 minutes</p>
                   </button>
                 } @else {
                   <div class="space-y-3">
                     @for (item of audioFiles; track $index) {
-                      <div class="relative border border-gray-200 rounded-xl p-3 bg-gray-50">
-                        <button (click)="removeFile('audio', $index)" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-red-500 hover:border-red-200">
+                      <div class="relative border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-900/50">
+                        <button (click)="removeFile('audio', $index)" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-red-500 hover:border-red-200">
                           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                         </button>
                         <div class="flex items-center gap-3 pr-6">
@@ -568,7 +737,7 @@
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0"/><path d="M12 17v5M9 22h6"/></svg>
                           </div>
                           <div class="min-w-0">
-                            <div class="text-xs font-medium text-gray-800 truncate">{{ item.file.name }}</div>
+                            <div class="text-xs font-medium text-gray-800 dark:text-white/90 truncate">{{ item.file.name }}</div>
                             <div class="text-[11px] text-gray-400">{{ formatFileSize(item.file.size) }}</div>
                           </div>
                         </div>
@@ -578,7 +747,7 @@
                       </div>
                     }
                     @if (audioFiles.length < maxFilesPerType) {
-                      <button (click)="audioInput.click()" class="flex items-center justify-center gap-2 w-full border border-dashed border-gray-300 rounded-xl p-3 text-xs font-medium text-gray-500 hover:border-gray-400 hover:text-gray-700">
+                      <button (click)="audioInput.click()" class="flex items-center justify-center gap-2 w-full border border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-3 text-xs font-medium text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                         Add another file
                       </button>
@@ -592,7 +761,7 @@
               <p class="text-xs text-red-500 mt-4">{{ fileError }}</p>
             }
 
-            <div class="border-t border-gray-100 mt-4 pt-3">
+            <div class="border-t border-gray-100 dark:border-t-gray-800 dark:border-gray-800 mt-4 pt-3">
               <p class="text-xs text-gray-400">Supported: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, PNG, JPEG, JPG, MP3, M4A, WAV. Up to 2 files per type, 100MB each.</p>
             </div>
           </div>
@@ -603,13 +772,13 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end gap-3 pt-1 pb-4">
-          <button type="button" (click)="onCancel()" class="border border-gray-200 rounded-lg px-5 py-2.5 text-sm font-semibold bg-white hover:bg-gray-50">Cancel</button>
-          <button type="button" (click)="onSaveDraft()" class="border border-gray-200 rounded-lg px-5 py-2.5 text-sm font-semibold bg-white hover:bg-gray-50">Save Draft</button>
+          <button type="button" (click)="onCancel()" class="border border-gray-200 dark:border-gray-700 rounded-lg px-5 py-2.5 text-sm font-semibold bg-white dark:bg-white/[0.03] hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800">Cancel</button>
+          <button type="button" (click)="onSaveDraft()" class="border border-gray-200 dark:border-gray-700 rounded-lg px-5 py-2.5 text-sm font-semibold bg-white dark:bg-white/[0.03] hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800">Save Draft</button>
           <button
             type="button"
             (click)="onSubmitEntry()"
             class="bg-gray-900 text-white rounded-lg px-5 py-2.5 text-sm font-semibold hover:bg-gray-800"
-            [disabled]="(activeTab === 0 && (!title || !categoryId || !priority)) || (activeTab === 1 && (!incidentTitle || !incidentType || !priority)) || (activeTab === 2 && (!handoverTitle || !priority)) || isSubmitting || isLoadingEntry">
+            [disabled]="(activeTab === 0 && (!title || !categoryId || !priority || !description)) || (activeTab === 1 && (!incidentTitle || !incidentTypeId || !priority || !occurredAt || !location || !incidentDescription || !immediateActionsTaken)) || (activeTab === 2 && (!handoverTitle || !handoverTypeId || !handoverDateTime || !handoverFrom || !handoverTo || !priority || !operationalSummary || !outstandingIssues || !outstandingActions || !importantInfo)) || (activeTab === 3 && (!followUpTitle || !priority || !description)) || isSubmitting || isLoadingEntry">
             {{ isSubmitting ? (editMode ? 'Updating...' : 'Submitting...') : (editMode ? 'Update Entry' : 'Submit Entry') }}
           </button>
         </div>
@@ -617,8 +786,8 @@
 
       <!-- AI Generation Panel (docks from the right and squeezes content, like the follow-up section) -->
       @if (aiDrawerOpen) {
-        <div class="col-span-12 xl:col-span-4">
-          <div class="sticky top-6 max-h-[1000px] overflow-hidden border border-gray-200 rounded-xl bg-white flex flex-col">
+        <div class="col-span-12 xl:col-span-3">
+          <div class="sticky top-6 max-h-[calc(100vh-3rem)] overflow-hidden border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-white/[0.03] flex flex-col">
             <div class="flex-1 overflow-y-auto">
               <div class="p-5">
                 <div class="flex items-center justify-between">
@@ -645,7 +814,7 @@
                   </div>
                 </div>
 
-                <p class="text-[15px] font-semibold text-gray-900 leading-relaxed">
+                <p class="text-[15px] font-semibold text-gray-900 dark:text-white leading-relaxed">
                   Add a description to your entry and I will generate title, category, priority, and description according to the provided details.
                 </p>
                 <p class="text-sm text-indigo-600 font-medium mt-3">This will save you time and you can create a draft using AI.</p>
@@ -691,15 +860,15 @@
                 </div>
 
                 <!-- Chat input -->
-                <div class="mt-5 border border-indigo-200 rounded-xl bg-white p-3">
+                <div class="mt-5 border border-indigo-200 rounded-xl bg-white dark:bg-white/[0.03] p-3">
                   <textarea
                     rows="5"
                     [(ngModel)]="aiPrompt" name="aiPrompt"
                     placeholder="Describe the handover in detail..."
-                    class="w-full resize-none outline-none text-sm text-gray-700 placeholder:text-indigo-400 leading-relaxed"></textarea>
+                    class="w-full resize-none outline-none text-sm text-gray-700 dark:text-gray-300 placeholder:text-indigo-400 leading-relaxed"></textarea>
                   <div class="flex items-center justify-between mt-3">
                     <div></div>
-                    <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50">
+                    <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/[0.03] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800">
                       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0"/><path d="M12 17v5M9 22h6"/></svg>
                     </button>
                   </div>
@@ -719,20 +888,20 @@
                   {{ aiError }}
                 </div>
 
-                <div *ngIf="aiHistory.length > 0" class="border-t border-gray-200 pt-4 mt-4">
+                <div *ngIf="aiHistory.length > 0" class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
                   <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-semibold text-gray-900">Prompt History</h3>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Prompt History</h3>
                     <button (click)="clearAiHistory()" class="text-xs text-red-500 hover:text-red-600">Clear</button>
                   </div>
                   <div class="space-y-3">
-                    <div *ngFor="let item of aiHistory" class="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                      <div class="text-xs text-gray-500 mb-1">
+                    <div *ngFor="let item of aiHistory" class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                      <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
                         {{ item.timestamp | date: 'short' }}
                       </div>
-                      <div class="text-sm text-gray-700 mb-1">
+                      <div class="text-sm text-gray-700 dark:text-gray-300 mb-1">
                         <span class="font-semibold">Prompt:</span> {{ item.prompt }}
                       </div>
-                      <div class="text-sm text-gray-900 line-clamp-3">
+                      <div class="text-sm text-gray-900 dark:text-white line-clamp-3">
                         <span class="font-semibold">Result:</span> {{ item.result }}
                       </div>
                     </div>

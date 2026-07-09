@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { EdobService } from '../../core/services/edob.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AIGenerationService, AIMessage } from '../../core/services/ai-generation.service';
-import { Entry, EntryType, Category } from '../../core/models/edob.models';
+import { Entry, EntryType, Category, IncidentType, HandoverType } from '../../core/models/edob.models';
 
 interface AIHistoryItem {
   prompt: string;
@@ -43,15 +43,24 @@ export class CreateEntryComponent implements OnInit {
     { id: 'followup', label: 'Follow-Up', icon: '✅', entryTypeCode: 'FOLLOW_UP' },
   ];
 
-  // Form fields
+  // Common fields
   title = '';
   categoryId = '';
   priority = '';
   description = '';
   assignedToUserId = '';
   location = '';
+  occurredAt = '';
   descriptionLength = 0;
   maxChars = 5000;
+
+  // Validation errors
+  titleError = '';
+  categoryError = '';
+  priorityError = '';
+  descriptionError = '';
+  occurredAtError = '';
+  locationError = '';
 
   // Per-type attachment state (max 2 each)
   pdfFiles: SelectedFile[] = [];
@@ -61,17 +70,25 @@ export class CreateEntryComponent implements OnInit {
   readonly maxFilesPerType = 2;
   readonly maxFileSize = 100 * 1024 * 1024;
 
+  // Incident fields
   incidentTitle = '';
-  incidentType = '';
+  incidentTypeId = '';
   incidentDate = '';
   incidentTime = '';
   peopleInvolved = '';
   incidentDescription = '';
   immediateActionsTaken = '';
+  severityScore = '';
+  incidentTitleError = '';
+  incidentTypeError = '';
+  incidentDateError = '';
+  locationIncidentError = '';
+  incidentDescriptionError = '';
+  immediateActionsError = '';
 
   // Handover fields
   handoverTitle = '';
-  handoverType = '';
+  handoverTypeId = '';
   handoverDateTime = '';
   handoverFrom = '';
   handoverTo = '';
@@ -81,10 +98,27 @@ export class CreateEntryComponent implements OnInit {
   outstandingIssues = '';
   outstandingActions = '';
   importantInfo = '';
+  handoverTitleError = '';
+  handoverTypeError = '';
+  handoverDateTimeError = '';
+  handoverFromError = '';
+  handoverToError = '';
+  operationalSummaryError = '';
+  outstandingIssuesError = '';
+  outstandingActionsError = '';
+  importantInfoError = '';
+
+  // Follow-Up fields
+  followUpTitle = '';
+  parentEntryId = '';
+  followUpTitleError = '';
+  parentEntryIdError = '';
 
   // API-loaded data
   entryTypes: EntryType[] = [];
   categories: Category[] = [];
+  incidentTypes: IncidentType[] = [];
+  handoverTypes: HandoverType[] = [];
   isLoadingData = false;
 
   showCreateCategoryForm = false;
@@ -129,7 +163,7 @@ export class CreateEntryComponent implements OnInit {
     if (!orgId) return;
 
     this.isLoadingData = true;
-    this.edobService.listCategories(orgId).subscribe({
+    const sub = this.edobService.listCategories(orgId).subscribe({
       next: (cats) => {
         const raw = cats as any;
         let list: Category[] = [];
@@ -147,6 +181,28 @@ export class CreateEntryComponent implements OnInit {
         console.error('Failed to load categories', err);
         this.isLoadingData = false;
       },
+    });
+
+    this.edobService.listIncidentTypes(orgId).subscribe({
+      next: (types) => {
+        const raw = types as any;
+        let list: IncidentType[] = [];
+        if (Array.isArray(raw)) list = raw;
+        else if (raw && typeof raw === 'object') list = raw.data ?? raw.incidentTypes ?? raw.content ?? raw.items ?? [];
+        this.incidentTypes = list.filter((t: IncidentType) => t.active);
+      },
+      error: (err) => console.error('Failed to load incident types', err),
+    });
+
+    this.edobService.listHandoverTypes(orgId).subscribe({
+      next: (types) => {
+        const raw = types as any;
+        let list: HandoverType[] = [];
+        if (Array.isArray(raw)) list = raw;
+        else if (raw && typeof raw === 'object') list = raw.data ?? raw.handoverTypes ?? raw.content ?? raw.items ?? [];
+        this.handoverTypes = list.filter((t: HandoverType) => t.active);
+      },
+      error: (err) => console.error('Failed to load handover types', err),
     });
   }
 
@@ -172,30 +228,35 @@ export class CreateEntryComponent implements OnInit {
     this.activeTab = typeIndexMap[entry.entryTypeCode] ?? 0;
     this.title = entry.title || '';
     this.incidentTitle = entry.title || '';
+    this.handoverTitle = entry.title || '';
+    this.followUpTitle = entry.title || '';
     this.categoryId = entry.categoryId || '';
     this.priority = entry.priority || '';
     this.description = entry.description || '';
     this.incidentDescription = entry.description || '';
     this.assignedToUserId = entry.assignedToUserId || '';
+    this.occurredAt = entry.occurredAt ? entry.occurredAt.replace('Z', '').slice(0, 16) : '';
 
     const data = entry.data || {};
     this.location = data['location'] || '';
-    this.incidentType = data['incidentType'] || '';
+    this.incidentTypeId = entry.incidentTypeId || '';
+    this.handoverTypeId = entry.handoverTypeId || '';
+    this.peopleInvolved = Array.isArray(data['peopleInvolved']) ? data['peopleInvolved'].join(', ') : (data['peopleInvolved'] || '');
+    this.immediateActionsTaken = data['immediateActionsTaken'] || '';
+    this.severityScore = data['severityScore'] != null ? String(data['severityScore']) : '';
     this.incidentDate = data['incidentDate'] || '';
     this.incidentTime = data['incidentTime'] || '';
-    this.peopleInvolved = data['peopleInvolved'] || '';
-    this.immediateActionsTaken = data['immediateActionsTaken'] || '';
-    this.handoverType = data['handoverType'] || '';
-    this.handoverDateTime = data['shiftDateTime'] || '';
+    this.handoverDateTime = data['shiftDateTime'] || data['handoverDateTime'] || '';
     this.handoverFrom = data['handoverFrom'] || '';
     this.handoverTo = data['handoverTo'] || '';
     this.handoverLocation = data['handoverLocation'] || '';
-    this.outstandingIssues = data['outstandingIssues'] || '';
+    this.outstandingIssues = Array.isArray(data['outstandingIssues']) ? data['outstandingIssues'].join('\n') : (data['outstandingIssues'] || '');
     this.outstandingActions = data['outstandingActions'] || '';
     this.importantInfo = data['importantInformation'] || '';
-    this.operationalSummary = entry.description || '';
+    this.operationalSummary = data['operationalSummary'] || entry.description || '';
     this.operationalSummaryLength = this.operationalSummary.length;
-    this.descriptionLength = this.description.length;
+    this.descriptionLength = (this.description || '').length;
+    this.parentEntryId = data['parentEntryId'] || '';
   }
 
   private getOrgId(): string | null {
@@ -210,7 +271,111 @@ export class CreateEntryComponent implements OnInit {
     this.activeTab = index;
     this.showCreateCategoryForm = false;
     this.categoryCreateError = '';
+    this.clearErrors();
   }
+
+  private clearErrors(): void {
+    this.titleError = '';
+    this.categoryError = '';
+    this.priorityError = '';
+    this.descriptionError = '';
+    this.occurredAtError = '';
+    this.locationError = '';
+    this.incidentTitleError = '';
+    this.incidentTypeError = '';
+    this.incidentDateError = '';
+    this.locationIncidentError = '';
+    this.incidentDescriptionError = '';
+    this.immediateActionsError = '';
+    this.handoverTitleError = '';
+    this.handoverTypeError = '';
+    this.handoverDateTimeError = '';
+    this.handoverFromError = '';
+    this.handoverToError = '';
+    this.operationalSummaryError = '';
+    this.outstandingIssuesError = '';
+    this.outstandingActionsError = '';
+    this.importantInfoError = '';
+    this.followUpTitleError = '';
+    this.parentEntryIdError = '';
+  }
+
+  // ==================== Validations ====================
+
+  private validateBasic(): boolean {
+    this.clearErrors();
+    let valid = true;
+
+    if (!this.title.trim()) { this.titleError = 'Title is required'; valid = false; }
+    if (!this.categoryId) { this.categoryError = 'Category is required'; valid = false; }
+    if (!this.priority) { this.priorityError = 'Priority is required'; valid = false; }
+    if (!this.description.trim()) { this.descriptionError = 'Description is required'; valid = false; }
+    if (this.description.length > this.maxChars) { this.descriptionError = `Description must be under ${this.maxChars} characters`; valid = false; }
+
+    return valid;
+  }
+
+  private validateIncident(): boolean {
+    this.clearErrors();
+    let valid = true;
+
+    if (!this.incidentTitle.trim()) { this.incidentTitleError = 'Incident title is required'; valid = false; }
+    if (!this.incidentTypeId) { this.incidentTypeError = 'Incident type is required'; valid = false; }
+    if (!this.priority) { this.priorityError = 'Priority is required'; valid = false; }
+    if (!this.occurredAt) { this.occurredAtError = 'Date and time are required'; valid = false; }
+    if (!this.location.trim()) { this.locationIncidentError = 'Location is required'; valid = false; }
+    if (!this.incidentDescription.trim()) { this.incidentDescriptionError = 'Description is required'; valid = false; }
+    if (!this.immediateActionsTaken.trim()) { this.immediateActionsError = 'Immediate actions taken are required'; valid = false; }
+
+    if (this.severityScore && (Number(this.severityScore) < 1 || Number(this.severityScore) > 10)) {
+      this.immediateActionsError = 'Severity score must be between 1 and 10';
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  private validateHandover(): boolean {
+    this.clearErrors();
+    let valid = true;
+
+    if (!this.handoverTitle.trim()) { this.handoverTitleError = 'Handover title is required'; valid = false; }
+    if (!this.handoverTypeId) { this.handoverTypeError = 'Handover type is required'; valid = false; }
+    if (!this.handoverDateTime) { this.handoverDateTimeError = 'Date and time are required'; valid = false; }
+    if (!this.handoverFrom.trim()) { this.handoverFromError = 'Handover from is required'; valid = false; }
+    if (!this.handoverTo.trim()) { this.handoverToError = 'Handover to is required'; valid = false; }
+    if (!this.priority) { this.priorityError = 'Priority is required'; valid = false; }
+    if (!this.operationalSummary.trim()) { this.operationalSummaryError = 'Operational summary is required'; valid = false; }
+    if (this.operationalSummary.length > 5000) { this.operationalSummaryError = 'Operational summary must be under 5000 characters'; valid = false; }
+    if (!this.outstandingIssues.trim()) { this.outstandingIssuesError = 'Outstanding issues are required'; valid = false; }
+    if (!this.outstandingActions.trim()) { this.outstandingActionsError = 'Outstanding actions are required'; valid = false; }
+    if (!this.importantInfo.trim()) { this.importantInfoError = 'Important information is required'; valid = false; }
+
+    return valid;
+  }
+
+  private validateFollowUp(): boolean {
+    this.clearErrors();
+    let valid = true;
+
+    if (!this.followUpTitle.trim()) { this.followUpTitleError = 'Title is required'; valid = false; }
+    if (!this.priority) { this.priorityError = 'Priority is required'; valid = false; }
+    if (!this.description.trim()) { this.descriptionError = 'Description is required'; valid = false; }
+
+    return valid;
+  }
+
+  private validateForm(): boolean {
+    switch (this.tabs[this.activeTab].entryTypeCode) {
+      case 'BASIC': return this.validateBasic();
+      case 'INCIDENT': return this.validateIncident();
+      case 'HANDOVER': return this.validateHandover();
+      case 'FOLLOW_UP': return this.validateFollowUp();
+      default: return this.validateBasic();
+    }
+  }
+
+  // ==================== Description handlers ====================
 
   onDescriptionInput(value: string): void {
     this.description = value;
@@ -221,6 +386,8 @@ export class CreateEntryComponent implements OnInit {
     this.operationalSummary = value;
     this.operationalSummaryLength = value.length;
   }
+
+  // ==================== File handlers ====================
 
   onFileSelected(event: Event, type: AttachmentType): void {
     const input = event.target as HTMLInputElement;
@@ -308,6 +475,8 @@ export class CreateEntryComponent implements OnInit {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
+  // ==================== Cancel / Category ====================
+
   onCancel(): void {
     this.title = '';
     this.categoryId = '';
@@ -315,19 +484,21 @@ export class CreateEntryComponent implements OnInit {
     this.description = '';
     this.assignedToUserId = '';
     this.location = '';
+    this.occurredAt = '';
     this.descriptionLength = 0;
     this.clearFiles();
     this.fileError = '';
     this.errorMessage = '';
     this.incidentTitle = '';
-    this.incidentType = '';
+    this.incidentTypeId = '';
     this.incidentDate = '';
     this.incidentTime = '';
     this.peopleInvolved = '';
     this.incidentDescription = '';
     this.immediateActionsTaken = '';
+    this.severityScore = '';
     this.handoverTitle = '';
-    this.handoverType = '';
+    this.handoverTypeId = '';
     this.handoverDateTime = '';
     this.handoverFrom = '';
     this.handoverTo = '';
@@ -337,9 +508,12 @@ export class CreateEntryComponent implements OnInit {
     this.outstandingIssues = '';
     this.outstandingActions = '';
     this.importantInfo = '';
+    this.followUpTitle = '';
+    this.parentEntryId = '';
     this.showCreateCategoryForm = false;
     this.newCategoryName = '';
     this.categoryCreateError = '';
+    this.clearErrors();
   }
 
   onCategoryChange(value: string): void {
@@ -383,11 +557,10 @@ export class CreateEntryComponent implements OnInit {
     });
   }
 
+  // ==================== Save / Submit ====================
+
   onSaveDraft(): void {
-    const hasBasic = this.title && this.categoryId && this.priority;
-    const hasIncident = this.incidentTitle && this.incidentType && this.priority;
-    const hasHandover = this.handoverTitle && this.priority;
-    if (!hasBasic && !hasIncident && !hasHandover) return;
+    if (!this.validateForm()) return;
     this.isSavingDraft = true;
     this.errorMessage = '';
 
@@ -396,10 +569,7 @@ export class CreateEntryComponent implements OnInit {
   }
 
   onSubmitEntry(): void {
-    const hasBasic = this.title && this.categoryId && this.priority;
-    const hasIncident = this.incidentTitle && this.incidentType && this.priority;
-    const hasHandover = this.handoverTitle && this.priority;
-    if (!hasBasic && !hasIncident && !hasHandover) return;
+    if (!this.validateForm()) return;
     this.isSubmitting = true;
     this.errorMessage = '';
 
@@ -434,38 +604,61 @@ export class CreateEntryComponent implements OnInit {
     }
   }
 
+  // ==================== Payload builder ====================
+
   private buildFormData(): FormData {
     const entryPayload: any = {
       entryTypeCode: this.tabs[this.activeTab].entryTypeCode,
       priority: this.priority,
-      title: this.title,
-      description: this.description,
     };
 
-    if (this.categoryId) entryPayload['categoryId'] = this.categoryId;
-    if (this.assignedToUserId) entryPayload['assignedToUserId'] = this.assignedToUserId;
+    if (this.tabs[this.activeTab].entryTypeCode === 'BASIC') {
+      entryPayload.title = this.title;
+      entryPayload.description = this.description;
+      if (this.categoryId) entryPayload.categoryId = this.categoryId;
+      if (this.assignedToUserId) entryPayload.assignedToUserId = this.assignedToUserId;
+    } else if (this.tabs[this.activeTab].entryTypeCode === 'INCIDENT') {
+      entryPayload.title = this.incidentTitle;
+      entryPayload.description = this.incidentDescription;
+      if (this.categoryId) entryPayload.categoryId = this.categoryId;
+      if (this.assignedToUserId) entryPayload.assignedToUserId = this.assignedToUserId;
+      if (this.occurredAt) entryPayload.occurredAt = new Date(this.occurredAt).toISOString();
+      entryPayload.incidentTypeId = this.incidentTypeId;
+      if (this.location) entryPayload.location = this.location;
 
-    if (this.tabs[this.activeTab].entryTypeCode === 'INCIDENT') {
-      if (this.incidentTitle) entryPayload['title'] = this.incidentTitle;
-      if (this.incidentType) entryPayload['data'] = { ...(entryPayload['data'] || {}), incidentType: this.incidentType };
-      if (this.incidentDate) entryPayload['data'] = { ...(entryPayload['data'] || {}), incidentDate: this.incidentDate };
-      if (this.incidentTime) entryPayload['data'] = { ...(entryPayload['data'] || {}), incidentTime: this.incidentTime };
-      if (this.peopleInvolved) entryPayload['data'] = { ...(entryPayload['data'] || {}), peopleInvolved: this.peopleInvolved };
-      if (this.incidentDescription) entryPayload['description'] = this.incidentDescription;
-      if (this.immediateActionsTaken) entryPayload['data'] = { ...(entryPayload['data'] || {}), immediateActionsTaken: this.immediateActionsTaken };
+      const data: any = {};
+      const peopleArr = this.peopleInvolved.split(',').map(s => s.trim()).filter(Boolean);
+      if (peopleArr.length) data['peopleInvolved'] = peopleArr;
+      if (this.immediateActionsTaken) data['immediateActionsTaken'] = this.immediateActionsTaken;
+      if (this.severityScore) data['severityScore'] = Number(this.severityScore);
+      entryPayload.data = data;
     } else if (this.tabs[this.activeTab].entryTypeCode === 'HANDOVER') {
-      if (this.handoverTitle) entryPayload['title'] = this.handoverTitle;
-      if (this.operationalSummary) entryPayload['description'] = this.operationalSummary;
-      const data: Record<string, any> = {};
-      if (this.handoverType) data['handoverType'] = this.handoverType;
-      if (this.handoverDateTime) data['shiftDateTime'] = this.handoverDateTime;
+      entryPayload.title = this.handoverTitle;
+      entryPayload.description = this.operationalSummary;
+      if (this.categoryId) entryPayload.categoryId = this.categoryId;
+      if (this.assignedToUserId) entryPayload.assignedToUserId = this.assignedToUserId;
+      if (this.occurredAt) entryPayload.occurredAt = new Date(this.handoverDateTime).toISOString();
+      entryPayload.handoverTypeId = this.handoverTypeId;
+
+      const data: any = {};
       if (this.handoverFrom) data['handoverFrom'] = this.handoverFrom;
       if (this.handoverTo) data['handoverTo'] = this.handoverTo;
       if (this.handoverLocation) data['handoverLocation'] = this.handoverLocation;
-      if (this.outstandingIssues) data['outstandingIssues'] = this.outstandingIssues;
-      if (this.outstandingActions) data['outstandingActions'] = this.outstandingActions;
+      const issuesArr = this.outstandingIssues.split('\n').map(s => s.trim()).filter(Boolean);
+      if (issuesArr.length) data['outstandingIssues'] = issuesArr;
+      data['outstandingActions'] = this.parseOutstandingActions(this.outstandingActions);
       if (this.importantInfo) data['importantInformation'] = this.importantInfo;
-      entryPayload['data'] = data;
+      entryPayload.data = data;
+    } else if (this.tabs[this.activeTab].entryTypeCode === 'FOLLOW_UP') {
+      entryPayload.title = this.followUpTitle;
+      entryPayload.description = this.description;
+      if (this.categoryId) entryPayload.categoryId = this.categoryId;
+      if (this.assignedToUserId) entryPayload.assignedToUserId = this.assignedToUserId;
+      if (this.occurredAt) entryPayload.occurredAt = new Date(this.occurredAt).toISOString();
+
+      const data: any = {};
+      if (this.parentEntryId) data['parentEntryId'] = this.parentEntryId;
+      entryPayload.data = data;
     }
 
     const formData = new FormData();
@@ -477,6 +670,16 @@ export class CreateEntryComponent implements OnInit {
 
     return formData;
   }
+
+  private parseOutstandingActions(raw: string): any[] {
+    if (!raw.trim()) return [];
+    return raw.split('\n')
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => ({ task: line, done: false }));
+  }
+
+  // ==================== AI Generation ====================
 
   toggleAiDrawer(): void {
     this.aiDrawerOpen = !this.aiDrawerOpen;
@@ -494,7 +697,9 @@ export class CreateEntryComponent implements OnInit {
     const categoryNames = this.categories.map(c => c.name);
     const priorityValues = this.priorities.map(p => p.value);
 
-    this.aiService.generateEntry(this.aiPrompt, history, categoryNames, priorityValues).subscribe({
+    const entryTypeCode = this.tabs[this.activeTab].entryTypeCode as 'BASIC' | 'INCIDENT' | 'HANDOVER' | 'FOLLOW_UP';
+
+    this.aiService.generateEntry(this.aiPrompt, history, categoryNames, priorityValues, entryTypeCode).subscribe({
       next: (res) => {
         const text = res?.content || '';
         this.aiHistory.unshift({
@@ -524,31 +729,64 @@ export class CreateEntryComponent implements OnInit {
 
     if (parsed.title) {
       this.title = parsed.title;
+      this.incidentTitle = parsed.title;
+      this.handoverTitle = parsed.title;
+      this.followUpTitle = parsed.title;
     }
     if (parsed.description) {
       this.description = parsed.description;
       this.descriptionLength = parsed.description.length;
+      this.incidentDescription = parsed.description;
+      this.operationalSummary = parsed.description;
+      this.operationalSummaryLength = parsed.description.length;
     }
     if (parsed.priority) {
       const upper = String(parsed.priority).toUpperCase();
       const valid = this.priorities.find(p => p.value === upper);
-      if (valid) {
-        this.priority = valid.value;
-      }
+      if (valid) this.priority = valid.value;
     }
     if (parsed.category) {
       const match = this.categories.find(c => c.name.toLowerCase() === String(parsed.category).toLowerCase());
-      if (match) {
-        this.categoryId = match.id;
+      if (match) this.categoryId = match.id;
+    }
+    if (parsed.incidentType) {
+      const match = this.incidentTypes.find(t => t.name.toLowerCase() === String(parsed.incidentType).toLowerCase());
+      if (match) this.incidentTypeId = match.id;
+    }
+    if (parsed.handoverType) {
+      const match = this.handoverTypes.find(t => t.name.toLowerCase() === String(parsed.handoverType).toLowerCase());
+      if (match) this.handoverTypeId = match.id;
+    }
+    if (parsed.location) {
+      this.location = parsed.location;
+    }
+    if (parsed.occurredAt) {
+      this.occurredAt = parsed.occurredAt;
+    }
+    if (parsed.peopleInvolved) {
+      this.peopleInvolved = Array.isArray(parsed.peopleInvolved) ? parsed.peopleInvolved.join(', ') : parsed.peopleInvolved;
+    }
+    if (parsed.immediateActionsTaken) {
+      this.immediateActionsTaken = parsed.immediateActionsTaken;
+    }
+    if (parsed.severityScore != null) {
+      this.severityScore = String(parsed.severityScore);
+    }
+    if (parsed.outstandingIssues) {
+      this.outstandingIssues = Array.isArray(parsed.outstandingIssues) ? parsed.outstandingIssues.join('\n') : parsed.outstandingIssues;
+    }
+    if (parsed.outstandingActions) {
+      if (Array.isArray(parsed.outstandingActions)) {
+        this.outstandingActions = parsed.outstandingActions.map((a: any) => a.task || a).join('\n');
+      } else {
+        this.outstandingActions = parsed.outstandingActions;
       }
     }
-
-    if (this.tabs[this.activeTab].entryTypeCode === 'HANDOVER') {
-      if (parsed.title) this.handoverTitle = parsed.title;
-      if (parsed.description) {
-        this.operationalSummary = parsed.description;
-        this.operationalSummaryLength = parsed.description.length;
-      }
+    if (parsed.importantInformation) {
+      this.importantInfo = parsed.importantInformation;
+    }
+    if (parsed.parentEntryId) {
+      this.parentEntryId = parsed.parentEntryId;
     }
   }
 

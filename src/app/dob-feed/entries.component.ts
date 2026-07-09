@@ -235,20 +235,20 @@ export class EntriesComponent implements OnInit {
         }).length;
 
         this.metrics = [
-          { label: 'Total Entries', value: this.formatNumber(total), note: 'All time', tone: 'bg-gray-100 text-gray-900', icon: 'M7 3h10v18H7V3Zm3 5h4M10 12h4M10 16h3' },
-          { label: 'Open Incidents', value: this.formatNumber(openIncidents), note: 'Requires attention', tone: 'bg-error-50 text-error-500', icon: 'M12 4 3.5 19h17L12 4Zm0 5v4M12 16.5h.01' },
-          { label: 'Active Follow-Ups', value: this.formatNumber(activeFollowUps), note: 'In progress', tone: 'bg-warning-50 text-warning-600', icon: 'M19 12a7 7 0 1 1-2-4.9M19 5v5h-5' },
-          { label: 'Pending Handovers', value: this.formatNumber(pendingHandovers), note: 'Awaiting review', tone: 'bg-purple-50 text-purple-600', icon: 'M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M17 8h4M19 6v4' },
-          { label: 'Completed (This Month)', value: this.formatNumber(completedThisMonth), note: 'View all completed', tone: 'bg-success-50 text-success-600', icon: 'M20 6 9 17l-5-5' },
+          { label: 'Total Entries', value: this.formatNumber(total), note: 'All time', tone: 'bg-gray-100 text-gray-900', icon: '<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>' },
+          { label: 'Open Incidents', value: this.formatNumber(openIncidents), note: 'Requires attention', tone: 'bg-error-50 text-error-500', icon: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>' },
+          { label: 'Active Follow-Ups', value: this.formatNumber(activeFollowUps), note: 'In progress', tone: 'bg-warning-50 text-warning-600', icon: '<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>' },
+          { label: 'Pending Handovers', value: this.formatNumber(pendingHandovers), note: 'Awaiting review', tone: 'bg-purple-50 text-purple-600', icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>' },
+          { label: 'Completed (This Month)', value: this.formatNumber(completedThisMonth), note: 'View all completed', tone: 'bg-success-50 text-success-600', icon: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>' },
         ];
       },
       error: () => {
         this.metrics = [
-          { label: 'Total Entries', value: '0', note: 'All time', tone: 'bg-gray-100 text-gray-900', icon: 'M7 3h10v18H7V3Zm3 5h4M10 12h4M10 16h3' },
-          { label: 'Open Incidents', value: '0', note: 'Requires attention', tone: 'bg-error-50 text-error-500', icon: 'M12 4 3.5 19h17L12 4Zm0 5v4M12 16.5h.01' },
-          { label: 'Active Follow-Ups', value: '0', note: 'In progress', tone: 'bg-warning-50 text-warning-600', icon: 'M19 12a7 7 0 1 1-2-4.9M19 5v5h-5' },
-          { label: 'Pending Handovers', value: '0', note: 'Awaiting review', tone: 'bg-purple-50 text-purple-600', icon: 'M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M17 8h4M19 6v4' },
-          { label: 'Completed (This Month)', value: '0', note: 'View all completed', tone: 'bg-success-50 text-success-600', icon: 'M20 6 9 17l-5-5' },
+          { label: 'Total Entries', value: '0', note: 'All time', tone: 'bg-gray-100 text-gray-900', icon: '<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>' },
+          { label: 'Open Incidents', value: '0', note: 'Requires attention', tone: 'bg-error-50 text-error-500', icon: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>' },
+          { label: 'Active Follow-Ups', value: '0', note: 'In progress', tone: 'bg-warning-50 text-warning-600', icon: '<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>' },
+          { label: 'Pending Handovers', value: '0', note: 'Awaiting review', tone: 'bg-purple-50 text-purple-600', icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>' },
+          { label: 'Completed (This Month)', value: '0', note: 'View all completed', tone: 'bg-success-50 text-success-600', icon: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>' },
         ];
       },
     });

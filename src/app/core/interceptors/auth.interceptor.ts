@@ -31,13 +31,14 @@ export class AuthInterceptor implements HttpInterceptor {
 
     const token = this.getAccessToken();
 
-    // Proactively refresh when the access token is missing or about to expire.
     if (!token) {
       return next.handle(req);
     }
 
     const exp = this.decodeExp(token);
-    if (exp !== null && exp - Date.now() < this.REFRESH_THRESHOLD_MS) {
+    const timeToExpiry = exp !== null ? exp - Date.now() : null;
+
+    if (timeToExpiry !== null && timeToExpiry < this.REFRESH_THRESHOLD_MS) {
       return this.refreshAndProceed(req, next);
     }
 
@@ -83,6 +84,7 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     this.isRefreshing = true;
+    console.log('[AuthInterceptor] Refreshing access token...');
     return from(this.authService.refresh({ refreshToken })).pipe(
       switchMap((res: any) => {
         this.isRefreshing = false;
@@ -90,6 +92,7 @@ export class AuthInterceptor implements HttpInterceptor {
         const newRefreshToken = res?.refresh_token;
 
         if (!newToken) {
+          console.error('[AuthInterceptor] Refresh response missing access_token');
           this.flushQueue(null);
           this.clearTokens();
           this.router.navigate(['/signin']);
@@ -100,6 +103,7 @@ export class AuthInterceptor implements HttpInterceptor {
         if (newRefreshToken) {
           this.setRefreshToken(newRefreshToken);
         }
+        console.log('[AuthInterceptor] Token refreshed successfully');
         this.flushQueue(newToken);
         return next.handle(req.clone({ setHeaders: { Authorization: `Bearer ${newToken}` } }));
       }),
@@ -107,6 +111,7 @@ export class AuthInterceptor implements HttpInterceptor {
         this.isRefreshing = false;
         this.flushQueue(null);
         this.clearTokens();
+        console.error('[AuthInterceptor] Token refresh failed', err);
         this.router.navigate(['/signin']);
         return throwError(() => err);
       })
