@@ -3,20 +3,21 @@
   <div class="w-full">
 
     <!-- Header -->
-    <header class="flex items-start justify-between">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight">
-          {{ editMode ? 'Edit Entry' : 'Create Entry' }}
-        </h1>
-        <p class="text-sm text-gray-400 mt-1">Record an observation, activity, note, or occurrence.</p>
-      </div>
     
-    </header>
-
-    <div class="mt-6 grid grid-cols-12 gap-6 items-start">
+    <div class="grid grid-cols-12 gap-6 items-start">
 
       <!-- ================= MAIN COLUMN ================= -->
-      <div class="space-y-6" [ngClass]="aiDrawerOpen ? 'col-span-12 xl:col-span-9' : 'col-span-12'">
+      <div class="space-y-6" [ngClass]="aiDrawerOpen ? 'col-span-12 xl:col-span-8' : 'col-span-12'">
+
+        <header class="flex items-start justify-between">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight">
+              {{ editMode ? 'Edit Entry' : 'Create Entry' }}
+            </h1>
+            <p class="text-sm text-gray-400 mt-1">Record an observation, activity, note, or occurrence.</p>
+          </div>
+        
+        </header>
 
         <!-- Entry type tabs -->
         <div class="grid grid-cols-4 gap-3">
@@ -616,8 +617,8 @@
 
       <!-- AI Generation Panel (docks from the right and squeezes content, like the follow-up section) -->
       @if (aiDrawerOpen) {
-        <div class="col-span-12 xl:col-span-3">
-          <div class="sticky top-6 max-h-[calc(100vh-3rem)] overflow-hidden border border-gray-200 rounded-xl bg-white flex flex-col">
+        <div class="col-span-12 xl:col-span-4">
+          <div class="sticky top-6 max-h-[1000px] overflow-hidden border border-gray-200 rounded-xl bg-white flex flex-col">
             <div class="flex-1 overflow-y-auto">
               <div class="p-5">
                 <div class="flex items-center justify-between">
