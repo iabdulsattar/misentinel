@@ -143,6 +143,45 @@ export class EntryDetailComponent implements OnInit {
     return 'bg-slate-50';
   }
 
+  private attachmentName(att: any): string {
+    return att.filename || att.fileName || 'attachment';
+  }
+
+  viewAttachment(att: any): void {
+    const orgId = this.getOrgId();
+    const entryId = this.entry?.id;
+    if (!orgId || !entryId || !att?.id) return;
+
+    this.edobService.downloadAttachment(orgId, entryId, att.id).subscribe({
+      next: (blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        window.open(objectUrl, '_blank');
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+      },
+      error: () => {}
+    });
+  }
+
+  downloadAttachment(att: any): void {
+    const orgId = this.getOrgId();
+    const entryId = this.entry?.id;
+    if (!orgId || !entryId || !att?.id) return;
+
+    this.edobService.downloadAttachment(orgId, entryId, att.id).subscribe({
+      next: (blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = objectUrl;
+        a.download = this.attachmentName(att);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(objectUrl);
+      },
+      error: () => {}
+    });
+  }
+
   private getOrgId(): string | null {
     const remember = localStorage.getItem('remember_device');
     if (remember === 'true') {

@@ -66,13 +66,17 @@ export class EdobService {
 
   // GET /api/v1/edob/organizations/{orgId}/incident-types
   listIncidentTypes(orgId: string): Observable<IncidentType[]> {
-    return this.api.get<ApiWrapper<IncidentType[]>>(`${this.basePath(orgId)}/incident-types`).pipe(map(res => res.data));
+    return this.api.get<ApiWrapper<IncidentType[]> | IncidentType[]>(`${this.basePath(orgId)}/incident-types`).pipe(
+      map((res: any) => (Array.isArray(res) ? res : (res?.data ?? [])))
+    );
   }
 
   // POST /api/v1/edob/organizations/{orgId}/incident-types
   createIncidentType(orgId: string, payload: CreateIncidentTypeRequest): Observable<IncidentType> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.api.post<IncidentType>(`${this.basePath(orgId)}/incident-types`, payload, headers);
+    return this.api.post<any>(`${this.basePath(orgId)}/incident-types`, payload, headers).pipe(
+      map((res: any) => res?.data ?? res)
+    );
   }
 
   // PUT /api/v1/edob/organizations/{orgId}/incident-types/{incidentTypeId}
@@ -90,7 +94,9 @@ export class EdobService {
 
   // GET /api/v1/edob/organizations/{orgId}/handover-types
   listHandoverTypes(orgId: string): Observable<HandoverType[]> {
-    return this.api.get<ApiWrapper<HandoverType[]>>(`${this.basePath(orgId)}/handover-types`).pipe(map(res => res.data));
+    return this.api.get<ApiWrapper<HandoverType[]> | HandoverType[]>(`${this.basePath(orgId)}/handover-types`).pipe(
+      map((res: any) => (Array.isArray(res) ? res : (res?.data ?? [])))
+    );
   }
 
   // POST /api/v1/edob/organizations/{orgId}/handover-types
@@ -114,7 +120,9 @@ export class EdobService {
 
   // GET /api/v1/edob/organizations/{orgId}/categories
   listCategories(orgId: string): Observable<Category[]> {
-    return this.api.get<ApiWrapper<Category[]>>(`${this.basePath(orgId)}/categories`).pipe(map(res => res.data));
+    return this.api.get<ApiWrapper<Category[]> | Category[]>(`${this.basePath(orgId)}/categories`).pipe(
+      map((res: any) => (Array.isArray(res) ? res : (res?.data ?? [])))
+    );
   }
 
   // POST /api/v1/edob/organizations/{orgId}/categories
@@ -189,7 +197,7 @@ export class EdobService {
 
   // GET /api/v1/edob/organizations/{orgId}/entries/{entryId}/attachments/{attachmentId}/download
   downloadAttachment(orgId: string, entryId: string, attachmentId: string): Observable<Blob> {
-    return this.api.get<Blob>(`${this.basePath(orgId)}/entries/${entryId}/attachments/${attachmentId}/download`);
+    return this.api.getBlob(`${this.basePath(orgId)}/entries/${entryId}/attachments/${attachmentId}/download`);
   }
 
   // DELETE /api/v1/edob/organizations/{orgId}/entries/{entryId}/attachments/{attachmentId}

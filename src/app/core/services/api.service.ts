@@ -26,4 +26,8 @@ export class ApiService {
   delete<T>(path: string, headers?: HttpHeaders): Observable<T> {
     return this.http.delete<T>(`${API_BASE}${path}`, { headers });
   }
+
+  getBlob(path: string, headers?: HttpHeaders): Observable<Blob> {
+    return this.http.get(`${API_BASE}${path}`, { headers, responseType: 'blob' });
+  }
 }

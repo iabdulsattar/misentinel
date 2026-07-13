@@ -282,7 +282,11 @@ export class EntriesComponent implements OnInit {
 
   editEntry(): void {
     if (!this.selectedEntry?.entryId) return;
-    this.router.navigate(['/create-entry'], { queryParams: { id: this.selectedEntry.entryId } });
+    this.router.navigate(['/entries', this.selectedEntry.entryId]);
+  }
+
+  closeSidebar(): void {
+    this.showSidebar = false;
   }
 
   createEntry(): void {

@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { EntryType, OrgUser, EntryStatus, EntryPriority } from '../../../../core/models/edob.models';
 import type { EntriesFilter } from '../../../../dob-feed/entries.component';
 import { SingleSelectComponent, SelectOption } from '../../form/single-select/single-select.component';
+import { DatePickerComponent } from '../../form/date-picker/date-picker.component';
 
 @Component({
   selector: 'app-entries-types',
   standalone: true,
-  imports: [CommonModule, FormsModule, SingleSelectComponent],
+  imports: [CommonModule, SingleSelectComponent, DatePickerComponent],
   templateUrl: './entries-types.component.html',
 })
 export class EntriesTypesComponent {
@@ -22,6 +22,32 @@ export class EntriesTypesComponent {
 
   emit() {
     this.filtersChange.emit({ ...this.filters });
+  }
+
+  get dateRangeValue(): string[] | undefined {
+    if (this.filters.from && this.filters.to) {
+      return [this.filters.from, this.filters.to];
+    }
+    return undefined;
+  }
+
+  onDateRangeChange(event: { selectedDates: Date[] }): void {
+    const dates = event.selectedDates || [];
+    if (dates.length === 2) {
+      this.filters.from = this.toISODate(dates[0]);
+      this.filters.to = this.toISODate(dates[1]);
+    } else {
+      this.filters.from = '';
+      this.filters.to = '';
+    }
+    this.emit();
+  }
+
+  private toISODate(date: Date): string {
+    const y = date.getFullYear();
+    const m = `${date.getMonth() + 1}`.padStart(2, '0');
+    const d = `${date.getDate()}`.padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   onStatusChange(value: string) {

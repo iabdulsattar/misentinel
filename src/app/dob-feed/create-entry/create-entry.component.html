@@ -77,26 +77,18 @@
               </div>
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Category <span class="text-red-500">*</span></label>
-                <div class="relative mt-1.5">
-                  <select
-                    [(ngModel)]="categoryId" name="category"
-                    (ngModelChange)="onCategoryChange($event)"
+                <div class="mt-1.5">
+                  <app-rich-select
+                    [options]="categoryRichOptions"
+                    [value]="categoryId"
                     [disabled]="isLoadingData"
-                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <option value="" disabled>Select category</option>
-                    @if (isLoadingData) {
-                      <option value="" disabled>Loading categories...</option>
-                    } @else if (categories.length === 0) {
-                      <option value="" disabled>No categories available</option>
-                    } @else {
-                      @for (cat of categories; track cat.id) {
-                        <option [value]="cat.id">{{ cat.name }}</option>
-                      }
-                    }
-                    <option value="__create_new__">+ Create new category</option>
-                  </select>
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/><path d="M12 8v4M12 15h.01"/></svg>
-                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    placeholder="Select category"
+                    [showSearch]="true"
+                    [allowAddNew]="!isLoadingData && categories.length > 0"
+                    addNewLabel="Add new category"
+                    (valueChange)="onCategoryChange($event)"
+                    (addNew)="onCategoryChange('__create_new__')"
+                  />
                 </div>
                 @if (categoryError) {
                   <p class="mt-1 text-xs text-red-500">{{ categoryError }}</p>
@@ -124,21 +116,17 @@
               </div>
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority <span class="text-red-500">*</span></label>
-                <div class="relative mt-1.5">
-                  <select
-                    [(ngModel)]="priority" name="priority"
-                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400">
-                    <option value="" disabled>Select priority</option>
-                    @for (p of priorities; track p.value) {
-                      <option [value]="p.value">{{ p.label }}</option>
-                    }
-                  </select>
-                   <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 3.5L17 11H4"/></svg>
-                   <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                 </div>
-                 @if (priorityError) {
-                   <p class="mt-1 text-xs text-red-500">{{ priorityError }}</p>
-                 }
+                <div class="mt-1.5">
+                  <app-rich-select
+                    [options]="priorityRichOptions"
+                    [value]="priority"
+                    placeholder="Select priority"
+                    (valueChange)="priority = $event"
+                  />
+                </div>
+                @if (priorityError) {
+                  <p class="mt-1 text-xs text-red-500">{{ priorityError }}</p>
+                }
                </div>
              </div>
            } @else if (activeTab === 1) {
@@ -157,42 +145,55 @@
               </div>
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Incident Type <span class="text-red-500">*</span></label>
-                <div class="relative mt-1.5">
-                  <select
-                    [(ngModel)]="incidentTypeId" name="incidentTypeId"
+                <div class="mt-1.5">
+                  <app-rich-select
+                    [options]="incidentTypeOptions"
+                    [value]="incidentTypeId"
                     [disabled]="isLoadingData"
-                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <option value="" disabled>Select incident type</option>
-                    @if (isLoadingData) {
-                      <option value="" disabled>Loading types...</option>
-                    } @else if (incidentTypes.length === 0) {
-                      <option value="" disabled>No types available</option>
-                    } @else {
-                      @for (t of incidentTypes; track t.id) {
-                        <option [value]="t.id">{{ t.name }}</option>
-                      }
-                    }
-                  </select>
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>
-                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    placeholder="Select incident type"
+                    [allowAddNew]="!isLoadingData"
+                    addNewLabel="Add new incident type"
+                    (valueChange)="onIncidentTypeChange($event)"
+                    (addNew)="onIncidentTypeChange('__create_new__')"
+                  />
+                  @if (!isLoadingData) {
+                    <button type="button" (click)="onIncidentTypeChange('__create_new__')" class="mt-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+                      + Create new incident type
+                    </button>
+                  }
                 </div>
+                @if (showCreateIncidentTypeForm) {
+                  <div class="mt-2 flex gap-2">
+                    <input
+                      type="text"
+                      [(ngModel)]="newIncidentTypeName" name="newIncidentTypeName"
+                      placeholder="New incident type name"
+                      class="flex-1 h-10 rounded-lg border border-gray-200 dark:border-gray-700 px-3 text-sm focus:outline-none focus:border-indigo-500">
+                    <button
+                      type="button"
+                      (click)="createNewIncidentType()"
+                      [disabled]="isCreatingIncidentType"
+                      class="h-10 px-4 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
+                      {{ isCreatingIncidentType ? 'Saving...' : 'Save' }}
+                    </button>
+                  </div>
+                  @if (incidentTypeCreateError) {
+                    <p class="mt-1 text-xs text-red-500">{{ incidentTypeCreateError }}</p>
+                  }
+                }
                 @if (incidentTypeError) {
                   <p class="mt-1 text-xs text-red-500">{{ incidentTypeError }}</p>
                 }
               </div>
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority <span class="text-red-500">*</span></label>
-                <div class="relative mt-1.5">
-                  <select
-                    [(ngModel)]="priority" name="priority"
-                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400">
-                    <option value="" disabled>Select priority</option>
-                    @for (p of priorities; track p.value) {
-                      <option [value]="p.value">{{ p.label }}</option>
-                    }
-                  </select>
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 3.5L17 11H4"/></svg>
-                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                <div class="mt-1.5">
+                  <app-rich-select
+                    [options]="priorityRichOptions"
+                    [value]="priority"
+                    placeholder="Select priority"
+                    (valueChange)="priority = $event"
+                  />
                 </div>
                 @if (priorityError) {
                   <p class="mt-1 text-xs text-red-500">{{ priorityError }}</p>
@@ -206,12 +207,12 @@
             <div class="grid grid-cols-4 gap-4 mt-4">
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Incident Date &amp; Time <span class="text-red-500">*</span></label>
-                <div class="relative mt-1.5">
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                  <input
-                    type="datetime-local"
-                    [(ngModel)]="occurredAt" name="occurredAt"
-                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+                <div class="mt-1.5">
+                  <app-datetime-picker
+                    [value]="occurredAt"
+                    placeholder="Select date & time"
+                    (valueChange)="occurredAt = $event"
+                  />
                 </div>
                 @if (occurredAtError) {
                   <p class="mt-1 text-xs text-red-500">{{ occurredAtError }}</p>
@@ -273,37 +274,54 @@
               </div>
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Handover Type <span class="text-red-500">*</span></label>
-                <div class="relative mt-1.5">
-                  <select
-                    [(ngModel)]="handoverTypeId" name="handoverTypeId"
+                <div class="mt-1.5">
+                  <app-rich-select
+                    [options]="handoverTypeOptions"
+                    [value]="handoverTypeId"
                     [disabled]="isLoadingData"
-                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <option value="" disabled>Select type</option>
-                    @if (isLoadingData) {
-                      <option value="" disabled>Loading types...</option>
-                    } @else if (handoverTypes.length === 0) {
-                      <option value="" disabled>No types available</option>
-                    } @else {
-                      @for (t of handoverTypes; track t.id) {
-                        <option [value]="t.id">{{ t.name }}</option>
-                      }
-                    }
-                  </select>
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/></svg>
-                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    placeholder="Select type"
+                    [allowAddNew]="!isLoadingData"
+                    addNewLabel="Add new handover type"
+                    (valueChange)="onHandoverTypeChange($event)"
+                    (addNew)="onHandoverTypeChange('__create_new__')"
+                  />
+                  @if (!isLoadingData) {
+                    <button type="button" (click)="onHandoverTypeChange('__create_new__')" class="mt-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+                      + Create new handover type
+                    </button>
+                  }
                 </div>
+                @if (showCreateHandoverTypeForm) {
+                  <div class="mt-2 flex gap-2">
+                    <input
+                      type="text"
+                      [(ngModel)]="newHandoverTypeName" name="newHandoverTypeName"
+                      placeholder="New handover type name"
+                      class="flex-1 h-10 rounded-lg border border-gray-200 dark:border-gray-700 px-3 text-sm focus:outline-none focus:border-indigo-500">
+                    <button
+                      type="button"
+                      (click)="createNewHandoverType()"
+                      [disabled]="isCreatingHandoverType"
+                      class="h-10 px-4 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
+                      {{ isCreatingHandoverType ? 'Saving...' : 'Save' }}
+                    </button>
+                  </div>
+                  @if (handoverTypeCreateError) {
+                    <p class="mt-1 text-xs text-red-500">{{ handoverTypeCreateError }}</p>
+                  }
+                }
                 @if (handoverTypeError) {
                   <p class="mt-1 text-xs text-red-500">{{ handoverTypeError }}</p>
                 }
               </div>
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Date &amp; Time <span class="text-red-500">*</span></label>
-                <div class="relative mt-1.5">
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                  <input
-                    type="datetime-local"
-                    [(ngModel)]="handoverDateTime" name="handoverDateTime"
-                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 outline-none focus:border-gray-400">
+                <div class="mt-1.5">
+                  <app-datetime-picker
+                    [value]="handoverDateTime"
+                    placeholder="Select date & time"
+                    (valueChange)="handoverDateTime = $event"
+                  />
                 </div>
                 @if (handoverDateTimeError) {
                   <p class="mt-1 text-xs text-red-500">{{ handoverDateTimeError }}</p>
@@ -392,17 +410,13 @@
               </div>
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority <span class="text-red-500">*</span></label>
-                <div class="relative mt-1.5">
-                  <select
-                    [(ngModel)]="priority" name="priority"
-                    class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400">
-                    <option value="" disabled>Select priority</option>
-                    @for (p of priorities; track p.value) {
-                      <option [value]="p.value">{{ p.label }}</option>
-                    }
-                  </select>
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 3.5L17 11H4"/></svg>
-                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                <div class="mt-1.5">
+                  <app-rich-select
+                    [options]="priorityRichOptions"
+                    [value]="priority"
+                    placeholder="Select priority"
+                    (valueChange)="priority = $event"
+                  />
                 </div>
                 @if (priorityError) {
                   <p class="mt-1 text-xs text-red-500">{{ priorityError }}</p>
@@ -410,6 +424,63 @@
               </div>
             </div>
           </section>
+        } @else if (activeTab === 3) {
+          <!-- Follow-Up: Title / Category / Priority / Parent -->
+          <div class="grid grid-cols-3 gap-4 mt-3">
+            <div>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Title <span class="text-red-500">*</span></label>
+              <input
+                [(ngModel)]="followUpTitle" name="followUpTitle"
+                class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+                placeholder="Enter a concise title">
+              @if (followUpTitleError) {
+                <p class="mt-1 text-xs text-red-500">{{ followUpTitleError }}</p>
+              }
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Category <span class="text-red-500">*</span></label>
+              <div class="mt-1.5">
+                <app-rich-select
+                  [options]="categoryRichOptions"
+                  [value]="categoryId"
+                  [disabled]="isLoadingData"
+                  placeholder="Select category"
+                  [showSearch]="true"
+                  [allowAddNew]="!isLoadingData && categories.length > 0"
+                  addNewLabel="Add new category"
+                  (valueChange)="onCategoryChange($event)"
+                  (addNew)="onCategoryChange('__create_new__')"
+                />
+              </div>
+              @if (categoryError) {
+                <p class="mt-1 text-xs text-red-500">{{ categoryError }}</p>
+              }
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority <span class="text-red-500">*</span></label>
+              <div class="mt-1.5">
+                <app-rich-select
+                  [options]="priorityRichOptions"
+                  [value]="priority"
+                  placeholder="Select priority"
+                  (valueChange)="priority = $event"
+                />
+              </div>
+              @if (priorityError) {
+                <p class="mt-1 text-xs text-red-500">{{ priorityError }}</p>
+              }
+            </div>
+          </div>
+          <div class="mt-4">
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Parent Entry</label>
+            <input
+              [(ngModel)]="parentEntryId" name="parentEntryId"
+              class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
+              placeholder="Parent entry ID">
+            @if (parentEntryIdError) {
+              <p class="mt-1 text-xs text-red-500">{{ parentEntryIdError }}</p>
+            }
+          </div>
         }
 
         <!-- 2. Operational Summary (Handover) -->

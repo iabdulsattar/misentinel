@@ -9,43 +9,38 @@
           Here's what's happening with your operations today.
         </p>
       </div>
-
-      
-      
-     
     </div>
 
-    <!-- <div class="grid grid-cols-1 gap-7 2xl:grid-cols-[1fr_300px]"> -->
-    <div class="grid grid-cols-12 gap-4 ">  
-      <div class="col-span-12 xl:col-span-9 "> 
+    <div class="grid grid-cols-12 gap-4">
+      <div class="col-span-12 xl:col-span-9">
       <main class="space-y-8">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           @for (entry of quickEntries; track entry.title) {
-            <button class="group flex min-h-[112px] items-center gap-5 rounded-lg border border-gray-200 bg-white p-6 text-left shadow-theme-xs transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-brand-800">
-              <span class="flex size-11 shrink-0 items-center justify-center rounded-md text-gray-950 transition group-hover:bg-gray-50 group-hover:text-brand-600 dark:text-white dark:group-hover:bg-white/5">
-                <span [innerHTML]="entry.icon"></span>
-              </span>
-              <span>
-                <span class="block text-sm font-semibold text-gray-950 dark:text-white">{{ entry.title }}</span>
-                <span class="mt-1 block text-sm leading-5 text-gray-500 dark:text-gray-400">{{ entry.description }}</span>
-              </span>
-            </button>
+            <a [routerLink]="['/create-entry']" [queryParams]="{ tab: entry.tab }" class="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left transition hover:border-slate-300 dark:border-gray-800 dark:bg-white/[0.03]">
+              <div class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                <span [innerHTML]="entry.icon | safeHtml" class="text-slate-700 dark:text-gray-200"></span>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ entry.title }}</p>
+                <p class="mt-1 text-xs text-slate-400 dark:text-gray-400">{{ entry.description }}</p>
+              </div>
+            </a>
           }
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           @for (metric of metrics; track metric.label) {
-            <article class="rounded-lg border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-              <div class="flex items-center gap-5">
-                <div class="flex size-11 items-center justify-center rounded-lg" [ngClass]="metric.iconWrap">
-                  <span [innerHTML]="metric.icon"></span>
-                </div>
-                <div>
-                  <div class="text-2xl font-semibold leading-none text-gray-950 dark:text-white">{{ metric.value }}</div>
-                  <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ metric.label }}</p>
+            <article class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+              <div class="flex items-center gap-3">
+                <div class="flex size-10 items-center justify-center rounded-lg" [ngClass]="metric.iconWrap">
+                  <span [innerHTML]="metric.icon | safeHtml"></span>
                 </div>
               </div>
-              <p class="mt-5 text-xs font-medium" [ngClass]="metric.positive ? 'text-success-600' : 'text-error-500'">
+              <div>
+                <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ metric.value }}</p>
+                <p class="text-xs text-slate-400 dark:text-gray-400">{{ metric.label }}</p>
+              </div>
+              <p class="text-xs font-semibold" [ngClass]="metric.positive ? 'text-green-600' : 'text-red-500'">
                 {{ metric.change }}
               </p>
             </article>
@@ -130,7 +125,7 @@
           <div class="space-y-5">
             @for (type of activeTypes; track type.name) {
               <div class="grid grid-cols-[24px_1fr_82px_22px] items-center gap-3 text-sm">
-                <span class="text-gray-900 dark:text-white" [innerHTML]="type.icon"></span>
+                <span class="text-gray-900 dark:text-white" [innerHTML]="type.icon | safeHtml"></span>
                 <span class="font-medium text-gray-700 dark:text-gray-300">{{ type.name }}</span>
                 <span class="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
                   <span class="block h-full rounded-full" [ngClass]="type.barClass" [style.width.%]="type.percent"></span>

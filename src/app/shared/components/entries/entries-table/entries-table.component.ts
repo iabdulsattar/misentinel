@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import { BadgeComponent } from '../../ui/badge/badge.component';
 import { AvatarTextComponent } from '../../ui/avatar/avatar-text.component';
 import { CheckboxComponent } from '../../form/input/checkbox.component';
@@ -34,7 +33,6 @@ export interface TableEntry {
     CheckboxComponent,
     ButtonComponent,
     FormsModule,
-    RouterModule,
   ],
   templateUrl: './entries-table.component.html',
 })

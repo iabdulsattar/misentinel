@@ -6,6 +6,8 @@ import { EdobService } from '../../core/services/edob.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AIGenerationService, AIMessage } from '../../core/services/ai-generation.service';
 import { Entry, EntryType, Category, IncidentType, HandoverType } from '../../core/models/edob.models';
+import { DateTimePickerComponent } from '../../shared/components/form/datetime-picker/datetime-picker.component';
+import { RichSelectComponent, RichSelectOption } from '../../shared/components/form/rich-select/rich-select.component';
 
 interface AIHistoryItem {
   prompt: string;
@@ -27,7 +29,7 @@ type AttachmentType = 'pdf' | 'image' | 'audio';
 @Component({
   selector: 'app-create-entry',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, DateTimePickerComponent, RichSelectComponent],
   templateUrl: './create-entry.component.html',
 })
 export class CreateEntryComponent implements OnInit {
@@ -130,6 +132,16 @@ export class CreateEntryComponent implements OnInit {
   isCreatingCategory = false;
   categoryCreateError = '';
 
+  showCreateIncidentTypeForm = false;
+  newIncidentTypeName = '';
+  isCreatingIncidentType = false;
+  incidentTypeCreateError = '';
+
+  showCreateHandoverTypeForm = false;
+  newHandoverTypeName = '';
+  isCreatingHandoverType = false;
+  handoverTypeCreateError = '';
+
   priorities = [
     { value: 'LOW', label: 'Low' },
     { value: 'NORMAL', label: 'Normal' },
@@ -137,6 +149,61 @@ export class CreateEntryComponent implements OnInit {
     { value: 'HIGH', label: 'High' },
     { value: 'CRITICAL', label: 'Critical' },
   ];
+
+  private readonly SHIELD_ICON = '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>';
+  private readonly OPS_ICON = '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path>';
+  private readonly MAINT_ICON = '<path d="M14.7 6.3a4 4 0 1 0-5.4 5.4L2 19l3 3 7.3-7.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2z"></path>';
+  private readonly ENV_ICON = '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 11 13.09 12 11"></path>';
+  private readonly FLAG_ICON = '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line>';
+
+  private buildSvg(path: string, color: string, size = 16): string {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+  }
+
+  private categoryIcon(name: string): { path: string; color: string; bg: string } {
+    const n = (name || '').toLowerCase();
+    if (n.includes('security')) return { path: this.SHIELD_ICON, color: '#2563eb', bg: '#eff6ff' };
+    if (n.includes('safety')) return { path: this.SHIELD_ICON, color: '#16a34a', bg: '#f0fdf4' };
+    if (n.includes('op')) return { path: this.OPS_ICON, color: '#ea580c', bg: '#fff7ed' };
+    if (n.includes('maintenance')) return { path: this.MAINT_ICON, color: '#9333ea', bg: '#faf5ff' };
+    if (n.includes('env')) return { path: this.ENV_ICON, color: '#059669', bg: '#ecfdf5' };
+    return { path: this.SHIELD_ICON, color: '#2563eb', bg: '#eff6ff' };
+  }
+
+  get categoryRichOptions(): RichSelectOption[] {
+    return this.categories.map((c) => {
+      const icon = this.categoryIcon(c.name);
+      return {
+        value: c.id,
+        label: c.name,
+        iconSvg: this.buildSvg(icon.path, icon.color),
+        iconBg: icon.bg,
+      } as RichSelectOption;
+    });
+  }
+
+  get priorityRichOptions(): RichSelectOption[] {
+    const colors: Record<string, string> = {
+      CRITICAL: '#dc2626',
+      HIGH: '#ef4444',
+      MEDIUM: '#f59e0b',
+      NORMAL: '#3b82f6',
+      LOW: '#9ca3af',
+    };
+    return this.priorities.map((p) => ({
+      value: p.value,
+      label: p.label,
+      iconSvg: this.buildSvg(this.FLAG_ICON, colors[p.value] || '#9ca3af'),
+    }));
+  }
+
+  get incidentTypeOptions() {
+    return this.incidentTypes.map((t) => ({ value: t.id, label: t.name }));
+  }
+
+  get handoverTypeOptions() {
+    return this.handoverTypes.map((t) => ({ value: t.id, label: t.name }));
+  }
 
   // AI drawer state
   aiDrawerOpen = false;
@@ -153,12 +220,25 @@ export class CreateEntryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const entryId = this.route.snapshot.queryParamMap.get('id');
-    if (entryId) {
-      this.editMode = true;
-      this.editEntryId = entryId;
-      this.loadEntryForEdit(entryId);
-    }
+    this.route.queryParams.subscribe(params => {
+      const entryId = params['id'];
+      if (entryId) {
+        if (!this.editMode || this.editEntryId !== entryId) {
+          this.editMode = true;
+          this.editEntryId = entryId;
+          this.loadEntryForEdit(entryId);
+        }
+      } else if (this.editMode) {
+        this.editMode = false;
+        this.editEntryId = null;
+        this.onCancel();
+      }
+      const tab = params['tab'];
+      if (tab) {
+        const map: Record<string, number> = { basic: 0, incident: 1, handover: 2, followup: 3 };
+        this.activeTab = map[tab] ?? 0;
+      }
+    });
     this.loadFormData();
   }
 
@@ -567,6 +647,12 @@ export class CreateEntryComponent implements OnInit {
     this.showCreateCategoryForm = false;
     this.newCategoryName = '';
     this.categoryCreateError = '';
+    this.showCreateIncidentTypeForm = false;
+    this.newIncidentTypeName = '';
+    this.incidentTypeCreateError = '';
+    this.showCreateHandoverTypeForm = false;
+    this.newHandoverTypeName = '';
+    this.handoverTypeCreateError = '';
     this.clearErrors();
   }
 
@@ -607,6 +693,88 @@ export class CreateEntryComponent implements OnInit {
       error: (err) => {
         this.categoryCreateError = err?.error?.message || 'Failed to create category.';
         this.isCreatingCategory = false;
+      }
+    });
+  }
+
+  onIncidentTypeChange(value: string): void {
+    if (value === '__create_new__') {
+      this.incidentTypeId = '';
+      this.showCreateIncidentTypeForm = true;
+    } else {
+      this.incidentTypeId = value;
+      this.showCreateIncidentTypeForm = false;
+    }
+    this.incidentTypeCreateError = '';
+  }
+
+  createNewIncidentType(): void {
+    const name = this.newIncidentTypeName.trim();
+    if (!name) return;
+
+    this.isCreatingIncidentType = true;
+    this.incidentTypeCreateError = '';
+
+    const orgId = this.getOrgId();
+    if (!orgId) {
+      this.incidentTypeCreateError = 'Organization not found.';
+      this.isCreatingIncidentType = false;
+      return;
+    }
+
+    const code = name.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '') || 'INCIDENT_TYPE';
+    this.edobService.createIncidentType(orgId, { code, name, active: true }).subscribe({
+      next: (t) => {
+        this.incidentTypes = [...this.incidentTypes, t];
+        this.incidentTypeId = t.id;
+        this.newIncidentTypeName = '';
+        this.showCreateIncidentTypeForm = false;
+        this.isCreatingIncidentType = false;
+      },
+      error: (err) => {
+        this.incidentTypeCreateError = err?.error?.message || 'Failed to create incident type.';
+        this.isCreatingIncidentType = false;
+      }
+    });
+  }
+
+  onHandoverTypeChange(value: string): void {
+    if (value === '__create_new__') {
+      this.handoverTypeId = '';
+      this.showCreateHandoverTypeForm = true;
+    } else {
+      this.handoverTypeId = value;
+      this.showCreateHandoverTypeForm = false;
+    }
+    this.handoverTypeCreateError = '';
+  }
+
+  createNewHandoverType(): void {
+    const name = this.newHandoverTypeName.trim();
+    if (!name) return;
+
+    this.isCreatingHandoverType = true;
+    this.handoverTypeCreateError = '';
+
+    const orgId = this.getOrgId();
+    if (!orgId) {
+      this.handoverTypeCreateError = 'Organization not found.';
+      this.isCreatingHandoverType = false;
+      return;
+    }
+
+    const code = name.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '') || 'HANDOVER_TYPE';
+    this.edobService.createHandoverType(orgId, { code, name, active: true }).subscribe({
+      next: (t) => {
+        this.handoverTypes = [...this.handoverTypes, t];
+        this.handoverTypeId = t.id;
+        this.newHandoverTypeName = '';
+        this.showCreateHandoverTypeForm = false;
+        this.isCreatingHandoverType = false;
+      },
+      error: (err) => {
+        this.handoverTypeCreateError = err?.error?.message || 'Failed to create handover type.';
+        this.isCreatingHandoverType = false;
       }
     });
   }
