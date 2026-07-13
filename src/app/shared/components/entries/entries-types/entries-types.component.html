@@ -47,9 +47,9 @@
         <input
           type="date"
           class="calendar w-full rounded-lg border border-gray-300 bg-white pl-9 pr-2 py-2 text-theme-xs text-gray-700 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-          [ngModel]="filters.from"
-          (ngModelChange)="filters.from = $event; emit()"
-          (click)="$event.stopPropagation(); ($event.target as HTMLInputElement).showPicker?.()"
+          [value]="filters.from"
+          (input)="onFromInput($event)"
+          (click)="openPicker($event)"
         />
       </div>
 
@@ -58,8 +58,9 @@
         <input
           type="date"
           class="calendar w-full rounded-lg border border-gray-300 bg-white pl-9 pr-2 py-2 text-theme-xs text-gray-700 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-          [ngModel]="filters.to"
-          (ngModelChange)="filters.to = $event; emit()"
+          [value]="filters.to"
+          (input)="onToInput($event)"
+          (click)="openPicker($event)"
         />
       </div>
     </div>

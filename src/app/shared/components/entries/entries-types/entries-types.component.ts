@@ -3,12 +3,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { EntryType, OrgUser, EntryStatus, EntryPriority } from '../../../../core/models/edob.models';
 import type { EntriesFilter } from '../../../../dob-feed/entries.component';
 import { SingleSelectComponent, SelectOption } from '../../form/single-select/single-select.component';
-import { DatePickerComponent } from '../../form/date-picker/date-picker.component';
 
 @Component({
   selector: 'app-entries-types',
   standalone: true,
-  imports: [CommonModule, SingleSelectComponent, DatePickerComponent],
+  imports: [CommonModule, SingleSelectComponent],
   templateUrl: './entries-types.component.html',
 })
 export class EntriesTypesComponent {
@@ -22,6 +21,22 @@ export class EntriesTypesComponent {
 
   emit() {
     this.filtersChange.emit({ ...this.filters });
+  }
+
+  onFromInput(event: Event) {
+    this.filters.from = (event.target as HTMLInputElement).value;
+    this.emit();
+  }
+
+  onToInput(event: Event) {
+    this.filters.to = (event.target as HTMLInputElement).value;
+    this.emit();
+  }
+
+  openPicker(event: Event) {
+    event.stopPropagation();
+    const input = event.target as HTMLInputElement & { showPicker?: () => void };
+    input.showPicker?.();
   }
 
   get dateRangeValue(): string[] | undefined {

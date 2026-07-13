@@ -1,88 +1,155 @@
+import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { API_BASE } from '../config';
+import { map } from 'rxjs/operators';
+import { ApiService } from './api.service';
+import { AuthService } from './auth.service';
+import {
+  ServiceUser,
+  UserStats,
+  ListUsersParams,
+  CreateUserRequest,
+  UpdateUserRequest,
+  DeactivateUserRequest,
+  UserInvitation,
+  InvitationPreview,
+  AcceptUserInvitationRequest,
+} from '../models/user.models';
 
+/**
+ * user-service endpoints (Postman collection folder 13).
+ *
+ * Admin endpoints are JWT-authenticated and scoped to
+ * `/api/v1/users/organizations/{orgId}/...`.
+ * Public endpoints (invitation preview / accept) require no JWT and live
+ * under `/api/v1/invitations/...`.
+ *
+ * Responses come back as the standard `{ success, code, message, data, meta }`
+ * envelope; every method unwraps and returns the `data` payload.
+ */
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  constructor(private http: HttpClient) {}
+  constructor(private api: ApiService, private auth: AuthService) {}
 
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('access_token_saas') || sessionStorage.getItem('access_token_saas');
-    return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
+  // ---- header helpers ----
+  private authHeaders(extra?: Record<string, string>): HttpHeaders {
+    const token = this.auth.getAccessToken();
+    return new HttpHeaders({
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(extra ?? {}),
+    });
   }
 
-  private getJsonHeaders(): HttpHeaders {
-    return this.getHeaders().set('Content-Type', 'application/json');
+  private jsonHeaders(extra?: Record<string, string>): HttpHeaders {
+    return this.authHeaders({ 'Content-Type': 'application/json', ...(extra ?? {}) });
   }
 
-  listUsers(orgId: string, options: { q?: string; status?: string; page?: number; size?: number } = {}): Observable<any> {
+  /** Unwrap the standard API envelope, tolerating already-unwrapped payloads. */
+  private unwrap<T>() {
+    return map((res: any): T =>
+      res && typeof res === 'object' && 'data' in res ? (res.data as T) : (res as T),
+    );
+  }
+
+  private base(orgId: string): string {
+    return `/api/v1/users/organizations/${orgId}`;
+  }
+
+  // ==================== Users ====================
+
+  // 13.1 GET /api/v1/users/organizations/{orgId}/users
+  listUsers(orgId: string, options: ListUsersParams = {}): Observable<any> {
     let params = new HttpParams();
     if (options.q) params = params.set('q', options.q);
     if (options.status) params = params.set('status', options.status);
     if (options.page != null) params = params.set('page', String(options.page));
     if (options.size != null) params = params.set('size', String(options.size));
 
-    return this.http.get<any>(`${API_BASE}/api/v1/users/organizations/${orgId}/users`, {
-      headers: this.getHeaders(),
-      params,
-    });
+    const query = params.toString();
+    const path = `${this.base(orgId)}/users${query ? `?${query}` : ''}`;
+    // Returned as-is (envelope) so callers keep access to pagination `meta`.
+    return this.api.get<any>(path, this.authHeaders());
   }
 
+  // 13.2 GET /api/v1/users/organizations/{orgId}/users/stats
   getStats(orgId: string): Observable<any> {
-    return this.http.get<any>(`${API_BASE}/api/v1/users/organizations/${orgId}/users/stats`, {
-      headers: this.getHeaders(),
-    });
+    return this.api.get<any>(`${this.base(orgId)}/users/stats`, this.authHeaders());
   }
 
-  getUserDetail(orgId: string, userId: string): Observable<any> {
-    return this.http.get<any>(`${API_BASE}/api/v1/users/organizations/${orgId}/users/${userId}`, {
-      headers: this.getHeaders(),
-    });
+  // 13.3 GET /api/v1/users/organizations/{orgId}/users/{userId}
+  getUserDetail(orgId: string, userId: string): Observable<ServiceUser> {
+    return this.api
+      .get<any>(`${this.base(orgId)}/users/${userId}`, this.authHeaders())
+      .pipe(this.unwrap<ServiceUser>());
   }
 
-  createUser(orgId: string, payload: any): Observable<any> {
-    return this.http.post<any>(`${API_BASE}/api/v1/users/organizations/${orgId}/users`, payload, {
-      headers: this.getJsonHeaders(),
-    });
+  // 13.4 POST /api/v1/users/organizations/{orgId}/users
+  createUser(
+    orgId: string,
+    payload: CreateUserRequest,
+    companyName = 'ABC Security',
+  ): Observable<ServiceUser> {
+    return this.api
+      .post<any>(`${this.base(orgId)}/users`, payload, this.jsonHeaders({ 'X-Company-Name': companyName }))
+      .pipe(this.unwrap<ServiceUser>());
   }
 
-  updateUser(orgId: string, userId: string, payload: any): Observable<any> {
-    return this.http.patch<any>(`${API_BASE}/api/v1/users/organizations/${orgId}/users/${userId}`, payload, {
-      headers: this.getJsonHeaders(),
-    });
+  // 13.5 PATCH /api/v1/users/organizations/{orgId}/users/{userId}
+  updateUser(orgId: string, userId: string, payload: UpdateUserRequest): Observable<ServiceUser> {
+    return this.api
+      .patch<any>(`${this.base(orgId)}/users/${userId}`, payload, this.jsonHeaders())
+      .pipe(this.unwrap<ServiceUser>());
   }
 
-  deactivateUser(orgId: string, userId: string, payload: { reason: string; note?: string } = { reason: 'OTHER', note: '' }): Observable<any> {
-    return this.http.post<any>(`${API_BASE}/api/v1/users/organizations/${orgId}/users/${userId}/deactivate`, payload, {
-      headers: this.getJsonHeaders(),
-    });
+  // 13.6 POST /api/v1/users/organizations/{orgId}/users/{userId}/deactivate
+  deactivateUser(
+    orgId: string,
+    userId: string,
+    payload: DeactivateUserRequest = { reason: 'OTHER', note: '' },
+  ): Observable<ServiceUser> {
+    return this.api
+      .post<any>(`${this.base(orgId)}/users/${userId}/deactivate`, payload, this.jsonHeaders())
+      .pipe(this.unwrap<ServiceUser>());
   }
 
-  reactivateUser(orgId: string, userId: string): Observable<any> {
-    return this.http.post<any>(`${API_BASE}/api/v1/users/organizations/${orgId}/users/${userId}/reactivate`, {}, {
-      headers: this.getJsonHeaders(),
-    });
+  // 13.7 POST /api/v1/users/organizations/{orgId}/users/{userId}/reactivate
+  reactivateUser(orgId: string, userId: string): Observable<ServiceUser> {
+    return this.api
+      .post<any>(`${this.base(orgId)}/users/${userId}/reactivate`, {}, this.jsonHeaders())
+      .pipe(this.unwrap<ServiceUser>());
   }
 
-  sendInvitation(orgId: string, userId: string, companyName = 'ABC Security'): Observable<any> {
-    const headers = this.getJsonHeaders().set('X-Company-Name', companyName);
-    return this.http.post<any>(`${API_BASE}/api/v1/users/organizations/${orgId}/users/${userId}/invitations/send`, {}, { headers });
+  // ==================== Invitations ====================
+
+  // 13.8 POST /api/v1/users/organizations/{orgId}/users/{userId}/invitations/send
+  sendInvitation(orgId: string, userId: string, companyName = 'ABC Security'): Observable<UserInvitation> {
+    return this.api
+      .post<any>(
+        `${this.base(orgId)}/users/${userId}/invitations/send`,
+        {},
+        this.jsonHeaders({ 'X-Company-Name': companyName }),
+      )
+      .pipe(this.unwrap<UserInvitation>());
   }
 
-  revokeInvitation(orgId: string, userInvitationId: string): Observable<any> {
-    return this.http.delete<any>(`${API_BASE}/api/v1/users/organizations/${orgId}/invitations/${userInvitationId}`, {
-      headers: this.getHeaders(),
-    });
+  // 13.9 DELETE /api/v1/users/organizations/{orgId}/invitations/{userInvitationId}
+  revokeInvitation(orgId: string, userInvitationId: string): Observable<void> {
+    return this.api.delete<void>(
+      `${this.base(orgId)}/invitations/${userInvitationId}`,
+      this.authHeaders(),
+    );
   }
 
-  previewInvitation(token: string): Observable<any> {
-    return this.http.get<any>(`${API_BASE}/api/v1/invitations/${token}`);
+  // 13.10 GET /api/v1/invitations/{token}  (public — no JWT)
+  previewInvitation(token: string): Observable<InvitationPreview> {
+    return this.api
+      .get<any>(`/api/v1/invitations/${token}`)
+      .pipe(this.unwrap<InvitationPreview>());
   }
 
-  acceptInvitation(token: string, payload: { password: string }): Observable<any> {
-    return this.http.post<any>(`${API_BASE}/api/v1/invitations/${token}/accept`, payload, {
-      headers: this.getJsonHeaders(),
-    });
+  // 13.11 POST /api/v1/invitations/{token}/accept  (public — no JWT)
+  acceptInvitation(token: string, payload: AcceptUserInvitationRequest): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.post<any>(`/api/v1/invitations/${token}/accept`, payload, headers);
   }
 }

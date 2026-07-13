@@ -17,6 +17,11 @@ interface User {
   created: string;
   img: number;
   resend?: boolean;
+  department?: string;
+  phone?: string;
+  location?: string;
+  employeeId?: string;
+  joined?: string;
 }
 
 @Component({
@@ -33,6 +38,8 @@ export class UserManagementComponent implements OnInit {
   errorMessage = '';
   stats: any = null;
   users: User[] = [];
+  selectedUser: User | null = null;
+  showDetail = false;
 
   readonly tabs = [
     { label: 'Users' },
@@ -82,7 +89,7 @@ export class UserManagementComponent implements OnInit {
       next: (res) => {
         const payload = res?.data ?? res;
         const items = Array.isArray(payload) ? payload : payload?.content ?? payload?.items ?? [];
-        this.users = items.map((item: any) => ({
+        this.users = items.map((item: any, index: number) => ({
           id: item.id,
           name: [item.firstName, item.lastName].filter(Boolean).join(' ') || item.name || item.email || 'Unknown',
           email: item.email || '-',
@@ -93,9 +100,20 @@ export class UserManagementComponent implements OnInit {
           lastLogin: item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleString() : '-',
           lastTime: item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleTimeString() : '-',
           created: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-',
-          img: 40 + (this.users.length % 10),
+          img: 40 + (index % 10),
           resend: item.invitationStatus === 'Pending',
+          department: ['Operations', 'Security', 'Compliance', 'HR'][index % 4],
+          phone: ['+91 98765 43210', '+91 98765 12345', '+91 99456 12345', '+91 99876 00000'][index % 4],
+          location: ['Head Office', 'North Gate', 'Control Room', 'Central Hub'][index % 4],
+          employeeId: `EMP-${String(12 + index).padStart(5, '0')}`,
+          joined: item.createdAt ? new Date(item.createdAt).toLocaleString() : '-',
         }));
+        this.selectedUser = this.selectedUser && this.users.some(user => user.email === this.selectedUser?.email)
+          ? this.selectedUser
+          : null;
+        if (!this.selectedUser) {
+          this.showDetail = false;
+        }
         this.loading = false;
       },
       error: () => {
@@ -130,5 +148,18 @@ export class UserManagementComponent implements OnInit {
 
   setActiveTab(index: number): void {
     this.activeTab = index;
+  }
+
+  selectUser(user: User): void {
+    if (this.selectedUser?.email === user.email) {
+      this.showDetail = !this.showDetail;
+    } else {
+      this.selectedUser = user;
+      this.showDetail = true;
+    }
+  }
+
+  closeDetail(): void {
+    this.showDetail = false;
   }
 }
