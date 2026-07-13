@@ -1,4 +1,4 @@
-<main class="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-5 lg:py-7" *ngIf="!loading && entry; else loadingTpl">
+<main class="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-5 lg:py-7 dark:text-gray-100 bg-white dark:bg-gray-950" *ngIf="!loading && entry; else loadingTpl">
 
   <!-- Top bar -->
   <div class="flex items-center justify-between mb-6">
@@ -43,15 +43,15 @@
       </div>
 
       <!-- Description -->
-      <div class="bg-white rounded-xl border border-slate-200 p-5 sm:p-6">
-        <h2 class="font-semibold text-slate-900 mb-3">Description</h2>
+<div class="bg-white dark:bg-gray-900 rounded-xl border border-slate-200 dark:border-gray-800 p-5 sm:p-6">
+        <h2 class="font-semibold text-slate-900 dark:text-slate-100 mb-3">Description</h2>
         <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
           {{ entry.description || 'No description provided.' }}
         </p>
       </div>
 
       <!-- Attachments -->
-      <div class="bg-white rounded-xl border border-slate-200 p-5 sm:p-6" *ngIf="entry.attachments && entry.attachments.length > 0">
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-slate-200 dark:border-gray-800 p-5 sm:p-6" *ngIf="entry.attachments && entry.attachments.length > 0">
         <h2 class="font-semibold text-slate-900 mb-4">Attachments ({{ entry.attachments.length }})</h2>
         <div class="divide-y divide-slate-100">
           <div class="flex flex-col sm:flex-row sm:items-center gap-3 py-3.5 first:pt-0" *ngFor="let att of entry.attachments">
@@ -77,8 +77,8 @@
       </div>
 
       <!-- Comments -->
-      <div class="bg-white rounded-xl border border-slate-200 p-5 sm:p-6">
-        <h2 class="font-semibold text-slate-900 mb-4">Comments</h2>
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-slate-200 dark:border-gray-800 p-5 sm:p-6">
+        <h2 class="font-semibold text-slate-900 dark:text-slate-100 mb-4">Comments</h2>
         <div class="space-y-5">
           <div class="flex gap-3" *ngFor="let comment of (entry.data?.['comments'] || [])">
             <img [src]="'https://i.pravatar.cc/40?img=' + (comment.img || 14)" class="w-9 h-9 rounded-full shrink-0" />
@@ -95,8 +95,8 @@
           <p class="text-sm text-slate-400" *ngIf="!entry.data?.['comments'] || entry.data?.['comments']?.length === 0">No comments yet.</p>
         </div>
 
-        <div class="flex items-center gap-3 mt-6 border border-slate-200 rounded-lg px-3 py-2">
-          <input type="text" placeholder="Add comment..." class="flex-1 min-w-0 text-sm outline-none placeholder:text-slate-400" />
+<div class="flex items-center gap-3 mt-6 border border-slate-200 dark:border-gray-800 rounded-lg px-3 py-2">
+          <input type="text" placeholder="Add comment..." class="flex-1 min-w-0 text-sm outline-none placeholder:text-slate-400 bg-transparent dark:text-gray-100" />
           <button class="text-slate-400 hover:text-slate-600 shrink-0"><i class="ti ti-paperclip"></i></button>
           <button class="text-slate-400 hover:text-slate-600 shrink-0"><i class="ti ti-at"></i></button>
           <button class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg shrink-0">Add Comment</button>
@@ -108,8 +108,8 @@
     <!-- Right column -->
     <div class="space-y-6">
 
-      <div class="bg-white rounded-xl border border-slate-200 p-5 sm:p-6">
-        <h2 class="font-semibold text-slate-900 mb-4">Entry Summary</h2>
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-slate-200 dark:border-gray-800 p-5 sm:p-6">
+        <h2 class="font-semibold text-slate-900 dark:text-slate-100 mb-4">Entry Summary</h2>
         <dl class="space-y-4 text-sm">
           <div class="flex items-center justify-between">
             <dt class="text-slate-500">Entry ID</dt>
@@ -134,8 +134,8 @@
         </dl>
       </div>
 
-      <div class="bg-white rounded-xl border border-slate-200 p-5 sm:p-6">
-        <h2 class="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-slate-200 dark:border-gray-800 p-5 sm:p-6">
+          <h2 class="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
           <i class="ti ti-sparkles text-indigo-500"></i> AI Insights
         </h2>
         <dl class="space-y-4 text-sm">
