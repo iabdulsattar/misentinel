@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { UserService } from '../core/services/user.service';
 
 interface User {
+  id?: string;
   name: string;
   email: string;
   role: string;
@@ -24,9 +26,13 @@ interface User {
   templateUrl: './user-management.component.html',
   styles: ``
 })
-export class UserManagementComponent {
+export class UserManagementComponent implements OnInit {
   activeTab = 0;
   searchQuery = '';
+  loading = false;
+  errorMessage = '';
+  stats: any = null;
+  users: User[] = [];
 
   readonly tabs = [
     { label: 'Users' },
@@ -55,16 +61,63 @@ export class UserManagementComponent {
     'Not Invited': { icon: 'ti-circle-minus', color: 'text-slate-400' },
   };
 
-  readonly users: User[] = [
-    { name: 'Aisha Malik', email: 'aisha.malik@abscee.com', role: 'Supervisor', status: 'Active', invite: 'Accepted', inviteSub: '24 May 2025, 10:42 AM', lastLogin: '23 May 2025', lastTime: '08:42 AM', created: '15 Jan 2025', img: 47 },
-    { name: 'Ravi Kumar', email: 'ravi.kumar@abscee.com', role: 'Supervisor', status: 'Active', invite: 'Pending', inviteSub: 'Invited on 23 May 2025', lastLogin: '23 May 2025', lastTime: '08:15 AM', created: '10 Jan 2025', img: 13 },
-    { name: 'John Smith', email: 'john.smith@abscee.com', role: 'Security Officer', status: 'Active', invite: 'Accepted', inviteSub: '20 May 2025, 09:15 AM', lastLogin: '23 May 2025', lastTime: '07:30 AM', created: '05 Feb 2025', img: 14 },
-    { name: 'Priya Sharma', email: 'priya.sharma@abscee.com', role: 'Security Officer', status: 'Active', invite: 'Expired', inviteSub: 'Expired on 21 May 2025', lastLogin: '22 May 2025', lastTime: '06:20 PM', created: '12 Feb 2025', img: 48, resend: true },
-    { name: 'Michael Johnson', email: 'michael.johnson@abscee.com', role: 'Patrol Officer', status: 'Inactive', invite: 'Accepted', inviteSub: '18 May 2025, 06:50 PM', lastLogin: '18 May 2025', lastTime: '06:45 PM', created: '20 Mar 2025', img: 15 },
-    { name: 'Neha Verma', email: 'neha.verma@abscee.com', role: 'Reviewer', status: 'Active', invite: 'Pending', inviteSub: 'Invited on 23 May 2025', lastLogin: '23 May 2025', lastTime: '08:10 AM', created: '18 Mar 2025', img: 49 },
-    { name: 'David Wilson', email: 'david.wilson@abscee.com', role: 'Administrator', status: 'Active', invite: 'Accepted', inviteSub: '10 May 2025, 11:20 AM', lastLogin: '23 May 2025', lastTime: '07:05 AM', created: '02 Jan 2025', img: 33 },
-    { name: 'Sneha Iyer', email: 'sneha.iyer@abscee.com', role: 'Patrol Officer', status: 'Inactive', invite: 'Not Invited', inviteSub: '-', lastLogin: '10 May 2025', lastTime: '11:15 AM', created: '28 Mar 2025', img: 44 },
-  ];
+  constructor(private userService: UserService) {}
+
+  ngOnInit(): void {
+    this.loadUsers();
+    this.loadStats();
+  }
+
+  loadUsers(): void {
+    this.loading = true;
+    this.errorMessage = '';
+    const orgId = localStorage.getItem('org_id') || localStorage.getItem('organizationId') || '';
+    if (!orgId) {
+      this.loading = false;
+      this.errorMessage = 'No organization selected yet.';
+      return;
+    }
+
+    this.userService.listUsers(orgId, { page: 0, size: 10, q: this.searchQuery }).subscribe({
+      next: (res) => {
+        const payload = res?.data ?? res;
+        const items = Array.isArray(payload) ? payload : payload?.content ?? payload?.items ?? [];
+        this.users = items.map((item: any) => ({
+          id: item.id,
+          name: [item.firstName, item.lastName].filter(Boolean).join(' ') || item.name || item.email || 'Unknown',
+          email: item.email || '-',
+          role: item.roleName || item.role?.name || 'Member',
+          status: (item.status || item.accountStatus || '').toLowerCase() === 'inactive' ? 'Inactive' : 'Active',
+          invite: item.invitationStatus || 'Not Invited',
+          inviteSub: item.invitationUpdatedAt ? new Date(item.invitationUpdatedAt).toLocaleString() : '-',
+          lastLogin: item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleString() : '-',
+          lastTime: item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleTimeString() : '-',
+          created: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-',
+          img: 40 + (this.users.length % 10),
+          resend: item.invitationStatus === 'Pending',
+        }));
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.errorMessage = 'Unable to load users right now.';
+      },
+    });
+  }
+
+  loadStats(): void {
+    const orgId = localStorage.getItem('org_id') || localStorage.getItem('organizationId') || '';
+    if (!orgId) return;
+
+    this.userService.getStats(orgId).subscribe({
+      next: (res) => {
+        this.stats = res?.data ?? res;
+      },
+      error: () => {
+        this.stats = null;
+      },
+    });
+  }
 
   get filteredUsers(): User[] {
     if (!this.searchQuery.trim()) return this.users;
