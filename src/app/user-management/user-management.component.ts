@@ -6,6 +6,7 @@ import { UserService } from '../core/services/user.service';
 import { SendInviteModalComponent } from './send-invite-modal/send-invite-modal.component';
 import { DeactivateUserModalComponent } from './deactivate-user-modal/deactivate-user-modal.component';
 import { ReactivateUserModalComponent } from './reactivate-user-modal/reactivate-user-modal.component';
+import { UsersTableComponent, TableUser } from '../shared/components/users/users-table/users-table.component';
 
 interface User {
   id?: string;
@@ -37,7 +38,7 @@ interface PageMeta {
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SendInviteModalComponent, DeactivateUserModalComponent, ReactivateUserModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SendInviteModalComponent, DeactivateUserModalComponent, ReactivateUserModalComponent, UsersTableComponent],
   templateUrl: './user-management.component.html',
   styles: ``
 })
@@ -50,6 +51,8 @@ export class UserManagementComponent implements OnInit {
   stats: any = null;
   users: User[] = [];
   selectedUser: User | null = null;
+  detailUser: any = null;
+  loadingDetail = false;
   showDetail = false;
   showInviteModal = false;
   showDeactivateModal = false;
@@ -147,10 +150,10 @@ export class UserManagementComponent implements OnInit {
             totalElements: payload.totalElements ?? this.users.length,
             totalPages: payload.totalPages ?? 1,
           };
-          this.currentPage = this.meta.page;
-          this.pageSize = this.meta.size;
-          this.totalElements = this.meta.totalElements;
-          this.totalPages = this.meta.totalPages;
+          this.currentPage = Number(this.meta.page);
+          this.pageSize = Number(this.meta.size);
+          this.totalElements = Number(this.meta.totalElements);
+          this.totalPages = Number(this.meta.totalPages);
         }
 
         this.selectedUser = this.selectedUser && this.users.some(user => user.email === this.selectedUser?.email)
@@ -216,25 +219,36 @@ export class UserManagementComponent implements OnInit {
     const total = this.totalPages;
     const current = this.currentPage;
 
-    if (total <= 7) {
+    if (total <= 9) {
       for (let i = 0; i < total; i++) pages.push(i);
       return pages;
     }
 
     pages.push(0);
 
-    if (current > 3) {
-      pages.push('...');
+    let start: number;
+    let end: number;
+
+    if (current <= 2) {
+      start = 1;
+      end = 4;
+    } else if (current >= total - 3) {
+      start = total - 5;
+      end = total - 2;
+    } else {
+      start = current - 2;
+      end = current + 2;
     }
 
-    const start = Math.max(1, current - 1);
-    const end = Math.min(total - 2, current + 1);
+    if (start > 1) {
+      pages.push('...');
+    }
 
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
 
-    if (current < total - 4) {
+    if (end < total - 2) {
       pages.push('...');
     }
 
@@ -242,17 +256,122 @@ export class UserManagementComponent implements OnInit {
     return pages;
   }
 
+  get tableUsers(): TableUser[] {
+    return this.users.map((u) => ({
+      id: u.id || '',
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      status: u.status,
+      lastLogin: u.lastLogin,
+      created: u.created,
+      img: u.img,
+      raw: u,
+    }));
+  }
+
+  get showingText(): string {
+    if (this.totalElements === 0) return 'Showing 0 users';
+    const start = this.startIndex;
+    const end = this.endIndex;
+    return `Showing ${start} to ${end} of ${this.totalElements} users`;
+  }
+
+  onTableRowClick(user: TableUser): void {
+    const found = this.users.find((u) => u.id === user.id);
+    if (found) this.selectUser(found);
+  }
+
+  onTablePageChange(page: number): void {
+    this.goToPage(page);
+  }
+
+  onTableSearch(value: string): void {
+    this.searchQuery = value;
+    this.onSearch();
+  }
+
+  get detailName(): string {
+    if (!this.detailUser) return this.selectedUser?.name || '';
+    return [this.detailUser.firstName, this.detailUser.lastName].filter(Boolean).join(' ') || this.detailUser.name || this.selectedUser?.name || '';
+  }
+
+  get detailEmail(): string {
+    return this.detailUser?.email || this.selectedUser?.email || '';
+  }
+
+  get detailRole(): string {
+    return this.detailUser?.roleNames?.[0] || this.detailUser?.roleName || this.selectedUser?.role || 'Member';
+  }
+
+  get detailStatus(): string {
+    const s = this.detailUser?.status || this.selectedUser?.status || 'Active';
+    return s.toLowerCase() === 'inactive' ? 'Inactive' : 'Active';
+  }
+
+  get detailPhone(): string {
+    return this.detailUser?.phoneNumber || this.selectedUser?.phone || '';
+  }
+
+  get detailDepartment(): string {
+    return this.detailUser?.department || this.selectedUser?.department || '';
+  }
+
+  get detailLocation(): string {
+    return this.detailUser?.location || this.selectedUser?.location || '';
+  }
+
+  get detailEmployeeId(): string {
+    return this.detailUser?.employeeId || this.selectedUser?.employeeId || '';
+  }
+
+  get detailJoined(): string {
+    if (this.detailUser?.createdAt) return new Date(this.detailUser.createdAt).toLocaleString();
+    return this.selectedUser?.joined || this.selectedUser?.created || '';
+  }
+
+  get detailLastLogin(): string {
+    if (this.detailUser?.lastLoginAt) return new Date(this.detailUser.lastLoginAt).toLocaleString();
+    return this.selectedUser?.lastLogin || '';
+  }
+
   setActiveTab(index: number): void {
     this.activeTab = index;
   }
 
   selectUser(user: User): void {
-    if (this.selectedUser?.email === user.email) {
-      this.showDetail = !this.showDetail;
-    } else {
-      this.selectedUser = user;
-      this.showDetail = true;
+    if (this.selectedUser?.id === user.id && this.showDetail) {
+      this.showDetail = false;
+      return;
     }
+
+    this.selectedUser = user;
+    this.showDetail = true;
+    this.loadUserDetail(user);
+  }
+
+  private loadUserDetail(user: User): void {
+    if (!user.id) return;
+    this.loadingDetail = true;
+    this.detailUser = null;
+
+    const orgId = this.getOrgId();
+    if (!orgId) {
+      this.loadingDetail = false;
+      this.detailUser = user;
+      return;
+    }
+
+    this.userService.getUserDetail(orgId, user.id).subscribe({
+      next: (res) => {
+        this.detailUser = res;
+        this.loadingDetail = false;
+      },
+      error: () => {
+        this.loadingDetail = false;
+        this.detailUser = user;
+      }
+    });
   }
 
   closeDetail(): void {
