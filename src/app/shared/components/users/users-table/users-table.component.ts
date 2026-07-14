@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BadgeComponent } from '../../ui/badge/badge.component';
-import { ButtonComponent } from '../../ui/button/button.component';
 
 export interface TableUser {
   id: string;
@@ -19,12 +17,7 @@ export interface TableUser {
 @Component({
   selector: 'app-users-table',
   standalone: true,
-  imports: [
-    CommonModule,
-    BadgeComponent,
-    ButtonComponent,
-    FormsModule,
-  ],
+  imports: [CommonModule, FormsModule],
   templateUrl: './users-table.component.html',
 })
 export class UsersTableComponent {
@@ -70,29 +63,6 @@ export class UsersTableComponent {
   goToPage(page: number) {
     if (page >= 0 && page < this.totalPages) {
       this.pageChange.emit(page);
-    }
-  }
-
-  badgeColor(status: string): 'success' | 'error' | 'light' | 'primary' | 'warning' {
-    if (status === 'Active') return 'success';
-    if (status === 'Inactive') return 'error';
-    return 'light';
-  }
-
-  roleColor(role: string): 'primary' | 'warning' | 'success' | 'error' | 'light' {
-    switch (role) {
-      case 'Supervisor':
-        return 'primary';
-      case 'Security Officer':
-        return 'warning';
-      case 'Patrol Officer':
-        return 'primary';
-      case 'Reviewer':
-        return 'warning';
-      case 'Administrator':
-        return 'error';
-      default:
-        return 'light';
     }
   }
 }

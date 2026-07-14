@@ -1,10 +1,9 @@
-<div class="overflow-hidden rounded-2xl border border-gray-200 bg-white pt-4 dark:border-white/[0.05] dark:bg-white/[0.03] mt-4">
-  <div class="flex flex-col gap-4 px-6 mb-4 sm:flex-row sm:items-center sm:justify-between">
+<div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+  <div class="flex flex-col gap-4 px-6 pt-4 pb-2 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h3 class="text-theme-md font-semibold text-gray-800 dark:text-white/90">
         All Users
       </h3>
-      <span class="block text-gray-500 text-theme-xs dark:text-gray-400">{{ showingText || ('Showing 0 users') }}</span>
     </div>
     <div class="flex items-center gap-3">
       <div class="relative">
@@ -29,52 +28,44 @@
       No users found.
     </div>
   } @else {
-    <div class="max-w-full overflow-x-auto">
-      <table class="min-w-full">
-        <thead class="px-6 py-3.5 border-t border-gray-100 border-y bg-gray-50 dark:border-white/[0.05] dark:bg-gray-900">
-          <tr>
-            <th class="px-6 py-3 font-medium text-gray-500 sm:px-6 text-theme-xs dark:text-gray-400 text-start">User</th>
-            <th class="px-6 py-3 font-medium text-gray-500 sm:px-6 text-theme-xs dark:text-gray-400 text-start">Email</th>
-            <th class="px-6 py-3 font-medium text-gray-500 sm:px-6 text-theme-xs dark:text-gray-400 text-start">Role</th>
-            <th class="px-6 py-3 font-medium text-gray-500 sm:px-6 text-theme-xs dark:text-gray-400 text-start">Status</th>
-            <th class="px-6 py-3 font-medium text-gray-500 sm:px-6 text-theme-xs dark:text-gray-400 text-start">Last Login</th>
-            <th class="px-6 py-3 font-medium text-gray-500 sm:px-6 text-theme-xs dark:text-gray-400 text-start">Created On</th>
-            <th class="px-6 py-3 font-medium text-gray-500 sm:px-6 text-theme-xs dark:text-gray-400 text-start">Actions</th>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-slate-500 border-b border-slate-200">
+            <th class="font-semibold px-5 py-3 whitespace-nowrap">User</th>
+            <th class="font-semibold px-5 py-3 whitespace-nowrap">Email</th>
+            <th class="font-semibold px-5 py-3 whitespace-nowrap">Role</th>
+            <th class="font-semibold px-5 py-3 whitespace-nowrap">Status</th>
+            <th class="font-semibold px-5 py-3 whitespace-nowrap">Last Login</th>
+            <th class="font-semibold px-5 py-3 whitespace-nowrap">Created On</th>
+            <th class="font-semibold px-5 py-3 whitespace-nowrap text-right">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-slate-100">
           @for (user of users; track user.id) {
-            <tr class="border-t border-gray-100 dark:border-white/[0.05] hover:bg-gray-50 dark:hover:bg-white/[0.02]">
-              <td class="px-4 sm:px-6 py-3.5">
+            <tr class="hover:bg-slate-50 cursor-pointer" (click)="rowClick.emit(user)">
+              <td class="px-5 py-3.5 whitespace-nowrap">
                 <div class="flex items-center gap-3">
-                  <img [src]="'https://i.pravatar.cc/40?img=' + user.img" class="h-9 w-9 rounded-full object-cover" />
-                  <span (click)="rowClick.emit(user)" class="block cursor-pointer font-medium text-brand-600 hover:underline text-theme-sm dark:text-brand-400">
-                    {{ user.name }}
-                  </span>
+                  <div class="relative">
+                    <img [src]="'https://i.pravatar.cc/40?img=' + user.img" class="w-8 h-8 rounded-full object-cover" />
+                    <span class="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border-2 border-white"></span>
+                  </div>
+                  <span class="font-semibold text-slate-800">{{ user.name }}</span>
                 </div>
               </td>
-              <td class="px-4 sm:px-6 py-3.5">
-                <p class="text-gray-700 text-theme-sm dark:text-gray-400">{{ user.email }}</p>
+              <td class="px-5 py-3.5 text-slate-500 whitespace-nowrap">{{ user.email }}</td>
+              <td class="px-5 py-3.5 whitespace-nowrap">
+                <span class="bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-full">{{ user.role }}</span>
               </td>
-              <td class="px-4 sm:px-6 py-3.5">
-                <app-badge variant="light" [color]="roleColor(user.role)" size="sm">
-                  {{ user.role }}
-                </app-badge>
+              <td class="px-5 py-3.5 whitespace-nowrap">
+                <span class="bg-green-50 text-green-600 text-xs font-semibold px-2.5 py-1 rounded-full" *ngIf="user.status === 'Active'">{{ user.status }}</span>
+                <span class="bg-slate-100 text-slate-500 text-xs font-semibold px-2.5 py-1 rounded-full" *ngIf="user.status === 'Inactive'">{{ user.status }}</span>
               </td>
-              <td class="px-4 sm:px-6 py-3.5">
-                <app-badge variant="light" [color]="badgeColor(user.status)" size="sm">
-                  {{ user.status }}
-                </app-badge>
-              </td>
-              <td class="px-4 sm:px-6 py-3.5">
-                <p class="text-gray-700 text-theme-sm dark:text-gray-400">{{ user.lastLogin }}</p>
-              </td>
-              <td class="px-4 sm:px-6 py-3.5">
-                <p class="text-gray-700 text-theme-sm dark:text-gray-400">{{ user.created }}</p>
-              </td>
-              <td class="px-4 sm:px-6 py-3.5">
-                <button (click)="rowClick.emit(user)" title="View" class="inline-flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-icon lucide-eye text-gray-700 dark:text-gray-400"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+              <td class="px-5 py-3.5 text-slate-500 whitespace-nowrap">{{ user.lastLogin }}</td>
+              <td class="px-5 py-3.5 text-slate-500 whitespace-nowrap">{{ user.created }}</td>
+              <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                <button class="text-slate-400 hover:text-slate-700" (click)="$event.stopPropagation()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-more-horizontal lucide-more-horizontal"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
                 </button>
               </td>
             </tr>
@@ -83,37 +74,33 @@
       </table>
     </div>
 
-    <div class="px-6 py-4 border-t border-gray-200 dark:border-white/[0.05]">
-      <div class="flex items-center justify-between">
-        <app-button size="sm" variant="outline" (btnClick)="goToPage(page - 1)" [disabled]="page === 0">
-          <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.58301 9.99868C2.58272 10.1909 2.65588 10.3833 2.80249 10.53L7.79915 15.5301C8.09194 15.8231 8.56682 15.8233 8.85981 15.5305C9.15281 15.2377 9.15297 14.7629 8.86018 14.4699L5.14009 10.7472L16.6675 10.7472C17.0817 10.7472 17.4175 10.4114 17.4175 9.99715C17.4175 9.58294 17.0817 9.24715 16.6675 9.24715L5.14554 9.24715L8.86017 5.53016C9.15297 5.23717 9.15282 4.7623 8.85983 4.4695C8.56684 4.1767 8.09197 4.17685 7.79917 4.46984L2.84167 9.43049C2.68321 9.568 2.58301 9.77087 2.58301 9.99715C2.58301 9.99766 2.58301 9.99817 2.58301 9.99868Z" fill=""></path></svg>
-          <span class="hidden sm:inline">Previous</span>
-        </app-button>
-
-        <span class="block text-sm font-medium text-gray-700 dark:text-gray-400 sm:hidden">
-          Page {{ page + 1 }} of {{ totalPages }}
-        </span>
-
-        <ul class="hidden items-center gap-0.5 sm:flex">
-          @for (p of visiblePages; track $index) {
-            @if (p === '...') {
-              <li><span class="flex h-10 w-10 items-center justify-center text-theme-sm text-gray-400">…</span></li>
-            } @else {
-              <li>
-                <button (click)="goToPage(p)" class="flex h-10 w-10 items-center justify-center rounded-lg text-theme-sm font-medium"
-                  [ngClass]="{ 'bg-brand-500 text-white': page === p, 'text-gray-700 hover:bg-brand-500/[0.08] dark:hover:bg-brand-500 dark:hover:text-white hover:text-brand-500 dark:text-gray-400': page !== p }">
-                  {{ p + 1 }}
-                </button>
-              </li>
-            }
-          }
-        </ul>
-
-        <app-button size="sm" variant="outline" (btnClick)="goToPage(page + 1)" [disabled]="page >= totalPages - 1">
-          <span class="hidden sm:inline">Next</span>
-          <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.4175 9.9986C17.4178 10.1909 17.3446 10.3832 17.198 10.53L12.2013 15.5301C11.9085 15.8231 11.4337 15.8233 11.1407 15.5305C10.8477 15.2377 10.8475 14.7629 11.1403 14.4699L14.8604 10.7472L3.33301 10.7472C2.91879 10.7472 2.58301 10.4114 2.58301 9.99715C2.58301 9.58294 2.91879 9.24715 3.33301 9.24715L14.8549 9.24715L11.1403 5.53016C10.8475 5.23717 10.8477 4.7623 11.1407 4.4695C11.4336 4.1767 11.9085 4.17685 12.2013 4.46984L17.1588 9.43049C17.3173 9.568 17.4175 9.77087 17.4175 9.99715C17.4175 9.99763 17.4175 9.99812 17.4175 9.9986Z" fill=""></path></svg>
-        </app-button>
-      </div>
-    </div>
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-4 border-t border-slate-200">
+          <p class="text-sm text-slate-500">Showing 1 to {{ users.length }} of {{ total }} users</p>
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <select [(ngModel)]="size" (ngModelChange)="pageChange.emit(0)" class="appearance-none border border-slate-200 rounded-lg text-sm pl-3 pr-8 py-1.5 bg-white focus:outline-none">
+                <option [value]="10">10 per page</option>
+                <option [value]="20">20 per page</option>
+                <option [value]="50">50 per page</option>
+              </select>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div class="flex items-center gap-1">
+              <button (click)="goToPage(page - 1)" [disabled]="page === 0" class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+              @for (p of visiblePages; track p) {
+                @if (p === '...') {
+                  <span class="px-1 text-slate-400 text-sm">...</span>
+                } @else {
+                  <button (click)="goToPage(p)" [class.bg-indigo-600]="page === p" [class.text-white]="page === p" [class.border-slate-200]="page !== p" [class.text-slate-600]="page !== p" class="w-8 h-8 flex items-center justify-center rounded-lg border bg-white text-sm font-semibold hover:bg-slate-50">{{ p + 1 }}</button>
+                }
+              }
+              <button (click)="goToPage(page + 1)" [disabled]="page >= totalPages - 1" class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+            </div>
+          </div>
+        </div>
   }
 </div>
