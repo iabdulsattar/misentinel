@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -32,6 +32,12 @@ export class AddUserComponent implements OnInit {
     canAccessMobile: true,
   };
 
+  profileImage: string | null = null;
+  showCamera = false;
+  cameraStream: MediaStream | null = null;
+  @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
+  @ViewChild('fileInput') fileInput!: HTMLInputElement;
+
   constructor(
     private userService: UserService,
     private router: Router,
@@ -45,6 +51,10 @@ export class AddUserComponent implements OnInit {
     if (this.isEditMode && this.userId) {
       this.loadUser(this.userId);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.stopCamera();
   }
 
   private getOrgId(): string | null {
@@ -76,6 +86,7 @@ export class AddUserComponent implements OnInit {
         this.form.location = user.location || '';
         this.form.canAccessWeb = user.canAccessWeb ?? true;
         this.form.canAccessMobile = user.canAccessMobile ?? true;
+        this.profileImage = (user as any).profileImage || null;
         this.loading = false;
       },
       error: () => {
@@ -83,6 +94,76 @@ export class AddUserComponent implements OnInit {
         this.errorMessage = 'Failed to load user details.';
       }
     });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      this.errorMessage = 'Please select a valid image file.';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.profileImage = reader.result as string;
+      this.errorMessage = '';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async openCamera(): Promise<void> {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: false,
+      });
+      this.cameraStream = stream;
+      this.showCamera = true;
+
+      setTimeout(() => {
+        if (this.videoElement?.nativeElement) {
+          this.videoElement.nativeElement.srcObject = stream;
+        }
+      }, 100);
+    } catch (err) {
+      console.error('Camera access error:', err);
+      this.errorMessage = 'Unable to access camera. Please check permissions.';
+    }
+  }
+
+  stopCamera(): void {
+    if (this.cameraStream) {
+      this.cameraStream.getTracks().forEach(track => track.stop());
+      this.cameraStream = null;
+    }
+    this.showCamera = false;
+  }
+
+  capturePhoto(): void {
+    if (!this.videoElement?.nativeElement) return;
+
+    const video = this.videoElement.nativeElement;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      this.profileImage = canvas.toDataURL('image/jpeg', 0.9);
+    }
+
+    this.stopCamera();
+  }
+
+  removePhoto(): void {
+    this.profileImage = null;
+    if (this.fileInput) {
+      this.fileInput.value = '';
+    }
   }
 
   submit(): void {

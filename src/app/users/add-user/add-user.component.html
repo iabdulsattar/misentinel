@@ -46,21 +46,31 @@
         <!-- Profile picture -->
         <div class="col-span-1">
           <label class="block text-sm font-semibold text-slate-800 mb-2">Profile Picture <span class="font-normal text-slate-400">(Optional)</span></label>
-          <div class="border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center py-8 px-4 text-center">
-            <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center mb-3">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+
+          @if (profileImage) {
+            <div class="border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center py-6 px-4 text-center">
+              <img [src]="profileImage" class="w-24 h-24 rounded-full object-cover mb-3" />
+              <button type="button" (click)="removePhoto()" class="text-xs text-red-600 hover:text-red-700 font-medium">Remove photo</button>
             </div>
-            <p class="text-sm font-semibold text-slate-800">Upload Photo</p>
-            <p class="text-xs text-slate-400 mt-0.5">PNG, JPG up to 2MB</p>
-          </div>
-          <div class="flex items-center gap-3 my-3">
-            <div class="h-px bg-slate-200 flex-1"></div>
-            <span class="text-xs text-slate-400">OR</span>
-            <div class="h-px bg-slate-200 flex-1"></div>
-          </div>
-          <button class="w-full flex items-center justify-center gap-2 border border-slate-200 text-slate-700 font-medium text-sm py-2.5 rounded-lg hover:bg-slate-50">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Take Photo
-          </button>
+          } @else {
+            <div class="border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center py-8 px-4 text-center cursor-pointer hover:border-indigo-300 transition-colors" (click)="fileInput.click()">
+              <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center mb-3">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+              </div>
+              <p class="text-sm font-semibold text-slate-800">Upload Photo</p>
+              <p class="text-xs text-slate-400 mt-0.5">PNG, JPG up to 2MB</p>
+            </div>
+            <div class="flex items-center gap-3 my-3">
+              <div class="h-px bg-slate-200 flex-1"></div>
+              <span class="text-xs text-slate-400">OR</span>
+              <div class="h-px bg-slate-200 flex-1"></div>
+            </div>
+            <button type="button" (click)="openCamera()" class="w-full flex items-center justify-center gap-2 border border-slate-200 text-slate-700 font-medium text-sm py-2.5 rounded-lg hover:bg-slate-50">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Take Photo
+            </button>
+          }
+
+          <input type="file" #fileInput accept="image/png,image/jpeg,image/jpg" (change)="onFileSelected($event)" class="hidden" />
         </div>
 
         <!-- Right form fields -->
@@ -239,4 +249,24 @@
     </aside>
 
   </div>
+
+  @if (showCamera) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+          <h3 class="text-sm font-semibold text-slate-900">Take Photo</h3>
+          <button type="button" (click)="stopCamera()" class="text-slate-400 hover:text-slate-600">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="p-4">
+          <video #videoElement autoplay playsinline class="w-full rounded-lg bg-black"></video>
+        </div>
+        <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-slate-200">
+          <button type="button" (click)="stopCamera()" class="px-4 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+          <button type="button" (click)="capturePhoto()" class="px-4 py-2 rounded-lg bg-indigo-600 text-sm font-semibold text-white hover:bg-indigo-700">Capture</button>
+        </div>
+      </div>
+    </div>
+  }
 </main>
