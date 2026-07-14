@@ -351,6 +351,7 @@ export class CreateEntryComponent implements OnInit {
         if (Array.isArray(raw)) list = raw;
         else if (raw && typeof raw === 'object') list = raw.data ?? raw.users ?? raw.content ?? raw.items ?? [];
         this.orgUsers = list;
+        this.rematchUserSelections();
       },
       error: (err) => console.error('Failed to load org users', err),
     });
@@ -867,6 +868,20 @@ export class CreateEntryComponent implements OnInit {
 
   onPeopleInvolvedChange(values: string[]): void {
     this.peopleInvolvedUserIds = values;
+  }
+
+  private rematchUserSelections(): void {
+    if (!this.orgUsers.length) return;
+    if (this.handoverFrom && !this.handoverFromUserId) {
+      this.handoverFromUserId = this.matchUserId(this.handoverFrom);
+    }
+    if (this.handoverTo && !this.handoverToUserId) {
+      this.handoverToUserId = this.matchUserId(this.handoverTo);
+    }
+    if (this.peopleInvolved && !this.peopleInvolvedUserIds.length) {
+      const names = this.peopleInvolved.split(',').map(s => s.trim()).filter(Boolean);
+      this.peopleInvolvedUserIds = names.map(name => this.matchUserId(name)).filter(Boolean);
+    }
   }
 
   // ==================== Save / Submit ====================
