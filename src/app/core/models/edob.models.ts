@@ -264,3 +264,20 @@ export interface OrgUser {
   roles?: Role[];
   [key: string]: any;
 }
+
+// -------- Comments --------
+export interface Comment {
+  id: string;
+  entryId: string;
+  authorUserId: string;
+  authorName: string;
+  authorAvatarUrl: string | null;
+  body: string;
+  editedAt: string | null;
+  createdAt: string;
+  user?: string;
+  role?: string;
+  time?: string;
+  img?: number;
+  [key: string]: any;
+}

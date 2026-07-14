@@ -80,26 +80,31 @@
       <div class="bg-white dark:bg-gray-900 rounded-xl border border-slate-200 dark:border-gray-800 p-5 sm:p-6">
         <h2 class="font-semibold text-slate-900 dark:text-slate-100 mb-4">Comments</h2>
         <div class="space-y-5">
-          <div class="flex gap-3" *ngFor="let comment of (entry.data?.['comments'] || [])">
-            <img [src]="'https://i.pravatar.cc/40?img=' + (comment.img || 14)" class="w-9 h-9 rounded-full shrink-0" />
-            <div class="flex-1 min-w-0">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="font-semibold text-slate-900 text-sm">{{ comment.user || 'User' }}</span>
-                <span class="bg-blue-50 text-blue-700 text-xs font-medium px-2 py-0.5 rounded-full">{{ comment.role || 'User' }}</span>
-                <span class="text-xs text-slate-400">{{ comment.time || '' }}</span>
+          @for (comment of comments; track comment.id || $index) {
+            <div class="flex gap-3">
+              <img [src]="'https://i.pravatar.cc/40?img=' + (comment.img || 14)" class="w-9 h-9 rounded-full shrink-0" />
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-semibold text-slate-900 text-sm">{{ comment.user || 'User' }}</span>
+                  <span class="bg-blue-50 text-blue-700 text-xs font-medium px-2 py-0.5 rounded-full">{{ comment.role || 'User' }}</span>
+                  <span class="text-xs text-slate-400">{{ comment.time ? formatDateTime(comment.time) : '' }}</span>
+                </div>
+                <p class="text-sm text-slate-600 mt-1">{{ comment.body || comment['text'] || '' }}</p>
               </div>
-              <p class="text-sm text-slate-600 mt-1">{{ comment.text || '' }}</p>
+              <button class="text-slate-400 hover:text-slate-600 shrink-0"><i class="ti ti-dots"></i></button>
             </div>
-            <button class="text-slate-400 hover:text-slate-600 shrink-0"><i class="ti ti-dots"></i></button>
-          </div>
-          <p class="text-sm text-slate-400" *ngIf="!entry.data?.['comments'] || entry.data?.['comments']?.length === 0">No comments yet.</p>
+          } @empty {
+            <p class="text-sm text-slate-400">No comments yet.</p>
+          }
         </div>
 
-<div class="flex items-center gap-3 mt-6 border border-slate-200 dark:border-gray-800 rounded-lg px-3 py-2">
-          <input type="text" placeholder="Add comment..." class="flex-1 min-w-0 text-sm outline-none placeholder:text-slate-400 bg-transparent dark:text-gray-100" />
+        <div class="flex items-center gap-3 mt-6 border border-slate-200 dark:border-gray-800 rounded-lg px-3 py-2">
+          <input type="text" [(ngModel)]="newCommentText" placeholder="Add comment..." class="flex-1 min-w-0 text-sm outline-none placeholder:text-slate-400 bg-transparent dark:text-gray-100" (keyup.enter)="addComment()" />
           <button class="text-slate-400 hover:text-slate-600 shrink-0"><i class="ti ti-paperclip"></i></button>
           <button class="text-slate-400 hover:text-slate-600 shrink-0"><i class="ti ti-at"></i></button>
-          <button class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg shrink-0">Add Comment</button>
+          <button (click)="addComment()" [disabled]="isSubmittingComment" class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg shrink-0 disabled:opacity-50">
+            {{ isSubmittingComment ? 'Posting...' : 'Add Comment' }}
+          </button>
         </div>
       </div>
 

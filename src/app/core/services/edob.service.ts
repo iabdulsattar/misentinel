@@ -27,7 +27,8 @@ import {
   CreateRoleRequest,
   UpdateRoleRequest,
   AssignRolesRequest,
-  OrgUser
+  OrgUser,
+  Comment
 } from '../models/edob.models';
 
 @Injectable({ providedIn: 'root' })
@@ -203,6 +204,20 @@ export class EdobService {
   // DELETE /api/v1/edob/organizations/{orgId}/entries/{entryId}/attachments/{attachmentId}
   deleteAttachment(orgId: string, entryId: string, attachmentId: string): Observable<any> {
     return this.api.delete(`${this.basePath(orgId)}/entries/${entryId}/attachments/${attachmentId}`);
+  }
+
+  // ==================== Comments ====================
+
+  // GET /api/v1/edob/organizations/{orgId}/entries/{entryId}/comments
+  getComments(orgId: string, entryId: string): Observable<Comment[]> {
+    return this.api.get<ApiWrapper<Comment[]>>(`${this.basePath(orgId)}/entries/${entryId}/comments`).pipe(map(res => res.data));
+  }
+
+  // POST /api/v1/edob/organizations/{orgId}/entries/{entryId}/comments
+  addComment(orgId: string, entryId: string, payload: { body: string }): Observable<Comment> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.post<ApiWrapper<Comment>>(`${this.basePath(orgId)}/entries/${entryId}/comments`, payload, headers)
+      .pipe(map(res => res.data));
   }
 
   // ==================== Roles ====================

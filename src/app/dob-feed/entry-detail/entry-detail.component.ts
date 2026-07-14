@@ -1,13 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { EdobService } from '../../core/services/edob.service';
-import { Entry } from '../../core/models/edob.models';
+import { AuthService } from '../../core/services/auth.service';
+import { Entry, Comment } from '../../core/models/edob.models';
 
 @Component({
   selector: 'app-entry-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './entry-detail.component.html',
   styles: ``
 })
@@ -16,11 +18,20 @@ export class EntryDetailComponent implements OnInit {
   loading = true;
   errorMessage = '';
 
+  comments: Comment[] = [];
+  newCommentText = '';
+  isSubmittingComment = false;
+  currentUserName = '';
+  currentUserRole = 'User';
+  currentUserImg = 14;
+
   private categoryMap = new Map<string, string>();
   private userMap = new Map<string, string>();
+  private userRoleMap = new Map<string, string>();
 
   constructor(
     private edobService: EdobService,
+    private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -49,6 +60,7 @@ export class EntryDetailComponent implements OnInit {
         this.entry = data;
         this.loading = false;
         this.loadLookups(orgId);
+        this.loadComments(orgId, id);
       },
       error: () => {
         this.errorMessage = 'Failed to load entry. Please try again.';
@@ -68,8 +80,98 @@ export class EntryDetailComponent implements OnInit {
     this.edobService.listOrgUsers(orgId).subscribe({
       next: (users) => {
         this.userMap = new Map(users.map(u => [u.id, `${u.firstName} ${u.lastName}`.trim() || u.email]));
+        users.forEach(u => {
+          const role = (u.roles && u.roles.length > 0) ? u.roles[0].name : 'User';
+          this.userRoleMap.set(u.id, role);
+        });
       },
       error: () => {}
+    });
+
+    const token = this.authService.getAccessToken();
+    if (token) {
+      this.authService.me(token).subscribe({
+        next: (profile: any) => {
+          const user = profile?.user || profile?.data || profile;
+          this.currentUserName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User';
+          this.currentUserRole = (user.roles?.[0]?.name || user.role || 'User') as string;
+          this.currentUserImg = user.img || user.avatarImg || 14;
+        },
+        error: () => {}
+      });
+    }
+  }
+
+  private loadComments(orgId: string, entryId: string): void {
+    this.edobService.getComments(orgId, entryId).subscribe({
+      next: (comments) => {
+        this.comments = (comments || []).map(c => this.mapComment(c));
+      },
+      error: () => {
+        this.comments = (this.entry?.data?.['comments'] as Comment[]) || [];
+      }
+    });
+  }
+
+  private mapComment(c: any): Comment {
+    const avatarNum = c.authorAvatarUrl
+      ? parseInt(c.authorAvatarUrl, 10)
+      : (c.authorUserId ? this.hashUserId(c.authorUserId) : 14);
+    return {
+      ...c,
+      user: c.authorName || 'User',
+      role: this.userRoleMap.get(c.authorUserId) || 'User',
+      time: c.createdAt || new Date().toISOString(),
+      img: isNaN(avatarNum) ? 14 : avatarNum,
+    };
+  }
+
+  private hashUserId(userId: string): number {
+    let hash = 0;
+    for (let i = 0; i < userId.length; i++) {
+      hash = ((hash << 5) - hash) + userId.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash) % 70 + 1;
+  }
+
+  addComment(): void {
+    const orgId = this.getOrgId();
+    const entryId = this.entry?.id;
+    const text = this.newCommentText.trim();
+    if (!orgId || !entryId || !text || this.isSubmittingComment) return;
+
+    this.isSubmittingComment = true;
+    this.edobService.addComment(orgId, entryId, { body: text }).subscribe({
+      next: (comment) => {
+        const enriched = this.mapComment({
+          ...comment,
+          authorName: this.currentUserName || 'User',
+          authorUserId: 'current',
+        });
+        this.comments = [...this.comments, enriched];
+        this.newCommentText = '';
+        this.isSubmittingComment = false;
+      },
+      error: () => {
+        const optimisticComment: Comment = {
+          id: 'local-' + Date.now(),
+          entryId,
+          authorUserId: 'current',
+          authorName: this.currentUserName || 'User',
+          authorAvatarUrl: null,
+          body: text,
+          editedAt: null,
+          createdAt: new Date().toISOString(),
+          user: this.currentUserName || 'User',
+          role: this.currentUserRole || 'User',
+          time: new Date().toISOString(),
+          img: this.currentUserImg,
+        };
+        this.comments = [...this.comments, optimisticComment];
+        this.newCommentText = '';
+        this.isSubmittingComment = false;
+      }
     });
   }
 
