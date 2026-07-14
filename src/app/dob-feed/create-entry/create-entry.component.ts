@@ -5,9 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { EdobService } from '../../core/services/edob.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AIGenerationService, AIMessage } from '../../core/services/ai-generation.service';
-import { Entry, EntryType, Category, IncidentType, HandoverType } from '../../core/models/edob.models';
+import { Entry, EntryType, Category, IncidentType, HandoverType, OrgUser } from '../../core/models/edob.models';
 import { DateTimePickerComponent } from '../../shared/components/form/datetime-picker/datetime-picker.component';
 import { RichSelectComponent, RichSelectOption } from '../../shared/components/form/rich-select/rich-select.component';
+import { MultiSelectComponent, Option as MultiOption } from '../../shared/components/form/multi-select/multi-select.component';
 
 interface AIHistoryItem {
   prompt: string;
@@ -29,7 +30,7 @@ type AttachmentType = 'pdf' | 'image' | 'audio';
 @Component({
   selector: 'app-create-entry',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, DateTimePickerComponent, RichSelectComponent],
+  imports: [CommonModule, RouterModule, FormsModule, DateTimePickerComponent, RichSelectComponent, MultiSelectComponent],
   templateUrl: './create-entry.component.html',
 })
 export class CreateEntryComponent implements OnInit {
@@ -125,7 +126,12 @@ export class CreateEntryComponent implements OnInit {
   categories: Category[] = [];
   incidentTypes: IncidentType[] = [];
   handoverTypes: HandoverType[] = [];
+  orgUsers: OrgUser[] = [];
   isLoadingData = false;
+
+  handoverFromUserId = '';
+  handoverToUserId = '';
+  peopleInvolvedUserIds: string[] = [];
 
   showCreateCategoryForm = false;
   newCategoryName = '';
@@ -158,6 +164,13 @@ export class CreateEntryComponent implements OnInit {
 
   private buildSvg(path: string, color: string, size = 16): string {
     return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+  }
+
+  private matchUserId(name: string): string {
+    if (!name || !this.orgUsers.length) return '';
+    const lower = name.toLowerCase();
+    const match = this.orgUsers.find(u => `${u.firstName} ${u.lastName}`.toLowerCase() === lower);
+    return match ? match.id : '';
   }
 
   private categoryIcon(name: string): { path: string; color: string; bg: string } {
@@ -203,6 +216,48 @@ export class CreateEntryComponent implements OnInit {
 
   get handoverTypeOptions() {
     return this.handoverTypes.map((t) => ({ value: t.id, label: t.name }));
+  }
+
+  private readonly USER_COLORS = [
+    { bg: '#dbeafe', text: '#1e40af' },
+    { bg: '#fce7f3', text: '#be185d' },
+    { bg: '#cffafe', text: '#0e7490' },
+    { bg: '#ffedd5', text: '#c2410c' },
+    { bg: '#dcfce7', text: '#15803d' },
+    { bg: '#f3e8ff', text: '#7e22ce' },
+    { bg: '#fef9c3', text: '#a16207' },
+    { bg: '#fee2e2', text: '#b91c1c' },
+  ];
+
+  private userColor(name: string): { bg: string; text: string } {
+    const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return this.USER_COLORS[index % this.USER_COLORS.length];
+  }
+
+  private userInitialsSvg(name: string, textColor: string): string {
+    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    return `<svg width="16" height="16" viewBox="0 0 24 24"><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="${textColor}" stroke="none" font-family="sans-serif">${initials}</text></svg>`;
+  }
+
+  get handoverUserOptions(): RichSelectOption[] {
+    return this.orgUsers.map((user) => {
+      const name = `${user.firstName} ${user.lastName}`.trim();
+      const color = this.userColor(name);
+      return {
+        value: user.id,
+        label: name,
+        description: user.email,
+        iconSvg: this.userInitialsSvg(name, color.text),
+        iconBg: color.bg,
+      } as RichSelectOption;
+    });
+  }
+
+  get peopleInvolvedUserOptions(): MultiOption[] {
+    return this.orgUsers.map((user) => ({
+      value: user.id,
+      text: `${user.firstName} ${user.lastName}`.trim(),
+    }));
   }
 
   // AI drawer state
@@ -288,6 +343,17 @@ export class CreateEntryComponent implements OnInit {
       },
       error: (err) => console.error('Failed to load handover types', err),
     });
+
+    this.edobService.listOrgUsers(orgId).subscribe({
+      next: (users) => {
+        const raw = users as any;
+        let list: OrgUser[] = [];
+        if (Array.isArray(raw)) list = raw;
+        else if (raw && typeof raw === 'object') list = raw.data ?? raw.users ?? raw.content ?? raw.items ?? [];
+        this.orgUsers = list;
+      },
+      error: (err) => console.error('Failed to load org users', err),
+    });
   }
 
   private loadEntryForEdit(entryId: string): void {
@@ -325,15 +391,18 @@ export class CreateEntryComponent implements OnInit {
     this.location = data['location'] || '';
     this.incidentTypeId = entry.incidentTypeId || '';
     this.handoverTypeId = entry.handoverTypeId || '';
-    this.peopleInvolved = Array.isArray(data['peopleInvolved']) ? data['peopleInvolved'].join(', ') : (data['peopleInvolved'] || '');
-    this.immediateActionsTaken = data['immediateActionsTaken'] || '';
-    this.severityScore = data['severityScore'] != null ? String(data['severityScore']) : '';
-    this.incidentDate = data['incidentDate'] || '';
-    this.incidentTime = data['incidentTime'] || '';
     this.handoverDateTime = data['shiftDateTime'] || data['handoverDateTime'] || '';
     this.handoverFrom = data['handoverFrom'] || '';
     this.handoverTo = data['handoverTo'] || '';
+    this.handoverFromUserId = data['handoverFromUserId'] || this.matchUserId(data['handoverFrom'] || '');
+    this.handoverToUserId = data['handoverToUserId'] || this.matchUserId(data['handoverTo'] || '');
     this.handoverLocation = data['handoverLocation'] || '';
+    this.peopleInvolved = Array.isArray(data['peopleInvolved']) ? data['peopleInvolved'].join(', ') : (data['peopleInvolved'] || '');
+    this.peopleInvolvedUserIds = Array.isArray(data['peopleInvolvedUserIds'])
+      ? data['peopleInvolvedUserIds']
+      : (Array.isArray(data['peopleInvolved'])
+        ? data['peopleInvolved'].map((name: string) => this.matchUserId(name)).filter(Boolean)
+        : []);
     this.outstandingIssues = Array.isArray(data['outstandingIssues']) ? data['outstandingIssues'].join('\n') : (data['outstandingIssues'] || '');
     this.outstandingActions = data['outstandingActions'] || '';
     this.importantInfo = data['importantInformation'] || '';
@@ -451,8 +520,8 @@ export class CreateEntryComponent implements OnInit {
     if (!this.handoverTitle.trim()) { this.handoverTitleError = 'Handover title is required'; valid = false; }
     if (!this.handoverTypeId) { this.handoverTypeError = 'Handover type is required'; valid = false; }
     if (!this.handoverDateTime) { this.handoverDateTimeError = 'Date and time are required'; valid = false; }
-    if (!this.handoverFrom.trim()) { this.handoverFromError = 'Handover from is required'; valid = false; }
-    if (!this.handoverTo.trim()) { this.handoverToError = 'Handover to is required'; valid = false; }
+    if (!this.handoverFromUserId) { this.handoverFromError = 'Handover from is required'; valid = false; }
+    if (!this.handoverToUserId) { this.handoverToError = 'Handover to is required'; valid = false; }
     if (!this.priority) { this.priorityError = 'Priority is required'; valid = false; }
     if (!this.operationalSummary.trim()) { this.operationalSummaryError = 'Operational summary is required'; valid = false; }
     if (this.operationalSummary.length > 5000) { this.operationalSummaryError = 'Operational summary must be under 5000 characters'; valid = false; }
@@ -636,6 +705,9 @@ export class CreateEntryComponent implements OnInit {
     this.handoverDateTime = '';
     this.handoverFrom = '';
     this.handoverTo = '';
+    this.handoverFromUserId = '';
+    this.handoverToUserId = '';
+    this.peopleInvolvedUserIds = [];
     this.handoverLocation = '';
     this.operationalSummary = '';
     this.operationalSummaryLength = 0;
@@ -779,6 +851,24 @@ export class CreateEntryComponent implements OnInit {
     });
   }
 
+  onHandoverFromChange(value: string): void {
+    this.handoverFromUserId = value;
+    this.handoverFromError = '';
+    const user = this.orgUsers.find(u => u.id === value);
+    this.handoverFrom = user ? `${user.firstName} ${user.lastName}`.trim() : '';
+  }
+
+  onHandoverToChange(value: string): void {
+    this.handoverToUserId = value;
+    this.handoverToError = '';
+    const user = this.orgUsers.find(u => u.id === value);
+    this.handoverTo = user ? `${user.firstName} ${user.lastName}`.trim() : '';
+  }
+
+  onPeopleInvolvedChange(values: string[]): void {
+    this.peopleInvolvedUserIds = values;
+  }
+
   // ==================== Save / Submit ====================
 
   onSaveDraft(): void {
@@ -849,8 +939,13 @@ export class CreateEntryComponent implements OnInit {
       if (this.location) entryPayload.location = this.location;
 
       const data: any = {};
-      const peopleArr = this.peopleInvolved.split(',').map(s => s.trim()).filter(Boolean);
-      if (peopleArr.length) data['peopleInvolved'] = peopleArr;
+      if (this.peopleInvolvedUserIds.length) {
+        data['peopleInvolved'] = this.peopleInvolvedUserIds.map(id => {
+          const user = this.orgUsers.find(u => u.id === id);
+          return user ? `${user.firstName} ${user.lastName}`.trim() : id;
+        });
+        data['peopleInvolvedUserIds'] = this.peopleInvolvedUserIds;
+      }
       if (this.immediateActionsTaken) data['immediateActionsTaken'] = this.immediateActionsTaken;
       if (this.severityScore) data['severityScore'] = Number(this.severityScore);
       entryPayload.data = data;
@@ -863,8 +958,16 @@ export class CreateEntryComponent implements OnInit {
       entryPayload.handoverTypeId = this.handoverTypeId;
 
       const data: any = {};
-      if (this.handoverFrom) data['handoverFrom'] = this.handoverFrom;
-      if (this.handoverTo) data['handoverTo'] = this.handoverTo;
+      if (this.handoverFromUserId) {
+        const user = this.orgUsers.find(u => u.id === this.handoverFromUserId);
+        data['handoverFrom'] = user ? `${user.firstName} ${user.lastName}`.trim() : '';
+        data['handoverFromUserId'] = this.handoverFromUserId;
+      }
+      if (this.handoverToUserId) {
+        const user = this.orgUsers.find(u => u.id === this.handoverToUserId);
+        data['handoverTo'] = user ? `${user.firstName} ${user.lastName}`.trim() : '';
+        data['handoverToUserId'] = this.handoverToUserId;
+      }
       if (this.handoverLocation) data['handoverLocation'] = this.handoverLocation;
       const issuesArr = this.outstandingIssues.split('\n').map(s => s.trim()).filter(Boolean);
       if (issuesArr.length) data['outstandingIssues'] = issuesArr;
@@ -986,7 +1089,9 @@ export class CreateEntryComponent implements OnInit {
       this.occurredAt = parsed.occurredAt;
     }
     if (parsed.peopleInvolved) {
-      this.peopleInvolved = Array.isArray(parsed.peopleInvolved) ? parsed.peopleInvolved.join(', ') : parsed.peopleInvolved;
+      const arr = Array.isArray(parsed.peopleInvolved) ? parsed.peopleInvolved : [parsed.peopleInvolved];
+      this.peopleInvolved = arr.join(', ');
+      this.peopleInvolvedUserIds = arr.map((name: string) => this.matchUserId(name)).filter(Boolean);
     }
     if (parsed.immediateActionsTaken) {
       this.immediateActionsTaken = parsed.immediateActionsTaken;

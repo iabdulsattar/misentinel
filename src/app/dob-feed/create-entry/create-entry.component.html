@@ -234,13 +234,12 @@
               </div>
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">People Involved</label>
-                <div class="relative mt-1.5">
-                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2-5 6-5s6 2 6 5"/><circle cx="18" cy="9" r="2"/></svg>
-                  <input
-                    type="text"
-                    [(ngModel)]="peopleInvolved" name="peopleInvolved"
-                    placeholder="Add people involved"
-                    class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+                <div class="mt-1.5">
+                  <app-multi-select
+                    [options]="peopleInvolvedUserOptions"
+                    [defaultSelected]="peopleInvolvedUserIds"
+                    (selectionChange)="onPeopleInvolvedChange($event)"
+                  />
                 </div>
               </div>
               <div>
@@ -331,20 +330,32 @@
             <div class="grid grid-cols-3 gap-4 mt-4">
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Handover From <span class="text-red-500">*</span></label>
-                <input
-                  [(ngModel)]="handoverFrom" name="handoverFrom"
-                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
-                  placeholder="Person handing over">
+                <div class="mt-1.5">
+                  <app-rich-select
+                    [options]="handoverUserOptions"
+                    [value]="handoverFromUserId"
+                    [disabled]="isLoadingData"
+                    placeholder="Select person handing over"
+                    [showSearch]="true"
+                    (valueChange)="onHandoverFromChange($event)"
+                  />
+                </div>
                 @if (handoverFromError) {
                   <p class="mt-1 text-xs text-red-500">{{ handoverFromError }}</p>
                 }
               </div>
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Handover To <span class="text-red-500">*</span></label>
-                <input
-                  [(ngModel)]="handoverTo" name="handoverTo"
-                  class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400"
-                  placeholder="Person receiving">
+                <div class="mt-1.5">
+                  <app-rich-select
+                    [options]="handoverUserOptions"
+                    [value]="handoverToUserId"
+                    [disabled]="isLoadingData"
+                    placeholder="Select person receiving"
+                    [showSearch]="true"
+                    (valueChange)="onHandoverToChange($event)"
+                  />
+                </div>
                 @if (handoverToError) {
                   <p class="mt-1 text-xs text-red-500">{{ handoverToError }}</p>
                 }

@@ -35,22 +35,25 @@ export class UsersTableComponent {
   searchTerm = '';
 
   get totalPages(): number {
-    return Math.max(1, Math.ceil(this.total / this.size));
+    const safeTotal = Number(this.total) || 0;
+    const safeSize = Number(this.size) || 10;
+    return Math.max(1, Math.ceil(safeTotal / safeSize));
   }
 
   get visiblePages(): (number | '...')[] {
     const pages: (number | '...')[] = [];
     const total = this.totalPages;
+    const current = Number(this.page) || 0;
     if (total <= 7) {
       for (let i = 0; i < total; i++) pages.push(i);
       return pages;
     }
     pages.push(0);
-    if (this.page > 2) pages.push('...');
-    const start = Math.max(1, this.page - 1);
-    const end = Math.min(total - 2, this.page + 1);
+    if (current > 2) pages.push('...');
+    const start = Math.max(1, current - 1);
+    const end = Math.min(total - 2, current + 1);
     for (let i = start; i <= end; i++) pages.push(i);
-    if (this.page < total - 3) pages.push('...');
+    if (current < total - 3) pages.push('...');
     pages.push(total - 1);
     return pages;
   }
@@ -61,8 +64,9 @@ export class UsersTableComponent {
   }
 
   goToPage(page: number) {
-    if (page >= 0 && page < this.totalPages) {
-      this.pageChange.emit(page);
+    const target = Number(page);
+    if (Number.isInteger(target) && target >= 0 && target < this.totalPages) {
+      this.pageChange.emit(target);
     }
   }
 }
