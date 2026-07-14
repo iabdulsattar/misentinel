@@ -3,12 +3,17 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { UserService } from '../../core/services/user.service';
+import { AuthService } from '../../core/services/auth.service';
+import { EdobService } from '../../core/services/edob.service';
 import { ServiceUser, CreateUserRequest, UpdateUserRequest } from '../../core/models/user.models';
+import { AssignRolesRequest } from '../../core/models/edob.models';
+import { Role } from '../../core/models/edob.models';
+import { MultiSelectComponent, Option as MultiOption } from '../../shared/components/form/multi-select/multi-select.component';
 
 @Component({
   selector: 'app-add-user',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, MultiSelectComponent],
   templateUrl: './add-user.component.html',
   styles: ``
 })
@@ -30,7 +35,17 @@ export class AddUserComponent implements OnInit {
     location: '',
     canAccessWeb: true,
     canAccessMobile: true,
+    serviceCode: 'edob',
+    roleIds: [] as string[],
   };
+
+  roles: Role[] = [];
+  loadingRoles = false;
+  companyName = 'ABC Security';
+
+  get roleOptions(): MultiOption[] {
+    return this.roles.map(r => ({ value: r.id, text: r.name }));
+  }
 
   profileImage: string | null = null;
   showCamera = false;
@@ -40,6 +55,8 @@ export class AddUserComponent implements OnInit {
 
   constructor(
     private userService: UserService,
+    private authService: AuthService,
+    private edobService: EdobService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -51,6 +68,41 @@ export class AddUserComponent implements OnInit {
     if (this.isEditMode && this.userId) {
       this.loadUser(this.userId);
     }
+
+    this.loadRoles();
+    this.loadCompanyName();
+  }
+
+  private loadRoles(): void {
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+
+    this.loadingRoles = true;
+    this.edobService.listRoles(orgId).subscribe({
+      next: (roles: Role[]) => {
+        this.roles = roles;
+        this.loadingRoles = false;
+      },
+      error: () => {
+        this.roles = [];
+        this.loadingRoles = false;
+      }
+    });
+  }
+
+  private loadCompanyName(): void {
+    const token = this.authService.getAccessToken();
+    if (!token) return;
+
+    this.authService.getSession(token).subscribe({
+      next: (session) => {
+        const org = session.organizations?.[0];
+        if (org?.name) {
+          this.companyName = org.name;
+        }
+      },
+      error: () => {}
+    });
   }
 
   ngOnDestroy(): void {
@@ -86,6 +138,7 @@ export class AddUserComponent implements OnInit {
         this.form.location = user.location || '';
         this.form.canAccessWeb = user.canAccessWeb ?? true;
         this.form.canAccessMobile = user.canAccessMobile ?? true;
+        this.form.roleIds = user.roleIds || [];
         this.profileImage = (user as any).profileImage || null;
         this.loading = false;
       },
@@ -196,9 +249,24 @@ export class AddUserComponent implements OnInit {
 
       this.userService.updateUser(orgId, this.userId, payload).subscribe({
         next: () => {
-          this.saving = false;
-          this.successMessage = 'User updated successfully.';
-          setTimeout(() => this.router.navigate(['/user-management']), 1000);
+          if (this.form.roleIds.length && this.userId) {
+            const rolesPayload: AssignRolesRequest = { roleIds: this.form.roleIds };
+            this.edobService.assignRolesToUser(orgId, this.userId, rolesPayload).subscribe({
+              next: () => {
+                this.saving = false;
+                this.successMessage = 'User updated successfully.';
+                setTimeout(() => this.router.navigate(['/user-management']), 1000);
+              },
+              error: () => {
+                this.saving = false;
+                this.errorMessage = 'Failed to update user roles.';
+              }
+            });
+          } else {
+            this.saving = false;
+            this.successMessage = 'User updated successfully.';
+            setTimeout(() => this.router.navigate(['/user-management']), 1000);
+          }
         },
         error: () => {
           this.saving = false;
@@ -216,10 +284,12 @@ export class AddUserComponent implements OnInit {
         location: this.form.location.trim() || undefined,
         canAccessWeb: this.form.canAccessWeb,
         canAccessMobile: this.form.canAccessMobile,
+        serviceCode: this.form.serviceCode || 'edob',
+        roleIds: this.form.roleIds.length ? this.form.roleIds : undefined,
         sendInvite: true,
       };
 
-      this.userService.createUser(orgId, payload).subscribe({
+      this.userService.createUser(orgId, payload, this.companyName).subscribe({
         next: () => {
           this.saving = false;
           this.successMessage = 'User created and invitation sent successfully.';

@@ -153,6 +153,7 @@ export interface Entry {
   occurredAt?: string;
   incidentTypeId?: string;
   handoverTypeId?: string;
+  handoverFromUserId?: string;
   location?: string;
   [key: string]: any;
 }
@@ -227,8 +228,12 @@ export interface Role {
   code: string;
   name: string;
   description?: string;
+  color?: string;
   permissions: string[];
   active: boolean;
+  source?: string;
+  permissionCount?: number;
+  userCount?: number;
   createdAt?: string;
   updatedAt?: string;
   [key: string]: any;
@@ -238,6 +243,7 @@ export interface CreateRoleRequest {
   code: string;
   name: string;
   description?: string;
+  color?: string;
   permissions: string[];
   active?: boolean;
 }
@@ -246,6 +252,7 @@ export interface UpdateRoleRequest {
   code?: string;
   name?: string;
   description?: string;
+  color?: string;
   permissions?: string[];
   active?: boolean;
 }
@@ -279,5 +286,24 @@ export interface Comment {
   role?: string;
   time?: string;
   img?: number;
+  [key: string]: any;
+}
+
+// -------- Permissions --------
+export interface Permission {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string;
+  group?: string;
+  [key: string]: any;
+}
+
+export interface PermissionsGrouped {
+  [group: string]: Permission[];
+}
+
+export interface MyPermissionsResponse {
+  permissions: string[];
   [key: string]: any;
 }

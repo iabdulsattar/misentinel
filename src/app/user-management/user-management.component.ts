@@ -3,10 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../core/services/user.service';
+import { EdobService } from '../core/services/edob.service';
 import { SendInviteModalComponent } from './send-invite-modal/send-invite-modal.component';
 import { DeactivateUserModalComponent } from './deactivate-user-modal/deactivate-user-modal.component';
 import { ReactivateUserModalComponent } from './reactivate-user-modal/reactivate-user-modal.component';
 import { UsersTableComponent, TableUser } from '../shared/components/users/users-table/users-table.component';
+import { RolesTableComponent } from '../shared/components/roles/roles-table/roles-table.component';
+import { Role } from '../core/models/edob.models';
 
 interface User {
   id?: string;
@@ -38,7 +41,7 @@ interface PageMeta {
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SendInviteModalComponent, DeactivateUserModalComponent, ReactivateUserModalComponent, UsersTableComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SendInviteModalComponent, DeactivateUserModalComponent, ReactivateUserModalComponent, UsersTableComponent, RolesTableComponent],
   templateUrl: './user-management.component.html',
   styles: ``
 })
@@ -57,6 +60,15 @@ export class UserManagementComponent implements OnInit {
   showInviteModal = false;
   showDeactivateModal = false;
   showReactivateModal = false;
+
+  roles: Role[] = [];
+  rolesLoading = false;
+  rolesSearchQuery = '';
+  private rolesSearchDebounce: any;
+  rolesCurrentPage = 0;
+  rolesPageSize = 10;
+  rolesTotal = 0;
+  rolesTotalPages = 0;
 
   currentPage = 0;
   pageSize = 10;
@@ -91,11 +103,18 @@ export class UserManagementComponent implements OnInit {
     'Not Invited': { icon: 'ti-circle-minus', color: 'text-slate-400' },
   };
 
-  constructor(private userService: UserService, private router: Router) {}
+  constructor(private userService: UserService, private edobService: EdobService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadUsers();
     this.loadStats();
+  }
+
+  setActiveTab(index: number): void {
+    this.activeTab = index;
+    if (index === 1) {
+      this.loadRoles();
+    }
   }
 
   private getOrgId(): string | null {
@@ -118,7 +137,7 @@ export class UserManagementComponent implements OnInit {
 
     this.userService.listUsers(orgId, { page: this.currentPage, size: this.pageSize, q: this.searchQuery.trim() || undefined }).subscribe({
       next: (res) => {
-        const payload = res?.data ?? res;
+        const payload = res?.['data'] ?? res;
         const items = Array.isArray(payload) ? payload : payload?.content ?? payload?.items ?? [];
         this.users = items.map((item: any, index: number) => ({
           id: item.id,
@@ -177,12 +196,45 @@ export class UserManagementComponent implements OnInit {
 
     this.userService.getStats(orgId).subscribe({
       next: (res) => {
-        this.stats = res?.data ?? res;
+        this.stats = res?.['data'] ?? res;
       },
       error: () => {
         this.stats = null;
       },
     });
+  }
+
+  loadRoles(): void {
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+
+    this.rolesLoading = true;
+    this.errorMessage = '';
+    this.edobService.listRoles(orgId).subscribe({
+      next: (data: any) => {
+        const payload = data?.data ?? data;
+        this.roles = Array.isArray(payload) ? payload : [];
+        this.rolesTotal = this.roles.length;
+        this.rolesLoading = false;
+      },
+      error: () => {
+        this.roles = [];
+        this.rolesLoading = false;
+      },
+    });
+  }
+
+  onRolesSearch(): void {
+    if (this.rolesSearchDebounce) clearTimeout(this.rolesSearchDebounce);
+    this.rolesSearchDebounce = setTimeout(() => {
+      this.rolesCurrentPage = 0;
+      this.loadRoles();
+    }, 400);
+  }
+
+  onRolesPageChange(page: number): void {
+    this.rolesCurrentPage = page;
+    this.loadRoles();
   }
 
   onSearch(): void {
@@ -254,6 +306,12 @@ export class UserManagementComponent implements OnInit {
 
     pages.push(total - 1);
     return pages;
+  }
+
+  get rolesShowingText(): string {
+    const start = this.rolesCurrentPage * this.rolesPageSize + 1;
+    const end = Math.min((this.rolesCurrentPage + 1) * this.rolesPageSize, this.rolesTotal);
+    return `Showing ${start} to ${end} of ${this.rolesTotal} roles`;
   }
 
   get tableUsers(): TableUser[] {
@@ -335,10 +393,6 @@ export class UserManagementComponent implements OnInit {
     return this.selectedUser?.lastLogin || '';
   }
 
-  setActiveTab(index: number): void {
-    this.activeTab = index;
-  }
-
   selectUser(user: User): void {
     if (this.selectedUser?.id === user.id && this.showDetail) {
       this.showDetail = false;
@@ -397,7 +451,7 @@ export class UserManagementComponent implements OnInit {
     if (!this.selectedUser?.id) return;
     const orgId = this.getOrgId();
     if (!orgId) return;
-    this.userService.sendInvitation(orgId, this.selectedUser.id).subscribe({
+    this.userService.sendInvitation(orgId, this.selectedUser.id, 'ABC Security').subscribe({
       next: () => {
         this.onInviteSent();
       },
@@ -410,6 +464,10 @@ export class UserManagementComponent implements OnInit {
   editUser(): void {
     if (!this.selectedUser?.id) return;
     this.router.navigate(['/users/add-user'], { queryParams: { id: this.selectedUser.id } });
+  }
+
+  onRoleRowClick(role: Role): void {
+    this.router.navigate(['/roles/add-role'], { queryParams: { id: role.id } });
   }
 
   openDeactivateModal(): void {

@@ -955,11 +955,7 @@ export class CreateEntryComponent implements OnInit {
 
       const data: any = {};
       if (this.peopleInvolvedUserIds.length) {
-        data['peopleInvolved'] = this.peopleInvolvedUserIds.map(id => {
-          const user = this.orgUsers.find(u => u.id === id);
-          return user ? `${user.firstName} ${user.lastName}`.trim() : id;
-        });
-        data['peopleInvolvedUserIds'] = this.peopleInvolvedUserIds;
+        data['peopleInvolved'] = this.peopleInvolvedUserIds;
       }
       if (this.immediateActionsTaken) data['immediateActionsTaken'] = this.immediateActionsTaken;
       if (this.severityScore) data['severityScore'] = Number(this.severityScore);
@@ -971,13 +967,9 @@ export class CreateEntryComponent implements OnInit {
       if (this.assignedToUserId) entryPayload.assignedToUserId = this.assignedToUserId;
       if (this.occurredAt) entryPayload.occurredAt = new Date(this.handoverDateTime).toISOString();
       entryPayload.handoverTypeId = this.handoverTypeId;
+      if (this.handoverFromUserId) entryPayload.handoverFromUserId = this.handoverFromUserId;
 
       const data: any = {};
-      if (this.handoverFromUserId) {
-        const user = this.orgUsers.find(u => u.id === this.handoverFromUserId);
-        data['handoverFrom'] = user ? `${user.firstName} ${user.lastName}`.trim() : '';
-        data['handoverFromUserId'] = this.handoverFromUserId;
-      }
       if (this.handoverToUserId) {
         const user = this.orgUsers.find(u => u.id === this.handoverToUserId);
         data['handoverTo'] = user ? `${user.firstName} ${user.lastName}`.trim() : '';

@@ -9,6 +9,7 @@ import {
   LoginRequest,
   LoginResponse,
   ProfileResponse,
+  UpdateProfileRequest,
   InviteMemberRequest,
   InviteMemberResponse,
   InvitationResponse,
@@ -81,6 +82,18 @@ export class AuthService {
     }
 
     return this.api.get<ApiWrapper<ProfileResponse>>('/api/v1/auth/me', headers as any).pipe(
+      map((res) => res.data)
+    );
+  }
+
+  // PATCH /api/v1/auth/me/profile
+  updateProfile(payload: UpdateProfileRequest, token?: string): Observable<ProfileResponse> {
+    const accessToken = token ?? this.getAccessToken();
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+    });
+    return this.api.patch<ApiWrapper<ProfileResponse>>('/api/v1/auth/me/profile', payload, headers).pipe(
       map((res) => res.data)
     );
   }

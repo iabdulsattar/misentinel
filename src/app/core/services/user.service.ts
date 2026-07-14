@@ -4,16 +4,19 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
+import { ApiWrapper } from '../models/auth.models';
 import {
   ServiceUser,
   UserStats,
   ListUsersParams,
+  PagedUsers,
   CreateUserRequest,
   UpdateUserRequest,
   DeactivateUserRequest,
   UserInvitation,
   InvitationPreview,
   AcceptUserInvitationRequest,
+  ResendCredentialsRequest,
 } from '../models/user.models';
 
 /**
@@ -58,7 +61,7 @@ export class UserService {
   // ==================== Users ====================
 
   // 13.1 GET /api/v1/users/organizations/{orgId}/users
-  listUsers(orgId: string, options: ListUsersParams = {}): Observable<any> {
+  listUsers(orgId: string, options: ListUsersParams = {}): Observable<PagedUsers> {
     let params = new HttpParams();
     if (options.q) params = params.set('q', options.q);
     if (options.status) params = params.set('status', options.status);
@@ -67,13 +70,16 @@ export class UserService {
 
     const query = params.toString();
     const path = `${this.base(orgId)}/users${query ? `?${query}` : ''}`;
-    // Returned as-is (envelope) so callers keep access to pagination `meta`.
-    return this.api.get<any>(path, this.authHeaders());
+    return this.api.get<ApiWrapper<PagedUsers>>(path, this.authHeaders()).pipe(
+      map(res => res.data)
+    );
   }
 
   // 13.2 GET /api/v1/users/organizations/{orgId}/users/stats
-  getStats(orgId: string): Observable<any> {
-    return this.api.get<any>(`${this.base(orgId)}/users/stats`, this.authHeaders());
+  getStats(orgId: string): Observable<UserStats> {
+    return this.api.get<any>(`${this.base(orgId)}/users/stats`, this.authHeaders()).pipe(
+      map(res => (res && res.data) ? res.data : res)
+    );
   }
 
   // 13.3 GET /api/v1/users/organizations/{orgId}/users/{userId}
@@ -87,7 +93,7 @@ export class UserService {
   createUser(
     orgId: string,
     payload: CreateUserRequest,
-    companyName = 'ABC Security',
+    companyName: string,
   ): Observable<ServiceUser> {
     return this.api
       .post<any>(`${this.base(orgId)}/users`, payload, this.jsonHeaders({ 'X-Company-Name': companyName }))
@@ -119,10 +125,19 @@ export class UserService {
       .pipe(this.unwrap<ServiceUser>());
   }
 
+  // Resend credentials
+  resendCredentials(orgId: string, userId: string, payload: ResendCredentialsRequest): Observable<any> {
+    return this.api.post(
+      `${this.base(orgId)}/users/${userId}/credentials/resend`,
+      payload,
+      this.jsonHeaders()
+    );
+  }
+
   // ==================== Invitations ====================
 
   // 13.8 POST /api/v1/users/organizations/{orgId}/users/{userId}/invitations/send
-  sendInvitation(orgId: string, userId: string, companyName = 'ABC Security'): Observable<UserInvitation> {
+  sendInvitation(orgId: string, userId: string, companyName: string): Observable<UserInvitation> {
     return this.api
       .post<any>(
         `${this.base(orgId)}/users/${userId}/invitations/send`,

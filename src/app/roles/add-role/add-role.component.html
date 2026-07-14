@@ -92,17 +92,17 @@
             <p class="sticky top-0 bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500 px-3 py-2 rounded-md">{{ group.title }}</p>
 
             <div class="divide-y divide-slate-100">
-              @for (perm of group.permissions; track perm.key) {
+              @for (perm of group.permissions; track perm['key']) {
                 <label class="flex flex-wrap items-start gap-3 py-3.5 px-1 cursor-pointer" [hidden]="!matches(perm)">
-                  <input type="checkbox" [(ngModel)]="perm.checked" [name]="perm.key" class="mt-1 h-[18px] w-[18px] rounded accent-brand-500" />
+                  <input type="checkbox" [(ngModel)]="perm['checked']" [name]="perm['key']" class="mt-1 h-[18px] w-[18px] rounded accent-brand-500" />
                   <span class="flex-1">
-                    <span class="block text-sm font-semibold text-slate-900">{{ perm.name }}</span>
-                    <span class="block text-xs text-slate-400">{{ perm.description }}</span>
+                    <span class="block text-sm font-semibold text-slate-900">{{ perm['name'] }}</span>
+                    <span class="block text-xs text-slate-400">{{ perm['description'] }}</span>
                   </span>
                   <button type="button" (click)="toggleExpand(perm, $event)" class="mt-1 text-slate-400 hover:text-slate-600">
-                    <svg class="w-4 h-4 transition-transform" [class.rotate-90]="perm.expanded" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>
+                    <svg class="w-4 h-4 transition-transform" [class.rotate-90]="perm['expanded']" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>
                   </button>
-                  @if (perm.expanded) {
+                  @if (perm['expanded']) {
                     <div class="basis-full pl-7 pt-1 text-xs text-slate-400">Applies across all modules where this action is available.</div>
                   }
                 </label>

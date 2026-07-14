@@ -25,7 +25,7 @@
       <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ errorMessage }}</div>
     }
 
-    @if (activeTab === 0 || activeTab === 1) {
+    @if (activeTab === 0) {
     <div class="grid grid-cols-12 gap-6">
       <div class="col-span-12 space-y-6"
            [ngClass]="showDetail ? 'xl:col-span-8' : 'xl:col-span-12'">
@@ -189,6 +189,57 @@
         </aside>
       </div>
       }
+    </div>
+    }
+
+    @if (activeTab === 1) {
+    <div class="grid grid-cols-12 gap-6">
+      <div class="col-span-12 space-y-6">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 mb-3">
+              <i class="ti ti-shield-check text-xl text-blue-600"></i>
+            </div>
+            <p class="text-sm text-slate-500">Total Roles</p>
+            <p class="mt-0.5 text-2xl font-bold text-slate-900">{{ roles.length }}</p>
+            <p class="mt-2 text-xs text-slate-400">{{ roles.length ? 'Configured roles' : 'No roles' }}</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 mb-3">
+              <i class="ti ti-check text-xl text-green-600"></i>
+            </div>
+            <p class="text-sm text-slate-500">Active Roles</p>
+            <p class="mt-0.5 text-2xl font-bold text-slate-900">{{ roles.filter(r => r.active).length }}</p>
+            <p class="mt-2 text-xs text-slate-400">Available for assignment</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 mb-3">
+              <i class="ti ti-users text-xl text-orange-500"></i>
+            </div>
+            <p class="text-sm text-slate-500">Users with Roles</p>
+            <p class="mt-0.5 text-2xl font-bold text-slate-900">{{ roles.reduce((sum, r) => sum + (r.userCount || 0), 0) }}</p>
+            <p class="mt-2 text-xs text-slate-400">Across all roles</p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="relative w-full max-w-md">
+            <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" [(ngModel)]="rolesSearchQuery" (ngModelChange)="onRolesSearch()" placeholder="Search roles..." class="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
+          </div>
+        </div>
+
+        <app-roles-table
+          [roles]="roles"
+          [loading]="rolesLoading"
+          [total]="rolesTotal"
+          [page]="rolesCurrentPage"
+          [size]="rolesPageSize"
+          [showingText]="rolesShowingText"
+          (rowClick)="onRoleRowClick($event)"
+          (pageChange)="onRolesPageChange($event)"
+          (searchChange)="onRolesSearch()"
+        />
+      </div>
     </div>
     }
   </div>

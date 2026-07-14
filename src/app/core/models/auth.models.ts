@@ -175,6 +175,16 @@ export interface ResetPasswordResponse {
   message?: string;
 }
 
+export interface UpdateProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  country?: string;
+  jobTitle?: string;
+  phoneNumber?: string;
+  employeeCount?: string;
+  profileImage?: string;
+}
+
 export interface ApiMeta {
   timestamp: string;
   requestId: string;
@@ -199,8 +209,19 @@ export interface SessionSubscription {
   active: boolean;
   status?: string;
   planCode?: string;
+  planName?: string;
   daysUntilExpiry: number | null;
   features?: SubscriptionFeatures;
+}
+
+export interface SessionUser {
+  id: string;
+  keycloakId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  enabled: boolean;
+  [key: string]: any;
 }
 
 export interface SessionOrganization {
@@ -209,15 +230,7 @@ export interface SessionOrganization {
   slug?: string;
   role?: string;
   subscription?: SessionSubscription;
-  user?: {
-    id: string;
-    keycloakId: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    enabled: boolean;
-    [key: string]: any;
-  };
+  user?: SessionUser;
 }
 
 export interface SessionResponse {

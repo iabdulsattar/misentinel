@@ -28,7 +28,10 @@ import {
   UpdateRoleRequest,
   AssignRolesRequest,
   OrgUser,
-  Comment
+  Comment,
+  Permission,
+  PermissionsGrouped,
+  MyPermissionsResponse
 } from '../models/edob.models';
 
 @Injectable({ providedIn: 'root' })
@@ -37,6 +40,11 @@ export class EdobService {
 
   private basePath(orgId: string) {
     return `/api/v1/edob/organizations/${orgId}`;
+  }
+
+  // GET /api/v1/edob/organizations/{orgId}/dashboard
+  getDashboard(orgId: string): Observable<any> {
+    return this.api.get<any>(`${this.basePath(orgId)}/dashboard`);
   }
 
   // ==================== Entry Types ====================
@@ -220,11 +228,40 @@ export class EdobService {
       .pipe(map(res => res.data));
   }
 
+  // PATCH /api/v1/edob/organizations/{orgId}/comments/{commentId}
+  updateComment(orgId: string, commentId: string, payload: { body: string }): Observable<Comment> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.patch<ApiWrapper<Comment>>(`${this.basePath(orgId)}/comments/${commentId}`, payload, headers)
+      .pipe(map(res => res.data));
+  }
+
+  // DELETE /api/v1/edob/organizations/{orgId}/comments/{commentId}
+  deleteComment(orgId: string, commentId: string): Observable<any> {
+    return this.api.delete(`${this.basePath(orgId)}/comments/${commentId}`);
+  }
+
+  // ==================== Permissions ====================
+
+  // GET /api/v1/edob/organizations/{orgId}/permissions/grouped
+  getPermissionsGrouped(orgId: string): Observable<PermissionsGrouped> {
+    return this.api.get<ApiWrapper<PermissionsGrouped>>(`${this.basePath(orgId)}/permissions/grouped`).pipe(map(res => res.data));
+  }
+
+  // GET /api/v1/edob/organizations/{orgId}/permissions
+  listPermissions(orgId: string): Observable<Permission[]> {
+    return this.api.get<ApiWrapper<Permission[]>>(`${this.basePath(orgId)}/permissions`).pipe(map(res => res.data));
+  }
+
+  // GET /api/v1/edob/organizations/{orgId}/me/permissions
+  getMyPermissions(orgId: string): Observable<MyPermissionsResponse> {
+    return this.api.get<ApiWrapper<MyPermissionsResponse>>(`${this.basePath(orgId)}/me/permissions`).pipe(map(res => res.data));
+  }
+
   // ==================== Roles ====================
 
   // GET /api/v1/edob/organizations/{orgId}/roles
   listRoles(orgId: string): Observable<Role[]> {
-    return this.api.get<Role[]>(`${this.basePath(orgId)}/roles`);
+    return this.api.get<ApiWrapper<Role[]>>(`${this.basePath(orgId)}/roles`).pipe(map(res => res.data));
   }
 
   // POST /api/v1/edob/organizations/{orgId}/roles

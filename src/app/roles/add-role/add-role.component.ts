@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { EdobService } from '../../core/services/edob.service';
+import { Role, CreateRoleRequest, UpdateRoleRequest } from '../../core/models/edob.models';
 
 interface Permission {
   key: string;
@@ -23,44 +25,117 @@ interface PermissionGroup {
   templateUrl: './add-role.component.html',
   styles: ``,
 })
-export class AddRoleComponent {
+export class AddRoleComponent implements OnInit {
   roleName = '';
   roleDesc = '';
   status: 'active' | 'inactive' = 'active';
   search = '';
+  isEditMode = false;
+  roleId: string | null = null;
+  saving = false;
+  errorMessage = '';
 
   readonly maxNameLength = 100;
   readonly maxDescLength = 300;
 
-  groups: PermissionGroup[] = [
-    {
-      title: 'Entry & Feed Management',
-      permissions: [
-        { key: 'entry.view', name: 'View Entries', description: 'View all entries and details.', checked: true, expanded: false },
-        { key: 'entry.create', name: 'Create Entries', description: 'Create new entries in the system.', checked: true, expanded: false },
-        { key: 'entry.edit', name: 'Edit Entries', description: 'Edit existing entries.', checked: true, expanded: false },
-        { key: 'entry.delete', name: 'Delete Entries', description: 'Delete entries from the system.', checked: false, expanded: false },
-        { key: 'entry.comment', name: 'Add Comments', description: 'Add comments to entries.', checked: true, expanded: false },
-        { key: 'entry.attachments.view', name: 'View Attachments', description: 'View and download attachments.', checked: true, expanded: false },
-      ],
-    },
-    {
-      title: 'Review & Approval',
-      permissions: [
-        { key: 'entry.review', name: 'Review Entries', description: 'Review and approve entries.', checked: false, expanded: false },
-        { key: 'entry.escalate', name: 'Escalate Entries', description: 'Escalate entries to other users.', checked: false, expanded: false },
-      ],
-    },
-    {
-      title: 'Reports & Export',
-      permissions: [
-        { key: 'report.view', name: 'View Reports', description: 'View system reports.', checked: false, expanded: false },
-        { key: 'report.export', name: 'Export Data', description: 'Export entries and reports to file.', checked: false, expanded: false },
-      ],
-    },
-  ];
+  groups: PermissionGroup[] = [];
 
-  constructor(private router: Router) {}
+  constructor(private edobService: EdobService, private router: Router, private route: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    this.roleId = this.route.snapshot.queryParamMap.get('id');
+    this.isEditMode = !!this.roleId;
+
+    if (this.isEditMode && this.roleId) {
+      this.loadRole(this.roleId);
+    }
+
+    this.loadPermissions();
+  }
+
+  private loadRole(id: string): void {
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+
+    this.edobService.getOrgUser(orgId, id).subscribe({
+      next: (role: any) => {
+        this.roleName = role.name || '';
+        this.roleDesc = role.description || '';
+        this.status = role.active ? 'active' : 'inactive';
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load role details.';
+      }
+    });
+  }
+
+  private loadPermissions(): void {
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+
+    this.edobService.listPermissions(orgId).subscribe({
+      next: (perms) => {
+        this.groups = this.groupPermissions(perms);
+      },
+      error: () => {
+        this.groups = this.defaultGroups();
+      }
+    });
+  }
+
+  private groupPermissions(perms: any[]): PermissionGroup[] {
+    const map = new Map<string, Permission[]>();
+    for (const p of perms) {
+      const group = p.group || 'Other';
+      if (!map.has(group)) map.set(group, []);
+      map.get(group)!.push({
+        key: p.code || p.id || '',
+        name: p.name || '',
+        description: p.description || '',
+        checked: false,
+        expanded: false,
+      });
+    }
+    return Array.from(map.entries()).map(([title, permissions]) => ({ title, permissions }));
+  }
+
+  private defaultGroups(): PermissionGroup[] {
+    return [
+      {
+        title: 'Entry & Feed Management',
+        permissions: [
+          { key: 'entry.view', name: 'View Entries', description: 'View all entries and details.', checked: false, expanded: false },
+          { key: 'entry.create', name: 'Create Entries', description: 'Create new entries in the system.', checked: false, expanded: false },
+          { key: 'entry.edit', name: 'Edit Entries', description: 'Edit existing entries.', checked: false, expanded: false },
+          { key: 'entry.delete', name: 'Delete Entries', description: 'Delete entries from the system.', checked: false, expanded: false },
+          { key: 'entry.comment', name: 'Add Comments', description: 'Add comments to entries.', checked: false, expanded: false },
+          { key: 'entry.attachments.view', name: 'View Attachments', description: 'View and download attachments.', checked: false, expanded: false },
+        ],
+      },
+      {
+        title: 'Review & Approval',
+        permissions: [
+          { key: 'entry.review', name: 'Review Entries', description: 'Review and approve entries.', checked: false, expanded: false },
+          { key: 'entry.escalate', name: 'Escalate Entries', description: 'Escalate entries to other users.', checked: false, expanded: false },
+        ],
+      },
+      {
+        title: 'Reports & Export',
+        permissions: [
+          { key: 'report.view', name: 'View Reports', description: 'View system reports.', checked: false, expanded: false },
+          { key: 'report.export', name: 'Export Data', description: 'Export entries and reports to file.', checked: false, expanded: false },
+        ],
+      },
+    ];
+  }
+
+  private getOrgId(): string | null {
+    const remember = localStorage.getItem('remember_device');
+    if (remember === 'true') {
+      return localStorage.getItem('org_id') || localStorage.getItem('organizationId') || null;
+    }
+    return sessionStorage.getItem('org_id') || sessionStorage.getItem('organizationId') || localStorage.getItem('org_id') || localStorage.getItem('organizationId') || null;
+  }
 
   matches(permission: Permission): boolean {
     const q = this.search.trim().toLowerCase();
@@ -91,14 +166,46 @@ export class AddRoleComponent {
   }
 
   saveRole(): void {
-    // Wire up to the roles API when available.
-    const payload = {
+    const orgId = this.getOrgId();
+    if (!orgId) {
+      this.errorMessage = 'Organization not found.';
+      return;
+    }
+
+    const payload: CreateRoleRequest = {
+      code: this.roleName.trim().toUpperCase().replace(/\s+/g, '_'),
       name: this.roleName.trim(),
-      description: this.roleDesc.trim(),
+      description: this.roleDesc.trim() || undefined,
       active: this.status === 'active',
       permissions: this.selectedPermissions,
     };
-    console.log('Save role', payload);
-    this.router.navigate(['/user-management']);
+
+    this.saving = true;
+    this.errorMessage = '';
+
+    if (this.isEditMode && this.roleId) {
+      const updatePayload: UpdateRoleRequest = { ...payload };
+      this.edobService.updateRole(orgId, this.roleId, updatePayload).subscribe({
+        next: () => {
+          this.saving = false;
+          this.router.navigate(['/user-management']);
+        },
+        error: () => {
+          this.saving = false;
+          this.errorMessage = 'Failed to update role.';
+        }
+      });
+    } else {
+      this.edobService.createRole(orgId, payload).subscribe({
+        next: () => {
+          this.saving = false;
+          this.router.navigate(['/user-management']);
+        },
+        error: () => {
+          this.saving = false;
+          this.errorMessage = 'Failed to create role.';
+        }
+      });
+    }
   }
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 
 export interface Option {
   value: string;
@@ -8,13 +8,10 @@ export interface Option {
 
 @Component({
   selector: 'app-multi-select',
-  imports: [
-    CommonModule,
-  ],
+  imports: [CommonModule],
   templateUrl: './multi-select.component.html',
-  styles: ``
 })
-export class MultiSelectComponent {
+export class MultiSelectComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
   @Input() label: string = '';
   @Input() options: Option[] = [];
@@ -25,8 +22,38 @@ export class MultiSelectComponent {
   selectedOptions: string[] = [];
   isOpen = false;
 
+  @ViewChild('containerRef') containerRef!: ElementRef<HTMLDivElement>;
+
+  private handleClickOutside = (event: MouseEvent) => {
+    if (
+      this.isOpen &&
+      this.containerRef &&
+      !this.containerRef.nativeElement.contains(event.target as Node)
+    ) {
+      this.isOpen = false;
+    }
+  };
+
+  ngAfterViewInit() {
+    document.addEventListener('mousedown', this.handleClickOutside);
+  }
+
+  ngOnDestroy() {
+    document.removeEventListener('mousedown', this.handleClickOutside);
+  }
+
   ngOnInit() {
     this.selectedOptions = [...this.defaultSelected];
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['defaultSelected']) {
+      this.selectedOptions = [...(changes['defaultSelected'].currentValue || [])];
+    }
+    if (changes['options']) {
+      const current = changes['options'].currentValue || [];
+      this.selectedOptions = this.selectedOptions.filter(v => current.some((o: Option) => o.value === v));
+    }
   }
 
   toggleDropdown() {
@@ -39,12 +66,12 @@ export class MultiSelectComponent {
     } else {
       this.selectedOptions = [...this.selectedOptions, optionValue];
     }
-    this.selectionChange.emit(this.selectedOptions);
+    this.selectionChange.emit([...this.selectedOptions]);
   }
 
   removeOption(value: string) {
     this.selectedOptions = this.selectedOptions.filter(opt => opt !== value);
-    this.selectionChange.emit(this.selectedOptions);
+    this.selectionChange.emit([...this.selectedOptions]);
   }
 
   get selectedValuesText(): string[] {

@@ -132,3 +132,8 @@ export interface InvitationPreview {
 export interface AcceptUserInvitationRequest {
   password: string;
 }
+
+export interface ResendCredentialsRequest {
+  email: string;
+  password: string;
+}
