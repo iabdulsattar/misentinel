@@ -35,7 +35,7 @@
     @if (activeTab === 0 || activeTab === 1) {
     <div class="grid grid-cols-12 gap-6">
       <div class="col-span-12 space-y-6"
-           [ngClass]="showDetail ? 'xl:col-span-9' : 'xl:col-span-12'">
+           [ngClass]="showDetail ? 'xl:col-span-8' : 'xl:col-span-12'">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div class="rounded-xl border border-slate-200 bg-white p-5">
             <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 mb-3">
@@ -87,7 +87,7 @@
       </div>
 
       @if (showDetail) {
-      <div class="col-span-12 xl:col-span-3">
+      <div class="col-span-12 xl:col-span-4">
         <aside class="rounded-xl border border-slate-200 bg-white p-6">
           <div class="xl:sticky xl:top-6">
           @if (selectedUser) {
