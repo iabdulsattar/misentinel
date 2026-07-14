@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../core/services/user.service';
+import { SendInviteModalComponent } from './send-invite-modal/send-invite-modal.component';
+import { DeactivateUserModalComponent } from './deactivate-user-modal/deactivate-user-modal.component';
+import { ReactivateUserModalComponent } from './reactivate-user-modal/reactivate-user-modal.component';
 
 interface User {
   id?: string;
@@ -24,22 +27,39 @@ interface User {
   joined?: string;
 }
 
+interface PageMeta {
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, SendInviteModalComponent, DeactivateUserModalComponent, ReactivateUserModalComponent],
   templateUrl: './user-management.component.html',
   styles: ``
 })
 export class UserManagementComponent implements OnInit {
   activeTab = 0;
   searchQuery = '';
+  private searchDebounce: any;
   loading = false;
   errorMessage = '';
   stats: any = null;
   users: User[] = [];
   selectedUser: User | null = null;
   showDetail = false;
+  showInviteModal = false;
+  showDeactivateModal = false;
+  showReactivateModal = false;
+
+  currentPage = 0;
+  pageSize = 10;
+  totalPages = 0;
+  totalElements = 0;
+  meta: PageMeta | null = null;
 
   readonly tabs = [
     { label: 'Users' },
@@ -68,24 +88,32 @@ export class UserManagementComponent implements OnInit {
     'Not Invited': { icon: 'ti-circle-minus', color: 'text-slate-400' },
   };
 
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadUsers();
     this.loadStats();
   }
 
+  private getOrgId(): string | null {
+    const remember = localStorage.getItem('remember_device');
+    if (remember === 'true') {
+      return localStorage.getItem('org_id') || localStorage.getItem('organizationId') || null;
+    }
+    return sessionStorage.getItem('org_id') || sessionStorage.getItem('organizationId') || localStorage.getItem('org_id') || localStorage.getItem('organizationId') || null;
+  }
+
   loadUsers(): void {
     this.loading = true;
     this.errorMessage = '';
-    const orgId = localStorage.getItem('org_id') || localStorage.getItem('organizationId') || '';
+    const orgId = this.getOrgId();
     if (!orgId) {
       this.loading = false;
       this.errorMessage = 'No organization selected yet.';
       return;
     }
 
-    this.userService.listUsers(orgId, { page: 0, size: 10, q: this.searchQuery }).subscribe({
+    this.userService.listUsers(orgId, { page: this.currentPage, size: this.pageSize, q: this.searchQuery.trim() || undefined }).subscribe({
       next: (res) => {
         const payload = res?.data ?? res;
         const items = Array.isArray(payload) ? payload : payload?.content ?? payload?.items ?? [];
@@ -108,6 +136,23 @@ export class UserManagementComponent implements OnInit {
           employeeId: `EMP-${String(12 + index).padStart(5, '0')}`,
           joined: item.createdAt ? new Date(item.createdAt).toLocaleString() : '-',
         }));
+
+        if (Array.isArray(payload)) {
+          this.totalElements = this.users.length;
+          this.totalPages = 1;
+        } else {
+          this.meta = {
+            page: payload.page ?? this.currentPage,
+            size: payload.size ?? this.pageSize,
+            totalElements: payload.totalElements ?? this.users.length,
+            totalPages: payload.totalPages ?? 1,
+          };
+          this.currentPage = this.meta.page;
+          this.pageSize = this.meta.size;
+          this.totalElements = this.meta.totalElements;
+          this.totalPages = this.meta.totalPages;
+        }
+
         this.selectedUser = this.selectedUser && this.users.some(user => user.email === this.selectedUser?.email)
           ? this.selectedUser
           : null;
@@ -124,7 +169,7 @@ export class UserManagementComponent implements OnInit {
   }
 
   loadStats(): void {
-    const orgId = localStorage.getItem('org_id') || localStorage.getItem('organizationId') || '';
+    const orgId = this.getOrgId();
     if (!orgId) return;
 
     this.userService.getStats(orgId).subscribe({
@@ -137,13 +182,64 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
-  get filteredUsers(): User[] {
-    if (!this.searchQuery.trim()) return this.users;
-    const q = this.searchQuery.toLowerCase();
-    return this.users.filter(u =>
-      u.name.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q)
-    );
+  onSearch(): void {
+    if (this.searchDebounce) clearTimeout(this.searchDebounce);
+    this.searchDebounce = setTimeout(() => {
+      this.currentPage = 0;
+      this.loadUsers();
+    }, 400);
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 0;
+    this.loadUsers();
+  }
+
+  goToPage(page: number): void {
+    if (page < 0 || page >= this.totalPages) return;
+    this.currentPage = page;
+    this.loadUsers();
+  }
+
+  get startIndex(): number {
+    if (this.totalElements === 0) return 0;
+    return this.currentPage * this.pageSize + 1;
+  }
+
+  get endIndex(): number {
+    if (this.totalElements === 0) return 0;
+    return Math.min((this.currentPage + 1) * this.pageSize, this.totalElements);
+  }
+
+  get pageNumbers(): (number | '...')[] {
+    const pages: (number | '...')[] = [];
+    const total = this.totalPages;
+    const current = this.currentPage;
+
+    if (total <= 7) {
+      for (let i = 0; i < total; i++) pages.push(i);
+      return pages;
+    }
+
+    pages.push(0);
+
+    if (current > 3) {
+      pages.push('...');
+    }
+
+    const start = Math.max(1, current - 1);
+    const end = Math.min(total - 2, current + 1);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    if (current < total - 4) {
+      pages.push('...');
+    }
+
+    pages.push(total - 1);
+    return pages;
   }
 
   setActiveTab(index: number): void {
@@ -161,5 +257,71 @@ export class UserManagementComponent implements OnInit {
 
   closeDetail(): void {
     this.showDetail = false;
+  }
+
+  openInviteModal(): void {
+    this.showInviteModal = true;
+  }
+
+  closeInviteModal(): void {
+    this.showInviteModal = false;
+  }
+
+  onInviteSent(): void {
+    this.showInviteModal = false;
+    if (this.selectedUser) {
+      this.selectedUser = { ...this.selectedUser, invite: 'Pending', inviteSub: new Date().toLocaleString() } as User;
+    }
+  }
+
+  sendInvite(): void {
+    if (!this.selectedUser?.id) return;
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+    this.userService.sendInvitation(orgId, this.selectedUser.id).subscribe({
+      next: () => {
+        this.onInviteSent();
+      },
+      error: () => {
+        alert('Failed to send invitation.');
+      }
+    });
+  }
+
+  editUser(): void {
+    if (!this.selectedUser?.id) return;
+    this.router.navigate(['/users/add-user'], { queryParams: { id: this.selectedUser.id } });
+  }
+
+  openDeactivateModal(): void {
+    this.showDeactivateModal = true;
+  }
+
+  closeDeactivateModal(): void {
+    this.showDeactivateModal = false;
+  }
+
+  onUserDeactivated(): void {
+    this.showDeactivateModal = false;
+    if (this.selectedUser) {
+      this.selectedUser = { ...this.selectedUser, status: 'Inactive' } as User;
+    }
+    this.loadUsers();
+  }
+
+  openReactivateModal(): void {
+    this.showReactivateModal = true;
+  }
+
+  closeReactivateModal(): void {
+    this.showReactivateModal = false;
+  }
+
+  onUserReactivated(): void {
+    this.showReactivateModal = false;
+    if (this.selectedUser) {
+      this.selectedUser = { ...this.selectedUser, status: 'Active' } as User;
+    }
+    this.loadUsers();
   }
 }

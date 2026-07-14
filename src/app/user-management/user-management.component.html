@@ -34,44 +34,38 @@
 
     @if (activeTab === 0 || activeTab === 1) {
     <div class="flex flex-col gap-6 xl:flex-row xl:items-start">
-      <div class="flex-1 min-w-0 space-y-6">
+      <div class="flex-1 min-w-0 w-full space-y-6">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div class="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5">
-            <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50">
+          <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 mb-3">
               <i class="ti ti-users text-xl text-blue-600"></i>
             </div>
-            <div>
-              <p class="text-sm text-slate-500">Total Users</p>
-              <p class="mt-0.5 text-2xl font-bold text-slate-900">{{ stats?.totalUsers ?? stats?.total ?? '-' }}</p>
-              <p class="mt-1 text-xs text-slate-400"><span class="font-semibold text-green-600">{{ stats?.deltaPercent ?? '' }}</span> vs last 30 days</p>
-            </div>
+            <p class="text-sm text-slate-500">Total Users</p>
+            <p class="mt-0.5 text-2xl font-bold text-slate-900">{{ stats?.totalUsers ?? stats?.total ?? '-' }}</p>
+            <p class="mt-2 text-xs text-slate-400"><span class="font-semibold text-green-600">{{ stats?.totalDeltaPercent ?? '' }}</span> vs last 30 days</p>
           </div>
-          <div class="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5">
-            <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-green-50">
+          <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 mb-3">
               <i class="ti ti-circle-check text-xl text-green-600"></i>
             </div>
-            <div>
-              <p class="text-sm text-slate-500">Active Users</p>
-              <p class="mt-0.5 text-2xl font-bold text-slate-900">{{ stats?.activeUsers ?? stats?.active ?? '-' }}</p>
-              <p class="mt-1 text-xs text-slate-400"><span class="font-semibold text-green-600">{{ stats?.activeDelta ?? '' }}</span> vs last 30 days</p>
-            </div>
+            <p class="text-sm text-slate-500">Active Users</p>
+            <p class="mt-0.5 text-2xl font-bold text-slate-900">{{ stats?.activeUsers ?? stats?.active ?? '-' }}</p>
+            <p class="mt-2 text-xs text-slate-400"><span class="font-semibold text-green-600">{{ stats?.activeDeltaPercent ?? '' }}</span> vs last 30 days</p>
           </div>
-          <div class="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5">
-            <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-orange-50">
+          <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 mb-3">
               <i class="ti ti-clock text-xl text-orange-500"></i>
             </div>
-            <div>
-              <p class="text-sm text-slate-500">Inactive Users</p>
-              <p class="mt-0.5 text-2xl font-bold text-slate-900">{{ stats?.inactiveUsers ?? stats?.inactive ?? '-' }}</p>
-              <p class="mt-1 text-xs text-slate-400"><span class="font-semibold text-red-500">{{ stats?.inactiveDelta ?? '' }}</span> vs last 30 days</p>
-            </div>
+            <p class="text-sm text-slate-500">Inactive Users</p>
+            <p class="mt-0.5 text-2xl font-bold text-slate-900">{{ stats?.inactiveUsers ?? stats?.inactive ?? '-' }}</p>
+            <p class="mt-2 text-xs text-slate-400"><span class="font-semibold text-red-500">{{ stats?.inactiveDeltaPercent ?? '' }}</span> vs last 30 days</p>
           </div>
         </div>
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="relative w-full max-w-md">
             <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name or email..." class="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
+            <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()" placeholder="Search by name or email..." class="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
           </div>
           <button class="flex items-center gap-2 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
             <i class="ti ti-download"></i> Export <i class="ti ti-chevron-down text-xs"></i>
@@ -85,19 +79,18 @@
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead>
-                  <tr class="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-500">
-                    <th class="px-5 py-3 font-medium">User</th>
-                    <th class="px-5 py-3 font-medium">Email</th>
-                    <th class="px-5 py-3 font-medium">Role</th>
-                    <th class="px-5 py-3 font-medium">Status</th>
-                    <th class="px-5 py-3 font-medium">Invitation</th>
-                    <th class="px-5 py-3 font-medium">Last Login</th>
-                    <th class="px-5 py-3 font-medium">Created On</th>
-                    <th class="px-5 py-3 text-right font-medium">Actions</th>
+                  <tr class="border-b border-slate-200 text-left text-slate-500">
+                    <th class="font-semibold px-5 py-3 whitespace-nowrap">User</th>
+                    <th class="font-semibold px-5 py-3 whitespace-nowrap">Email</th>
+                    <th class="font-semibold px-5 py-3 whitespace-nowrap">Role</th>
+                    <th class="font-semibold px-5 py-3 whitespace-nowrap">Status</th>
+                    <th class="font-semibold px-5 py-3 whitespace-nowrap">Last Login</th>
+                    <th class="font-semibold px-5 py-3 whitespace-nowrap">Created On</th>
+                    <th class="font-semibold px-5 py-3 whitespace-nowrap text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                  @for (user of filteredUsers; track user.email) {
+                  @for (user of users; track user.email) {
                     <tr class="cursor-pointer transition hover:bg-slate-50" [class.bg-indigo-50/40]="showDetail && selectedUser?.email === user.email" (click)="selectUser(user)">
                       <td class="px-5 py-3.5 whitespace-nowrap">
                         <div class="flex items-center gap-3">
@@ -105,23 +98,17 @@
                           <span class="font-semibold text-slate-800">{{ user.name }}</span>
                         </div>
                       </td>
-                      <td class="px-5 py-3.5 whitespace-nowrap text-slate-600">{{ user.email }}</td>
+                      <td class="px-5 py-3.5 whitespace-nowrap text-slate-500">{{ user.email }}</td>
                       <td class="px-5 py-3.5 whitespace-nowrap">
                         <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="roleStyles[user.role]">{{ user.role }}</span>
                       </td>
                       <td class="px-5 py-3.5 whitespace-nowrap">
                         <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="statusStyles[user.status]">{{ user.status }}</span>
                       </td>
-                      <td class="px-5 py-3.5 whitespace-nowrap">
-                        <div class="flex items-center gap-1.5 font-medium" [ngClass]="invitationStyles[user.invite]?.color">
-                          <i class="ti" [ngClass]="invitationStyles[user.invite]?.icon"></i> {{ user.invite }}
-                        </div>
-                        <p class="mt-0.5 text-xs text-slate-400">{{ user.inviteSub }}</p>
+                      <td class="px-5 py-3.5 whitespace-nowrap text-slate-500">
+                        {{ user.lastLogin }}<br class="hidden md:block" /><span class="text-xs text-slate-400">{{ user.lastTime }}</span>
                       </td>
-                      <td class="px-5 py-3.5 whitespace-nowrap text-slate-600">
-                        {{ user.lastLogin }}<br /><span class="text-xs text-slate-400">{{ user.lastTime }}</span>
-                      </td>
-                      <td class="px-5 py-3.5 whitespace-nowrap text-slate-600">{{ user.created }}</td>
+                      <td class="px-5 py-3.5 whitespace-nowrap text-slate-500">{{ user.created }}</td>
                       <td class="px-5 py-3.5 text-right whitespace-nowrap">
                         <button class="text-slate-400 transition hover:text-slate-600" (click)="$event.stopPropagation()">
                           <i class="ti ti-dots text-lg"></i>
@@ -136,26 +123,30 @@
         </div>
 
         <div class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>Showing 1 to {{ filteredUsers.length }} of {{ filteredUsers.length }} users</p>
+          <p>Showing {{ startIndex }} to {{ endIndex }} of {{ totalElements }} users</p>
           <div class="flex items-center gap-3">
-            <select class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm">
-              <option>10 per page</option>
+            <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm">
+              <option [value]="10">10 per page</option>
+              <option [value]="25">25 per page</option>
+              <option [value]="50">50 per page</option>
             </select>
             <div class="flex items-center gap-1">
-              <button class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400"><i class="ti ti-chevron-left"></i></button>
-              <button class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-semibold text-white">1</button>
-              <button class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm text-slate-600">2</button>
-              <button class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm text-slate-600">3</button>
-              <span class="px-1 text-slate-400">...</span>
-              <button class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm text-slate-600">9</button>
-              <button class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500"><i class="ti ti-chevron-right"></i></button>
+              <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0" class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"><i class="ti ti-chevron-left"></i></button>
+              @for (page of pageNumbers; track page) {
+                @if (page === '...') {
+                  <span class="px-1 text-slate-400">...</span>
+                } @else {
+                  <button (click)="goToPage(page)" [class.bg-indigo-600]="currentPage === page" [class.text-white]="currentPage === page" [class.border-slate-200]="currentPage !== page" [class.text-slate-600]="currentPage !== page" class="flex h-8 w-8 items-center justify-center rounded-lg border bg-white text-sm font-semibold hover:bg-slate-50">{{ page + 1 }}</button>
+                }
+              }
+              <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1" class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"><i class="ti ti-chevron-right"></i></button>
             </div>
           </div>
         </div>
       </div>
 
       @if (showDetail) {
-      <aside class="w-full shrink-0 xl:w-[360px]">
+      <aside class="w-full shrink-0 xl:w-[380px]">
         <div class="sticky top-6 rounded-xl border border-slate-200 bg-white p-6">
           @if (selectedUser) {
             <button (click)="closeDetail()" class="mb-5 flex items-center justify-center rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600">
@@ -181,7 +172,7 @@
             <div class="space-y-4">
               <div class="flex items-center justify-between text-sm">
                 <span class="flex items-center gap-2 text-slate-500"><i class="ti ti-mail text-sm"></i> Email</span>
-                <span class="font-medium text-slate-800">{{ selectedUser.email }}</span>
+                <span class="flex items-center gap-1.5 font-medium text-slate-800">{{ selectedUser.email }} <i class="ti ti-copy text-sm text-slate-400 cursor-pointer"></i></span>
               </div>
               <div class="flex items-center justify-between text-sm">
                 <span class="flex items-center gap-2 text-slate-500"><i class="ti ti-badge-check text-sm"></i> Role</span>
@@ -211,32 +202,48 @@
                 <span class="flex items-center gap-2 text-slate-500"><i class="ti ti-clock text-sm"></i> Last Login</span>
                 <span class="font-medium text-slate-800">{{ selectedUser.lastLogin }}</span>
               </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="flex items-center gap-2 text-slate-500"><i class="ti ti-settings text-sm"></i> Status</span>
+                <button [ngClass]="selectedUser.status === 'Active' ? 'flex items-center gap-1 bg-green-50 text-green-600' : 'flex items-center gap-1 bg-slate-100 text-slate-600'" class="text-xs font-semibold px-2.5 py-1 rounded-lg">
+                  {{ selectedUser.status }} <i class="ti ti-chevron-down text-xs"></i>
+                </button>
+              </div>
             </div>
 
             <div class="my-6 h-px bg-slate-200"></div>
             <p class="mb-3 text-sm font-semibold text-slate-800">Quick Actions</p>
             <div class="space-y-3">
-              <button class="flex w-full items-start gap-3 rounded-lg border border-slate-200 p-3 text-left transition hover:bg-slate-50">
+              <button (click)="openInviteModal()" class="flex w-full items-start gap-3 rounded-lg border border-slate-200 p-3 text-left transition hover:bg-slate-50">
                 <i class="ti ti-send mt-0.5 text-slate-500"></i>
                 <div>
                   <p class="text-sm font-semibold text-slate-800">Send Email Invite</p>
                   <p class="mt-0.5 text-xs text-slate-500">Send a new invitation email to this user so they can set up their account.</p>
                 </div>
               </button>
-              <button class="flex w-full items-start gap-3 rounded-lg border border-slate-200 p-3 text-left transition hover:bg-slate-50">
+              <button (click)="editUser()" class="flex w-full items-start gap-3 rounded-lg border border-slate-200 p-3 text-left transition hover:bg-slate-50">
                 <i class="ti ti-pencil mt-0.5 text-slate-500"></i>
                 <div>
                   <p class="text-sm font-semibold text-slate-800">Edit User</p>
                   <p class="mt-0.5 text-xs text-slate-500">Update user details such as role, department, and contact information.</p>
                 </div>
               </button>
-              <button class="flex w-full items-start gap-3 rounded-lg border border-red-100 bg-red-50/70 p-3 text-left transition hover:bg-red-50">
-                <i class="ti ti-user-x mt-0.5 text-red-500"></i>
-                <div>
-                  <p class="text-sm font-semibold text-red-600">Deactivate User</p>
-                  <p class="mt-0.5 text-xs text-red-400">Remove access for this user from the system permanently.</p>
-                </div>
-              </button>
+              @if (selectedUser.status === 'Active') {
+                <button (click)="openDeactivateModal()" class="flex w-full items-start gap-3 rounded-lg border border-red-100 bg-red-50/70 p-3 text-left transition hover:bg-red-50">
+                  <i class="ti ti-user-x mt-0.5 text-red-500"></i>
+                  <div>
+                    <p class="text-sm font-semibold text-red-600">Deactivate User</p>
+                    <p class="mt-0.5 text-xs text-red-400">Remove access for this user from the system permanently.</p>
+                  </div>
+                </button>
+              } @else {
+                <button (click)="openReactivateModal()" class="flex w-full items-start gap-3 rounded-lg border border-green-100 bg-green-50/70 p-3 text-left transition hover:bg-green-50">
+                  <i class="ti ti-user-check mt-0.5 text-green-500"></i>
+                  <div>
+                    <p class="text-sm font-semibold text-green-600">Reactivate User</p>
+                    <p class="mt-0.5 text-xs text-green-400">Restore access for this user to the system.</p>
+                  </div>
+                </button>
+              }
             </div>
           } @else {
             <div class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">Select a user to view the details panel.</div>
@@ -247,4 +254,14 @@
     </div>
     }
   </div>
+
+  @if (showInviteModal && selectedUser) {
+    <app-send-invite-modal [user]="selectedUser" (close)="closeInviteModal()" (sent)="sendInvite()" />
+  }
+  @if (showDeactivateModal && selectedUser) {
+    <app-deactivate-user-modal [user]="selectedUser" (close)="closeDeactivateModal()" (deactivated)="onUserDeactivated()" />
+  }
+  @if (showReactivateModal && selectedUser) {
+    <app-reactivate-user-modal [user]="selectedUser" (close)="closeReactivateModal()" (reactivated)="onUserReactivated()" />
+  }
 </main>

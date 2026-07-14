@@ -133,6 +133,11 @@ export const routes: Routes = [
     title:'Sign In | eDOB'
   },
   {
+    path:'activate-account',
+    loadComponent: () => import('./auth/pages/activate-account/activate-account.component').then(m => m.ActivateAccountComponent),
+    title:'Activate Your Account | eDOB'
+  },
+  {
     path:'forgot-password',
     loadComponent: () => import('./auth/pages/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
     title:'Forgot Password | eDOB'
