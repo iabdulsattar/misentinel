@@ -90,6 +90,21 @@ export const routes: Routes = [
             title: 'View Role | eDOB'
           },
           {
+            path: 'roles/deactivate-role',
+            loadComponent: () => import('./roles/deactivate-role/deactivate-role.component').then(m => m.DeactivateRoleComponent),
+            title: 'Deactivate Role | eDOB'
+          },
+          {
+            path: 'roles/reactivate-role',
+            loadComponent: () => import('./roles/reactivate-role/reactivate-role.component').then(m => m.ReactivateRoleComponent),
+            title: 'Reactivate Role | eDOB'
+          },
+          {
+            path: 'roles/delete-role',
+            loadComponent: () => import('./roles/delete-role/delete-role.component').then(m => m.DeleteRoleComponent),
+            title: 'Delete Role | eDOB'
+          },
+          {
             path:'line-chart',
             loadComponent: () => import('./features/pages/charts/line-chart/line-chart.component').then(m => m.LineChartComponent),
             title:'Angular Line Chart Dashboard | TailAdmin - Angular Admin Dashboard Template'

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Role } from '../../../../core/models/edob.models';
 
@@ -20,8 +20,12 @@ export class RolesTableComponent {
   @Output() rowClick = new EventEmitter<Role>();
   @Output() pageChange = new EventEmitter<number>();
   @Output() searchChange = new EventEmitter<string>();
+  @Output() roleDeactivate = new EventEmitter<Role>();
+  @Output() roleReactivate = new EventEmitter<Role>();
+  @Output() roleDelete = new EventEmitter<Role>();
 
   searchTerm = '';
+  openMenuId: string | null = null;
 
   get totalPages(): number {
     const safeTotal = Number(this.total) || 0;
@@ -63,6 +67,28 @@ export class RolesTableComponent {
     return role.active
       ? 'bg-green-50 text-green-600'
       : 'bg-slate-100 text-slate-500';
+  }
+
+  toggleMenu(roleId: string, event: Event): void {
+    event.stopPropagation();
+    this.openMenuId = this.openMenuId === roleId ? null : roleId;
+  }
+
+  closeMenu(): void {
+    this.openMenuId = null;
+  }
+
+  onRowClick(event: Event, role: Role): void {
+    const target = event.target as HTMLElement | null;
+    if (target && target.closest('[data-actions]')) return;
+    this.rowClick.emit(role);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement | null;
+    if (target && target.closest('[data-actions]')) return;
+    this.openMenuId = null;
   }
 
   getColorClass(color?: string): string {

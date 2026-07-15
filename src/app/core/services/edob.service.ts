@@ -282,6 +282,11 @@ export class EdobService {
     return this.api.put(`${this.basePath(orgId)}/users/${userId}/roles`, payload, headers);
   }
 
+  // DELETE /api/v1/edob/organizations/{orgId}/roles/{roleId}
+  deleteRole(orgId: string, roleId: string): Observable<any> {
+    return this.api.delete(`${this.basePath(orgId)}/roles/${roleId}`);
+  }
+
   // GET /api/v1/edob/organizations/{orgId}/roles/{roleId}
   getRole(orgId: string, roleId: string): Observable<Role> {
     return this.api.get<ApiWrapper<Role>>(`${this.basePath(orgId)}/roles/${roleId}`).pipe(map(res => res.data));

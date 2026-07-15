@@ -85,6 +85,7 @@ export class UserManagementComponent implements OnInit {
   rolesPageSize = 10;
   rolesTotal = 0;
   rolesTotalPages = 0;
+  roleFeedback: { type: 'success' | 'error'; text: string } | null = null;
 
   currentPage = 0;
   pageSize = 10;
@@ -468,6 +469,25 @@ export class UserManagementComponent implements OnInit {
         this.rolesLoading = false;
       },
     });
+  }
+
+  private setRoleFeedback(type: 'success' | 'error', text: string): void {
+    this.roleFeedback = { type, text };
+    setTimeout(() => {
+      if (this.roleFeedback?.text === text) this.roleFeedback = null;
+    }, 4000);
+  }
+
+  onRoleDeactivate(role: Role): void {
+    this.router.navigate(['/roles/deactivate-role'], { queryParams: { id: role.id } });
+  }
+
+  onRoleReactivate(role: Role): void {
+    this.router.navigate(['/roles/reactivate-role'], { queryParams: { id: role.id } });
+  }
+
+  onRoleDelete(role: Role): void {
+    this.router.navigate(['/roles/delete-role'], { queryParams: { id: role.id } });
   }
 
   onRolesSearch(): void {

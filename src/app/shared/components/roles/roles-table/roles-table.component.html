@@ -1,4 +1,4 @@
-<div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+<div class="rounded-xl border border-slate-200 bg-white">
   <div class="flex flex-col gap-4 px-6 pt-4 pb-2 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h3 class="text-theme-md font-semibold text-gray-800 dark:text-white/90">
@@ -29,22 +29,22 @@
       No roles found.
     </div>
   } @else {
-    <div class="overflow-x-auto">
+    <div>
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-slate-500 border-b border-slate-200">
-            <th class="font-semibold px-5 py-3 whitespace-nowrap">Role Name</th>
-            <th class="font-semibold px-5 py-3 whitespace-nowrap">Code</th>
-            <th class="font-semibold px-5 py-3 whitespace-nowrap">Description</th>
-            <th class="font-semibold px-5 py-3 whitespace-nowrap">Status</th>
-            <th class="font-semibold px-5 py-3 whitespace-nowrap text-center">Permissions</th>
-            <th class="font-semibold px-5 py-3 whitespace-nowrap text-center">Users</th>
-            <th class="font-semibold px-5 py-3 whitespace-nowrap text-right">Actions</th>
+                <th class="font-semibold px-5 py-3 whitespace-nowrap first:rounded-tl-xl">Role Name</th>
+                <th class="font-semibold px-5 py-3 whitespace-nowrap">Code</th>
+                <th class="font-semibold px-5 py-3 whitespace-nowrap">Description</th>
+                <th class="font-semibold px-5 py-3 whitespace-nowrap">Status</th>
+                <th class="font-semibold px-5 py-3 whitespace-nowrap text-center">Permissions</th>
+                <th class="font-semibold px-5 py-3 whitespace-nowrap text-center">Users</th>
+                <th class="font-semibold px-5 py-3 whitespace-nowrap text-right last:rounded-tr-xl">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
           @for (role of roles; track role.id) {
-            <tr class="hover:bg-slate-50 cursor-pointer" (click)="rowClick.emit(role)">
+            <tr class="hover:bg-slate-50 cursor-pointer" (click)="onRowClick($event, role)">
               <td class="px-5 py-3.5 whitespace-nowrap">
                 <div class="flex items-center gap-3">
                   <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold"
@@ -69,10 +69,31 @@
               <td class="px-5 py-3.5 text-center whitespace-nowrap">
                 <span class="text-sm font-medium text-slate-700">{{ role.userCount ?? 0 }}</span>
               </td>
-              <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                <button class="text-slate-400 hover:text-slate-700" (click)="$event.stopPropagation(); rowClick.emit(role)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-more-horizontal lucide-more-horizontal"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                </button>
+              <td class="px-5 py-3.5 text-right whitespace-nowrap relative" data-actions>
+                <div class="relative inline-block text-left">
+                  <button type="button" class="text-slate-400 hover:text-slate-700" (click)="toggleMenu(role.id, $event)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-more-horizontal"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                  </button>
+                  @if (openMenuId === role.id) {
+                    <div class="absolute right-0 z-20 mt-2 w-44 rounded-lg border border-slate-200 bg-white py-1 text-left shadow-lg" (click)="$event.stopPropagation()">
+                      @if (role.active) {
+                          <button type="button" class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50" (click)="$event.stopPropagation(); closeMenu(); roleDeactivate.emit(role)">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="18" y1="8" x2="23" y2="13"></line><line x1="23" y1="8" x2="18" y2="13"></line></svg>
+                          Deactivate
+                        </button>
+                      } @else {
+                          <button type="button" class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-green-600 hover:bg-green-50" (click)="$event.stopPropagation(); closeMenu(); roleReactivate.emit(role)">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                          Reactivate
+                        </button>
+                      }
+                        <button type="button" class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50" (click)="$event.stopPropagation(); closeMenu(); roleDelete.emit(role)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m3 0-1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 7"></path></svg>
+                        Delete
+                      </button>
+                    </div>
+                  }
+                </div>
               </td>
             </tr>
           }
