@@ -92,7 +92,7 @@
               <div>
                 <div class="flex items-center gap-2">
                   <p class="font-semibold text-slate-900">{{ detailName }}</p>
-                  <span class="rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-semibold text-green-600">{{ detailStatus }}</span>
+                  <span [ngClass]="detailStatus === 'Active' ? 'rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-semibold text-green-600' : 'rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500'">{{ detailStatus }}</span>
                 </div>
                 <p class="text-sm text-slate-500">{{ detailEmail }}</p>
               </div>
@@ -354,12 +354,12 @@
   </div>
 
   @if (showInviteModal && selectedUser) {
-    <app-send-invite-modal [user]="selectedUser" (close)="closeInviteModal()" (sent)="sendInvite()" />
+    <app-send-invite-modal [user]="selectedUser" [orgId]="getOrgId() || ''" (close)="closeInviteModal()" (sent)="onInviteSent()" />
   }
   @if (showDeactivateModal && selectedUser) {
-    <app-deactivate-user-modal [user]="selectedUser" (close)="closeDeactivateModal()" (deactivated)="onUserDeactivated()" />
+    <app-deactivate-user-modal [user]="selectedUser" [orgId]="getOrgId() || ''" (close)="closeDeactivateModal()" (deactivated)="onUserDeactivated()" />
   }
   @if (showReactivateModal && selectedUser) {
-    <app-reactivate-user-modal [user]="selectedUser" (close)="closeReactivateModal()" (reactivated)="onUserReactivated()" />
+    <app-reactivate-user-modal [user]="selectedUser" [orgId]="getOrgId() || ''" (close)="closeReactivateModal()" (reactivated)="onUserReactivated()" />
   }
 </main>

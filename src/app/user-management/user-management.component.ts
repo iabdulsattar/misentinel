@@ -363,7 +363,7 @@ export class UserManagementComponent implements OnInit {
     }
   }
 
-  private getOrgId(): string | null {
+  getOrgId(): string | null {
     const remember = localStorage.getItem('remember_device');
     if (remember === 'true') {
       return localStorage.getItem('org_id') || localStorage.getItem('organizationId') || null;
@@ -693,20 +693,6 @@ export class UserManagementComponent implements OnInit {
     }
   }
 
-  sendInvite(): void {
-    if (!this.selectedUser?.id) return;
-    const orgId = this.getOrgId();
-    if (!orgId) return;
-    this.userService.sendInvitation(orgId, this.selectedUser.id, 'ABC Security').subscribe({
-      next: () => {
-        this.onInviteSent();
-      },
-      error: () => {
-        alert('Failed to send invitation.');
-      }
-    });
-  }
-
   editUser(): void {
     if (!this.selectedUser?.id) return;
     this.router.navigate(['/users/add-user'], { queryParams: { id: this.selectedUser.id } });
@@ -729,6 +715,9 @@ export class UserManagementComponent implements OnInit {
     if (this.selectedUser) {
       this.selectedUser = { ...this.selectedUser, status: 'Inactive' } as User;
     }
+    if (this.detailUser) {
+      this.detailUser = { ...this.detailUser, status: 'Inactive' };
+    }
     this.loadUsers();
   }
 
@@ -744,6 +733,9 @@ export class UserManagementComponent implements OnInit {
     this.showReactivateModal = false;
     if (this.selectedUser) {
       this.selectedUser = { ...this.selectedUser, status: 'Active' } as User;
+    }
+    if (this.detailUser) {
+      this.detailUser = { ...this.detailUser, status: 'Active' };
     }
     this.loadUsers();
   }

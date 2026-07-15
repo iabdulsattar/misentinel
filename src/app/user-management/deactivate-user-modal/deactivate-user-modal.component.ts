@@ -14,6 +14,7 @@ import { DeactivateReason } from '../../core/models/user.models';
 })
 export class DeactivateUserModalComponent {
   readonly user = input.required<any>();
+  readonly orgId = input<string>('');
   readonly close = output<void>();
   readonly deactivated = output<void>();
 
@@ -28,6 +29,8 @@ export class DeactivateUserModalComponent {
   selectedReason: DeactivateReason | '' = '';
   additionalNote = '';
   submitting = false;
+  statusMessage = '';
+  statusType: '' | 'success' | 'error' = '';
 
   constructor(private userService: UserService) {}
 
@@ -47,18 +50,29 @@ export class DeactivateUserModalComponent {
 
   confirm(): void {
     if (!this.user()?.id || !this.selectedReason) return;
+    const orgId = this.orgId();
+    if (!orgId) {
+      this.statusType = 'error';
+      this.statusMessage = 'Organization context is missing. Please reload the page and try again.';
+      return;
+    }
     this.submitting = true;
-    this.userService.deactivateUser('', this.user().id, {
+    this.statusMessage = '';
+    this.statusType = '';
+    this.userService.deactivateUser(orgId, this.user().id, {
       reason: this.selectedReason,
       note: this.additionalNote || undefined,
     }).subscribe({
       next: () => {
         this.submitting = false;
-        this.deactivated.emit();
+        this.statusType = 'success';
+        this.statusMessage = `${this.user()?.name || 'User'} has been deactivated successfully.`;
+        setTimeout(() => this.deactivated.emit(), 900);
       },
-      error: () => {
+      error: (err: any) => {
         this.submitting = false;
-        alert('Failed to deactivate user.');
+        this.statusType = 'error';
+        this.statusMessage = err?.error?.message || err?.message || 'Failed to deactivate user. Please try again.';
       }
     });
   }

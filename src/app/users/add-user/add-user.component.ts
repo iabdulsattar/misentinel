@@ -41,7 +41,6 @@ export class AddUserComponent implements OnInit {
 
   roles: Role[] = [];
   loadingRoles = false;
-  companyName = 'ABC Security';
 
   get roleOptions(): MultiOption[] {
     return this.roles.map(r => ({ value: r.id, text: r.name }));
@@ -71,7 +70,6 @@ export class AddUserComponent implements OnInit {
     }
 
     this.loadRoles();
-    this.loadCompanyName();
   }
 
   private loadRoles(): void {
@@ -88,21 +86,6 @@ export class AddUserComponent implements OnInit {
         this.roles = [];
         this.loadingRoles = false;
       }
-    });
-  }
-
-  private loadCompanyName(): void {
-    const token = this.authService.getAccessToken();
-    if (!token) return;
-
-    this.authService.getSession(token).subscribe({
-      next: (session) => {
-        const org = session.organizations?.[0];
-        if (org?.name) {
-          this.companyName = org.name;
-        }
-      },
-      error: () => {}
     });
   }
 
@@ -293,7 +276,7 @@ export class AddUserComponent implements OnInit {
         sendInvite: true,
       };
 
-      this.userService.createUser(orgId, payload, this.companyName, this.avatarFile).subscribe({
+      this.userService.createUser(orgId, payload, this.avatarFile).subscribe({
         next: () => {
           this.saving = false;
           this.successMessage = 'User created and invitation sent successfully.';

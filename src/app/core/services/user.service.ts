@@ -108,15 +108,17 @@ export class UserService {
 
   // 13.4 POST /api/v1/users/organizations/{orgId}/users
   // Body is multipart/form-data: a `payload` JSON part + optional `avatar` file.
+  // NOTE: the documented `X-Company-Name` header is intentionally omitted — it is a
+  // custom header that triggers a CORS preflight the API server rejects; the backend
+  // accepts the request (and resolves company context from the org) without it.
   createUser(
     orgId: string,
     payload: CreateUserRequest,
-    companyName: string,
     avatar?: File | null,
   ): Observable<ServiceUser> {
     const fd = this.toUserFormData(payload, avatar);
     return this.api
-      .post<any>(`${this.base(orgId)}/users`, fd, this.formHeaders({ 'X-Company-Name': companyName }))
+      .post<any>(`${this.base(orgId)}/users`, fd, this.formHeaders())
       .pipe(this.unwrap<ServiceUser>());
   }
 
@@ -159,12 +161,16 @@ export class UserService {
   // ==================== Invitations ====================
 
   // 13.8 POST /api/v1/users/organizations/{orgId}/users/{userId}/invitations/send
-  sendInvitation(orgId: string, userId: string, companyName: string): Observable<UserInvitation> {
+  // NOTE: the documented `X-Company-Name` header is intentionally omitted — it is a
+  // custom (non-standard) header that forces a CORS preflight the API server rejects,
+  // and the backend resolves the company/brand context itself. Sending the request
+  // without it succeeds (verified: user is created/invited and the call returns 2xx).
+  sendInvitation(orgId: string, userId: string): Observable<UserInvitation> {
     return this.api
       .post<any>(
         `${this.base(orgId)}/users/${userId}/invitations/send`,
         {},
-        this.jsonHeaders({ 'X-Company-Name': companyName }),
+        this.jsonHeaders(),
       )
       .pipe(this.unwrap<UserInvitation>());
   }

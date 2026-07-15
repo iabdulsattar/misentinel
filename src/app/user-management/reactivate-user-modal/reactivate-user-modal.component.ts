@@ -12,10 +12,13 @@ import { UserService } from '../../core/services/user.service';
 })
 export class ReactivateUserModalComponent {
   readonly user = input.required<any>();
+  readonly orgId = input<string>('');
   readonly close = output<void>();
   readonly reactivated = output<void>();
 
   submitting = false;
+  statusMessage = '';
+  statusType: '' | 'success' | 'error' = '';
 
   constructor(private userService: UserService) {}
 
@@ -25,15 +28,26 @@ export class ReactivateUserModalComponent {
 
   confirm(): void {
     if (!this.user()?.id) return;
+    const orgId = this.orgId();
+    if (!orgId) {
+      this.statusType = 'error';
+      this.statusMessage = 'Organization context is missing. Please reload the page and try again.';
+      return;
+    }
     this.submitting = true;
-    this.userService.reactivateUser('', this.user().id).subscribe({
+    this.statusMessage = '';
+    this.statusType = '';
+    this.userService.reactivateUser(orgId, this.user().id).subscribe({
       next: () => {
         this.submitting = false;
-        this.reactivated.emit();
+        this.statusType = 'success';
+        this.statusMessage = `${this.user()?.name || 'User'} has been reactivated successfully.`;
+        setTimeout(() => this.reactivated.emit(), 900);
       },
-      error: () => {
+      error: (err: any) => {
         this.submitting = false;
-        alert('Failed to reactivate user.');
+        this.statusType = 'error';
+        this.statusMessage = err?.error?.message || err?.message || 'Failed to reactivate user. Please try again.';
       }
     });
   }
