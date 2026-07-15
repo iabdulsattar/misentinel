@@ -85,6 +85,11 @@ export const routes: Routes = [
             title: 'Add Role | eDOB'
           },
           {
+            path: 'roles/view-role',
+            loadComponent: () => import('./roles/view-role/view-role.component').then(m => m.ViewRoleComponent),
+            title: 'View Role | eDOB'
+          },
+          {
             path:'line-chart',
             loadComponent: () => import('./features/pages/charts/line-chart/line-chart.component').then(m => m.LineChartComponent),
             title:'Angular Line Chart Dashboard | TailAdmin - Angular Admin Dashboard Template'

@@ -48,6 +48,7 @@ export class AddUserComponent implements OnInit {
   }
 
   profileImage: string | null = null;
+  avatarFile: File | null = null;
   showCamera = false;
   cameraStream: MediaStream | null = null;
   @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
@@ -159,6 +160,8 @@ export class AddUserComponent implements OnInit {
       return;
     }
 
+    this.avatarFile = file;
+
     const reader = new FileReader();
     reader.onload = () => {
       this.profileImage = reader.result as string;
@@ -214,6 +217,7 @@ export class AddUserComponent implements OnInit {
 
   removePhoto(): void {
     this.profileImage = null;
+    this.avatarFile = null;
     if (this.fileInput) {
       this.fileInput.value = '';
     }
@@ -247,7 +251,7 @@ export class AddUserComponent implements OnInit {
         canAccessMobile: this.form.canAccessMobile,
       };
 
-      this.userService.updateUser(orgId, this.userId, payload).subscribe({
+      this.userService.updateUser(orgId, this.userId, payload, this.avatarFile).subscribe({
         next: () => {
           if (this.form.roleIds.length && this.userId) {
             const rolesPayload: AssignRolesRequest = { roleIds: this.form.roleIds };
@@ -289,7 +293,7 @@ export class AddUserComponent implements OnInit {
         sendInvite: true,
       };
 
-      this.userService.createUser(orgId, payload, this.companyName).subscribe({
+      this.userService.createUser(orgId, payload, this.companyName, this.avatarFile).subscribe({
         next: () => {
           this.saving = false;
           this.successMessage = 'User created and invitation sent successfully.';

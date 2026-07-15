@@ -47,21 +47,46 @@ export class AddRoleComponent implements OnInit {
     this.isEditMode = !!this.roleId;
 
     if (this.isEditMode && this.roleId) {
-      this.loadRole(this.roleId);
+      this.loadPermissionsAndRole();
+    } else {
+      this.loadPermissions();
     }
+  }
 
-    this.loadPermissions();
+  private loadPermissionsAndRole(): void {
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+
+    this.edobService.listPermissions(orgId).subscribe({
+      next: (perms) => {
+        this.groups = this.groupPermissions(perms);
+        this.loadRole(this.roleId!);
+      },
+      error: () => {
+        this.groups = this.defaultGroups();
+        this.loadRole(this.roleId!);
+      }
+    });
   }
 
   private loadRole(id: string): void {
     const orgId = this.getOrgId();
     if (!orgId) return;
 
-    this.edobService.getOrgUser(orgId, id).subscribe({
+    this.edobService.getRole(orgId, id).subscribe({
       next: (role: any) => {
         this.roleName = role.name || '';
         this.roleDesc = role.description || '';
         this.status = role.active ? 'active' : 'inactive';
+
+        const granted = new Set<string>(role.permissions || []);
+        this.groups = this.groups.map(group => ({
+          ...group,
+          permissions: group.permissions.map(perm => ({
+            ...perm,
+            checked: granted.has(perm.key),
+          })),
+        }));
       },
       error: () => {
         this.errorMessage = 'Failed to load role details.';

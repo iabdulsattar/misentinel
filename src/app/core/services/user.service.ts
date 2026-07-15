@@ -47,6 +47,23 @@ export class UserService {
     return this.authHeaders({ 'Content-Type': 'application/json', ...(extra ?? {}) });
   }
 
+  /** Headers for multipart/form-data — no Content-Type so the browser sets the boundary. */
+  private formHeaders(extra?: Record<string, string>): HttpHeaders {
+    return this.authHeaders(extra ?? {});
+  }
+
+  /** Build the multipart body the API expects: a `payload` JSON part + an optional `avatar` file. */
+  private toUserFormData(payload: object, avatar?: File | null): FormData {
+    const fd = new FormData();
+    fd.append('payload', JSON.stringify(payload));
+    if (avatar) {
+      fd.append('avatar', avatar, avatar.name);
+    } else {
+      fd.append('avatar', '');
+    }
+    return fd;
+  }
+
   /** Unwrap the standard API envelope, tolerating already-unwrapped payloads. */
   private unwrap<T>() {
     return map((res: any): T =>
@@ -90,20 +107,25 @@ export class UserService {
   }
 
   // 13.4 POST /api/v1/users/organizations/{orgId}/users
+  // Body is multipart/form-data: a `payload` JSON part + optional `avatar` file.
   createUser(
     orgId: string,
     payload: CreateUserRequest,
     companyName: string,
+    avatar?: File | null,
   ): Observable<ServiceUser> {
+    const fd = this.toUserFormData(payload, avatar);
     return this.api
-      .post<any>(`${this.base(orgId)}/users`, payload, this.jsonHeaders({ 'X-Company-Name': companyName }))
+      .post<any>(`${this.base(orgId)}/users`, fd, this.formHeaders({ 'X-Company-Name': companyName }))
       .pipe(this.unwrap<ServiceUser>());
   }
 
   // 13.5 PATCH /api/v1/users/organizations/{orgId}/users/{userId}
-  updateUser(orgId: string, userId: string, payload: UpdateUserRequest): Observable<ServiceUser> {
+  // Body is multipart/form-data: a `payload` JSON part + optional `avatar` file (empty string if none).
+  updateUser(orgId: string, userId: string, payload: UpdateUserRequest, avatar?: File | null): Observable<ServiceUser> {
+    const fd = this.toUserFormData(payload, avatar);
     return this.api
-      .patch<any>(`${this.base(orgId)}/users/${userId}`, payload, this.jsonHeaders())
+      .patch<any>(`${this.base(orgId)}/users/${userId}`, fd, this.formHeaders())
       .pipe(this.unwrap<ServiceUser>());
   }
 

@@ -467,7 +467,7 @@ export class UserManagementComponent implements OnInit {
   }
 
   onRoleRowClick(role: Role): void {
-    this.router.navigate(['/roles/add-role'], { queryParams: { id: role.id } });
+    this.router.navigate(['/roles/view-role'], { queryParams: { id: role.id } });
   }
 
   openDeactivateModal(): void {

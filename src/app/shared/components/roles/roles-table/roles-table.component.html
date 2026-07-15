@@ -64,7 +64,7 @@
                 </span>
               </td>
               <td class="px-5 py-3.5 text-center whitespace-nowrap">
-                <span class="text-sm font-medium text-slate-700">{{ role.permissions?.length || 0 }}</span>
+                <span class="text-sm font-medium text-slate-700">{{ (role.permissions || []).length || role.permissionCount || 0 }}</span>
               </td>
               <td class="px-5 py-3.5 text-center whitespace-nowrap">
                 <span class="text-sm font-medium text-slate-700">{{ role.userCount ?? 0 }}</span>

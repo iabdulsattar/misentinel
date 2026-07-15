@@ -161,8 +161,12 @@ export class AuthService {
     );
   }
 
-  logout(payload: LogoutRequest): Observable<void> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+  logout(payload: LogoutRequest, token?: string): Observable<void> {
+    const accessToken = token ?? this.getAccessToken();
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+    });
     return this.api.post('/api/v1/auth/logout', payload, headers);
   }
 
