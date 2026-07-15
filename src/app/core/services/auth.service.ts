@@ -38,10 +38,12 @@ import {
 export class AuthService {
   constructor(private api: ApiService) {}
 
+  // POST /api/v1/auth/signup
+  // Returns the organization + user at the top level (per API contract).
   signup(payload: SignupRequest): Observable<SignupResponse> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.api.post<ApiWrapper<SignupResponse>>('/api/v1/auth/signup', payload, headers).pipe(
-      map((res) => res.data)
+    return this.api.post<any>('/api/v1/auth/signup', payload, headers).pipe(
+      map((res: any) => (res && typeof res === 'object' && 'data' in res ? res.data : res))
     );
   }
 
