@@ -296,12 +296,19 @@ export interface Permission {
   name: string;
   description?: string;
   group?: string;
+  category?: string;
+  type?: string;
+  active?: boolean;
   [key: string]: any;
 }
 
-export interface PermissionsGrouped {
-  [group: string]: Permission[];
+export interface PermissionGroupResponse {
+  group: string;
+  count: number;
+  permissions: Permission[];
 }
+
+export type PermissionsGrouped = PermissionGroupResponse[];
 
 export interface MyPermissionsResponse {
   permissions: string[];

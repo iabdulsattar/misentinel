@@ -122,12 +122,13 @@ export class ViewRoleComponent implements OnInit {
   }
 
   private mapPermissionGroups(grouped: PermissionsGrouped): PermissionGroupView[] {
-    const groups: PermissionGroupView[] = [];
-    for (const [title, perms] of Object.entries(grouped)) {
+    return (grouped || []).map(g => {
+      const perms = g.permissions || [];
+      const title = g.group;
       const grantedCount = perms.filter(p => this.isPermissionGranted(p.code)).length;
       const badgeClass = grantedCount === perms.length ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-700';
       const badgeText = `${grantedCount} / ${perms.length} Granted`;
-      groups.push({
+      return {
         title,
         description: this.getGroupDescription(title),
         icon: this.getGroupIcon(title),
@@ -139,9 +140,8 @@ export class ViewRoleComponent implements OnInit {
           name: p.name,
           granted: this.isPermissionGranted(p.code)
         }))
-      });
-    }
-    return groups;
+      };
+    });
   }
 
   private isPermissionGranted(code: string): boolean {

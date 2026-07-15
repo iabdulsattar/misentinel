@@ -242,6 +242,115 @@
       </div>
     </div>
     }
+
+    @if (activeTab === 2) {
+    <div class="flex flex-col gap-6">
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="relative w-full min-w-[220px] max-w-[300px] flex-1">
+          <i class="ti ti-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text" [(ngModel)]="permissionsSearchQuery" (ngModelChange)="onPermissionSearch()" placeholder="Search permissions..." class="w-full h-10 rounded-lg border border-gray-200 bg-white pl-10 pr-3 text-sm placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100" />
+        </div>
+
+        <select [(ngModel)]="permissionFilters.module" class="h-10 rounded-lg border border-gray-200 bg-white px-3 pr-9 text-sm font-medium text-slate-700 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100">
+          @for (opt of permissionModules; track opt) {
+            <option [value]="opt">{{ opt === 'All' ? 'All Modules' : opt }}</option>
+          }
+        </select>
+        <select [(ngModel)]="permissionFilters.category" class="h-10 rounded-lg border border-gray-200 bg-white px-3 pr-9 text-sm font-medium text-slate-700 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100">
+          @for (opt of permissionCategories; track opt) {
+            <option [value]="opt">{{ opt === 'All' ? 'All Categories' : opt }}</option>
+          }
+        </select>
+        <select [(ngModel)]="permissionFilters.type" class="h-10 rounded-lg border border-gray-200 bg-white px-3 pr-9 text-sm font-medium text-slate-700 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100">
+          @for (opt of permissionTypes; track opt) {
+            <option [value]="opt">{{ opt === 'All' ? 'All Types' : opt }}</option>
+          }
+        </select>
+        <select [(ngModel)]="permissionFilters.status" class="h-10 rounded-lg border border-gray-200 bg-white px-3 pr-9 text-sm font-medium text-slate-700 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100">
+          @for (opt of permissionStatuses; track opt) {
+            <option [value]="opt">{{ opt === 'All' ? 'All Statuses' : opt }}</option>
+          }
+        </select>
+
+        <div class="ml-auto flex items-center gap-3">
+          <button (click)="resetPermissionFilters()" class="inline-flex items-center gap-2 h-10 px-4 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-slate-700 transition hover:bg-gray-50">
+            <i class="ti ti-adjustments-horizontal text-base"></i> Filters
+          </button>
+          <button class="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-brand-500 text-white text-sm font-semibold transition hover:bg-brand-600">
+            <i class="ti ti-download text-base"></i> Export
+          </button>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-gray-200 bg-white shadow-theme-xs overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 text-left text-slate-500 border-b border-gray-100">
+                <th class="font-semibold px-6 py-3.5">Permission Name</th>
+                <th class="font-semibold px-4 py-3.5">Module</th>
+                <th class="font-semibold px-4 py-3.5">Category</th>
+                <th class="font-semibold px-4 py-3.5">Type</th>
+                <th class="font-semibold px-4 py-3.5">Status</th>
+                <th class="font-semibold px-4 py-3.5">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (permissionLoading) {
+                <tr>
+                  <td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500">
+                    <i class="ti ti-loader animate-spin inline-block align-middle mr-2"></i> Loading permissions...
+                  </td>
+                </tr>
+              } @else {
+              @for (item of permissionView; track $index) {
+                @if (item.kind === 'header') {
+                  <tr (click)="togglePermissionGroup(item.index)" class="cursor-pointer select-none border-b border-gray-100 bg-gray-50/70 hover:bg-gray-100/70">
+                    <td colspan="5" class="px-6 py-3">
+                      <span class="inline-flex items-center gap-2.5 font-bold text-slate-900 text-sm">
+                        <i class="ti ti-chevron-down text-slate-500 transition-transform duration-150" [class.-rotate-90]="collapsedGroups.has(item.index)"></i>
+                        {{ item.name }}
+                        <span class="font-semibold text-slate-400">({{ item.count }})</span>
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                      <i class="ti ti-chevron-up text-slate-400 inline-block transition-transform duration-150" [class.rotate-180]="collapsedGroups.has(item.index)"></i>
+                    </td>
+                  </tr>
+                } @else {
+                  <tr class="border-b border-gray-100 hover:bg-gray-50/60">
+                    <td class="px-6 py-3">
+                      <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0" [innerHTML]="permIcon(item.row.icon)"></span>
+                        <span class="font-semibold text-slate-900 whitespace-nowrap">{{ item.row.name }}</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap" [class]="moduleStyles[item.row.module] || 'bg-gray-100 text-gray-600'">{{ item.row.module }}</span>
+                    </td>
+                    <td class="px-4 py-3 text-slate-500 whitespace-nowrap">{{ item.row.category }}</td>
+                    <td class="px-4 py-3 text-slate-500">{{ item.row.type }}</td>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex items-center gap-1.5 text-success-600 font-semibold whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-success-500"></span>{{ item.row.status }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-slate-500 min-w-[280px]">{{ item.row.description }}</td>
+                  </tr>
+                }
+              } @empty {
+                <tr>
+                  <td colspan="6" class="px-6 py-10 text-center text-sm text-slate-500">No permissions match your filters.</td>
+                </tr>
+              }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    }
+
   </div>
 
   @if (showInviteModal && selectedUser) {
