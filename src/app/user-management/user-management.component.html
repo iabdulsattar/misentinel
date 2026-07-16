@@ -81,6 +81,7 @@
           (rowClick)="onTableRowClick($event)"
           (pageChange)="onTablePageChange($event)"
           (searchChange)="onTableSearch($event)"
+          (resendCredentials)="onResendCredentials($event)"
         />
       </div>
 
@@ -397,5 +398,8 @@
   }
   @if (showReactivateModal && selectedUser) {
     <app-reactivate-user-modal [user]="selectedUser" [orgId]="getOrgId() || ''" (close)="closeReactivateModal()" (reactivated)="onUserReactivated()" />
+  }
+  @if (showResendModal && resendTargetUser) {
+    <app-resend-credentials-modal [user]="resendTargetUser" [orgId]="getOrgId() || ''" (close)="closeResendModal()" (sent)="onCredentialsResent()" />
   }
 </main>

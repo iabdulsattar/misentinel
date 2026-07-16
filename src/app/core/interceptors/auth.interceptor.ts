@@ -10,6 +10,7 @@ import { Observable, from, throwError } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { PermissionService } from '../services/permission.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -22,7 +23,11 @@ export class AuthInterceptor implements HttpInterceptor {
 
   private readonly DEFAULT_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private permissionService: PermissionService,
+  ) {}
 
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     if (this.isPublicAuthPath(req.url)) {
@@ -201,5 +206,6 @@ export class AuthInterceptor implements HttpInterceptor {
     sessionStorage.removeItem('session_expires_at');
     sessionStorage.removeItem('org_id');
     sessionStorage.removeItem('organizationId');
+    this.permissionService.clear();
   }
 }

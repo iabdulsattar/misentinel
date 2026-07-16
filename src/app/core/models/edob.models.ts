@@ -314,3 +314,48 @@ export interface MyPermissionsResponse {
   permissions: string[];
   [key: string]: any;
 }
+
+// -------- Dashboard --------
+// Response shape from GET /api/v1/edob/organizations/{orgId}/dashboard.
+export interface EntryTypeCounter {
+  id?: string;
+  name?: string;
+  count?: number;
+  [key: string]: any;
+}
+
+export interface DashboardEntriesCounters {
+  totalEntries?: number;
+  open?: number;
+  inProgress?: number;
+  completed?: number;
+  cancelled?: number;
+  completedThisMonth?: number;
+  entryTypes?: EntryTypeCounter[];
+  [key: string]: any;
+}
+
+export interface DashboardRecentEntry {
+  id?: string;
+  entryNumber?: number;
+  title?: string;
+  note?: string;
+  type?: string;
+  priority?: string;
+  status?: string;
+  initials?: string;
+  createdBy?: string;
+  time?: string;
+  createdAt?: string;
+  [key: string]: any;
+}
+
+export interface DashboardData {
+  entriesCounters?: DashboardEntriesCounters;
+  recentEntries?: DashboardRecentEntry[];
+  criticalAlerts?: { title?: string; meta?: string; dotClass?: string; [key: string]: any }[];
+  activeTypes?: { name?: string; count?: number; percent?: number; barClass?: string; icon?: string; [key: string]: any }[];
+  snapshots?: { label?: string; value?: string | number; [key: string]: any }[];
+  metrics?: { value?: string | number; label?: string; change?: string; positive?: boolean; icon?: string; iconWrap?: string; [key: string]: any }[];
+  [key: string]: any;
+}

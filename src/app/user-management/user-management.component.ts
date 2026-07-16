@@ -8,6 +8,7 @@ import { EdobService } from '../core/services/edob.service';
 import { SendInviteModalComponent } from './send-invite-modal/send-invite-modal.component';
 import { DeactivateUserModalComponent } from './deactivate-user-modal/deactivate-user-modal.component';
 import { ReactivateUserModalComponent } from './reactivate-user-modal/reactivate-user-modal.component';
+import { ResendCredentialsModalComponent } from './resend-credentials-modal/resend-credentials-modal.component';
 import { UsersTableComponent, TableUser } from '../shared/components/users/users-table/users-table.component';
 import { RolesTableComponent } from '../shared/components/roles/roles-table/roles-table.component';
 import { Role } from '../core/models/edob.models';
@@ -57,7 +58,7 @@ interface PermissionGroup {
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SendInviteModalComponent, DeactivateUserModalComponent, ReactivateUserModalComponent, UsersTableComponent, RolesTableComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SendInviteModalComponent, DeactivateUserModalComponent, ReactivateUserModalComponent, ResendCredentialsModalComponent, UsersTableComponent, RolesTableComponent],
   templateUrl: './user-management.component.html',
   styles: ``
 })
@@ -76,6 +77,8 @@ export class UserManagementComponent implements OnInit {
   showInviteModal = false;
   showDeactivateModal = false;
   showReactivateModal = false;
+  showResendModal = false;
+  resendTargetUser: TableUser | null = null;
 
   roles: Role[] = [];
   rolesLoading = false;
@@ -758,5 +761,20 @@ export class UserManagementComponent implements OnInit {
       this.detailUser = { ...this.detailUser, status: 'Active' };
     }
     this.loadUsers();
+  }
+
+  onResendCredentials(user: TableUser): void {
+    this.resendTargetUser = user;
+    this.showResendModal = true;
+  }
+
+  closeResendModal(): void {
+    this.showResendModal = false;
+    this.resendTargetUser = null;
+  }
+
+  onCredentialsResent(): void {
+    this.showResendModal = false;
+    this.resendTargetUser = null;
   }
 }

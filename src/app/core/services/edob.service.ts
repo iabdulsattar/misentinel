@@ -31,7 +31,8 @@ import {
   Comment,
   Permission,
   PermissionsGrouped,
-  MyPermissionsResponse
+  MyPermissionsResponse,
+  DashboardData
 } from '../models/edob.models';
 
 @Injectable({ providedIn: 'root' })
@@ -43,8 +44,8 @@ export class EdobService {
   }
 
   // GET /api/v1/edob/organizations/{orgId}/dashboard
-  getDashboard(orgId: string): Observable<any> {
-    return this.api.get<any>(`${this.basePath(orgId)}/dashboard`);
+  getDashboard(orgId: string): Observable<DashboardData> {
+    return this.api.get<ApiWrapper<DashboardData>>(`${this.basePath(orgId)}/dashboard`).pipe(map(res => res.data));
   }
 
   // ==================== Entry Types ====================

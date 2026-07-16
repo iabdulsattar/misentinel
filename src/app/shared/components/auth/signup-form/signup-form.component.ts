@@ -213,6 +213,12 @@ onSignUp() {
     next: (res) => {
       console.log('Signup successful:', res);
       localStorage.setItem('org_id', res.organization.id);
+      localStorage.setItem('organizationId', res.organization.id);
+      const companyName = this.cname?.trim();
+      if (companyName) {
+        localStorage.setItem('organizationName', companyName);
+        localStorage.setItem('org_name', companyName);
+      }
       this.successMessage = 'Account created successfully! Signing you in...';
 
       // Auto-login after signup
@@ -232,6 +238,12 @@ onSignUp() {
           localStorage.setItem('refresh_token', refreshToken ?? '');
 
           localStorage.setItem('org_id', res.organization.id);
+          localStorage.setItem('organizationId', res.organization.id);
+          const companyName = this.cname?.trim();
+          if (companyName) {
+            localStorage.setItem('organizationName', companyName);
+            localStorage.setItem('org_name', companyName);
+          }
           this.isLoading = false;
           this.router.navigate(['/']);
         },

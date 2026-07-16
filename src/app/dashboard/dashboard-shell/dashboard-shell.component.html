@@ -11,11 +11,20 @@
       </div>
     </div>
 
+    @if (loading) {
+      <div class="flex items-center justify-center rounded-xl border border-slate-200 bg-white py-20 text-sm text-slate-400 dark:border-gray-800 dark:bg-white/[0.03]">
+        <i class="ti ti-loader animate-spin mr-2"></i> Loading dashboard...
+      </div>
+    } @else if (dashboardError) {
+      <div class="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-20 text-sm text-slate-500 dark:border-gray-800 dark:bg-white/[0.03]">
+        <p>Unable to load dashboard data.</p>
+      </div>
+    } @else {
     <div class="grid grid-cols-12 gap-4">
       <div class="col-span-12 xl:col-span-9">
       <main class="space-y-8">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          @for (entry of quickEntries; track entry.title) {
+          @for (entry of visibleQuickEntries; track entry.title) {
             <a [routerLink]="['/create-entry']" [queryParams]="{ tab: entry.tab }" class="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left transition hover:border-slate-300 dark:border-gray-800 dark:bg-white/[0.03]">
               <div class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                 <span [innerHTML]="entry.icon | safeHtml" class="text-slate-700 dark:text-gray-200"></span>
@@ -44,6 +53,8 @@
                 {{ metric.change }}
               </p>
             </article>
+          } @empty {
+            <p class="col-span-full text-sm text-slate-400">No metrics available.</p>
           }
         </div>
 
@@ -85,6 +96,8 @@
                     </svg>
                   </button>
                 </div>
+              } @empty {
+                <div class="px-5 py-10 text-center text-sm text-slate-400">No recent entries.</div>
               }
             </div>
           </div>
@@ -108,6 +121,8 @@
                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ alert.meta }}</p>
                 </div>
               </div>
+            } @empty {
+              <p class="text-sm text-slate-400">No critical alerts.</p>
             }
           </div>
         </section>
@@ -132,6 +147,8 @@
                 </span>
                 <span class="text-right font-semibold text-gray-950 dark:text-white">{{ type.count }}</span>
               </div>
+            } @empty {
+              <p class="text-sm text-slate-400">No activity recorded today.</p>
             }
           </div>
         </section>
@@ -152,12 +169,15 @@
                 <span class="font-medium text-gray-600 dark:text-gray-300">{{ snapshot.label }}</span>
                 <span class="font-semibold text-gray-950 dark:text-white">{{ snapshot.value }}</span>
               </div>
+            } @empty {
+              <p class="text-sm text-slate-400">No data available.</p>
             }
           </div>
         </section>
       </aside>
       </div>
     </div>  
+    }
     <!-- </div> -->
   </div>
 </section>

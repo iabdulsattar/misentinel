@@ -97,6 +97,7 @@
           </h2>
           <ul class="flex flex-col gap-1">
             @for (nav of navItems; track $index;let i = $index) {
+            @if (isNavVisible(nav)) {
             <li>
               @if (nav.subItems) {
                 <button
@@ -252,9 +253,10 @@
                     }
                   </span>
                 </a>
-                }
-              }
+                 }
+               }
             </li>
+            }
             }
           </ul>
         </div>
@@ -301,6 +303,7 @@
 
           <ul class="flex flex-col gap-1">
             @for (nav of othersItems; track $index;let i = $index) {
+            @if (isNavVisible(nav)) {
             <li>
               @if (nav.subItems) {
                 <button
@@ -458,9 +461,10 @@
                     }
                   </span>
                 </a>
-                }
-              }
+                 }
+               }
             </li>
+            }
             }
           </ul>
         </div>

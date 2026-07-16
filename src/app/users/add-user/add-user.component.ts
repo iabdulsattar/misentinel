@@ -282,9 +282,15 @@ export class AddUserComponent implements OnInit {
           this.successMessage = 'User created and invitation sent successfully.';
           setTimeout(() => this.router.navigate(['/user-management']), 1000);
         },
-        error: () => {
+        error: (err: any) => {
           this.saving = false;
-          this.errorMessage = 'Failed to create user.';
+          const status = err?.status;
+          const message = err?.error?.message || err?.message || '';
+          if (status === 409 || /already exists/i.test(message)) {
+            this.errorMessage = 'A user with this email already exists in the organization.';
+          } else {
+            this.errorMessage = 'Failed to create user.';
+          }
         }
       });
     }

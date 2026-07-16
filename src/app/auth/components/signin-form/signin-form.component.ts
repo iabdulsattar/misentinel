@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
+import { PermissionService, ServiceAccessGrant } from '../../../core/services/permission.service';
 import { Router } from '@angular/router';
 import { InputFieldComponent } from '../../../shared/components/form/input/input-field.component';
 import { LabelComponent } from '../../../shared/components/form/label/label.component';
@@ -23,7 +24,11 @@ import { ButtonComponent } from '../../../shared/components/ui/button/button.com
 })
 export class SigninFormComponent {
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private permissionService: PermissionService,
+    private router: Router,
+  ) {}
 
   showPassword = false;
   isChecked = false;
@@ -113,16 +118,22 @@ export class SigninFormComponent {
         }
 
         const orgs = data?.tokens?.organizations ?? data?.organizations ?? [];
+        const storeOrg = (id: string, name?: string) => {
+          localStorage.setItem('org_id', id);
+          localStorage.setItem('organizationId', id);
+          if (name) {
+            localStorage.setItem('organizationName', name);
+            localStorage.setItem('org_name', name);
+          }
+        };
         if (orgs?.length > 0) {
-          localStorage.setItem('org_id', orgs[0].id);
-          localStorage.setItem('organizationId', orgs[0].id);
+          storeOrg(orgs[0].id, orgs[0].name);
         } else {
           this.authService.me(accessToken).subscribe({
             next: (profile: any) => {
               const profileOrgs = profile?.organizations ?? [];
               if (profileOrgs?.length > 0) {
-                localStorage.setItem('org_id', profileOrgs[0].id);
-                localStorage.setItem('organizationId', profileOrgs[0].id);
+                storeOrg(profileOrgs[0].id, profileOrgs[0].name);
               }
             },
             error: () => {
@@ -130,13 +141,15 @@ export class SigninFormComponent {
           });
         }
 
+        this.permissionService.setServiceAccess((data?.serviceAccess as ServiceAccessGrant[]) ?? data?.tokens?.serviceAccess);
+
         this.isLoading = false;
         this.router.navigate(['/']);
       },
       error: (err) => {
         console.error('Login error:', err);
         this.isLoading = false;
-        
+
         if (err.status === 401) {
           this.errorMessage = 'Invalid email or password. Please try again.';
         } else if (err.status === 400) {

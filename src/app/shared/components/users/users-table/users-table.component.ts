@@ -31,8 +31,26 @@ export class UsersTableComponent {
   @Output() rowClick = new EventEmitter<TableUser>();
   @Output() pageChange = new EventEmitter<number>();
   @Output() searchChange = new EventEmitter<string>();
+  @Output() resendCredentials = new EventEmitter<TableUser>();
 
   searchTerm = '';
+
+  openMenuId: string | null = null;
+
+  toggleMenu(user: TableUser, event: MouseEvent) {
+    event.stopPropagation();
+    this.openMenuId = this.openMenuId === user.id ? null : user.id;
+  }
+
+  closeMenu() {
+    this.openMenuId = null;
+  }
+
+  onResendCredentials(user: TableUser, event: MouseEvent) {
+    event.stopPropagation();
+    this.openMenuId = null;
+    this.resendCredentials.emit(user);
+  }
 
   get totalPages(): number {
     const safeTotal = Number(this.total) || 0;

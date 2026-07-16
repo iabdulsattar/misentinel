@@ -282,6 +282,11 @@ export class SignupFormComponent implements OnInit {
         if (orgId) {
           localStorage.setItem('org_id', orgId);
           localStorage.setItem('organizationId', orgId);
+          const companyName = this.cname?.trim();
+          if (companyName) {
+            localStorage.setItem('organizationName', companyName);
+            localStorage.setItem('org_name', companyName);
+          }
         } else {
           console.warn('Organization ID not found in signup response. Available keys:', Object.keys(res || {}));
         }
