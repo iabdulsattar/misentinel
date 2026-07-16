@@ -97,7 +97,7 @@ export class UserManagementComponent implements OnInit {
     { label: 'Users' },
     { label: 'Roles' },
     { label: 'Permissions' },
-    { label: 'Activity' },
+    // { label: 'Activity' },
   ];
 
   // ---------- Permissions ----------
