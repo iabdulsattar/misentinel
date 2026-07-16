@@ -38,11 +38,109 @@ export class SigninFormComponent {
 
   isLoading = false;
   errorMessage = '';
+  successMessage = '';
   emailError = '';
   passwordError = '';
 
+  // ---- OTP (2FA) step ----
+  requiresOtp = false;
+  challengeToken = '';
+  otpSentTo = '';
+  d1 = '';
+  d2 = '';
+  d3 = '';
+  d4 = '';
+  d5 = '';
+  d6 = '';
+  digitError = false;
+
+  get otpCode(): string {
+    return [this.d1, this.d2, this.d3, this.d4, this.d5, this.d6].map(d => (d ?? '').toString()).join('');
+  }
+
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
+  }
+
+  private resetOtpStep() {
+    this.d1 = this.d2 = this.d3 = this.d4 = this.d5 = this.d6 = '';
+    this.digitError = false;
+  }
+
+  onOtpPaste(event: ClipboardEvent) {
+    event.preventDefault();
+    const pasted = (event.clipboardData?.getData('text') ?? '').replace(/\s+/g, '');
+    const digits = pasted.replace(/\D/g, '').slice(0, 6);
+    if (digits.length !== 6) return;
+    this.d1 = digits[0];
+    this.d2 = digits[1];
+    this.d3 = digits[2];
+    this.d4 = digits[3];
+    this.d5 = digits[4];
+    this.d6 = digits[5];
+  }
+
+  backToSignIn() {
+    this.requiresOtp = false;
+    this.challengeToken = '';
+    this.errorMessage = '';
+    this.resetOtpStep();
+  }
+
+  resendOtp() {
+    if (!this.email.trim()) {
+      this.errorMessage = 'Email is missing. Please go back and try again.';
+      return;
+    }
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.authService.login({ email: this.email, password: this.password }).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+        if (res?.challengeToken) {
+          this.challengeToken = res.challengeToken;
+        }
+        this.resetOtpStep();
+        this.successMessage = 'A new verification code has been sent to your email.';
+      },
+      error: () => {
+        this.isLoading = false;
+        this.errorMessage = 'Failed to resend the code. Please try again.';
+      }
+    });
+  }
+
+  onVerifyOtp() {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.digitError = false;
+
+    const code = this.otpCode.replace(/\s+/g, '').trim();
+    if (!/^\d{6}$/.test(code)) {
+      this.isLoading = false;
+      this.digitError = true;
+      this.errorMessage = 'Enter the 6-digit verification code.';
+      return;
+    }
+
+    this.authService.verify2fa({ challengeToken: this.challengeToken, code }).subscribe({
+      next: (res: any) => {
+        const accessToken = res?.access_token ?? res?.tokens?.access_token;
+        const refreshToken = res?.refresh_token ?? res?.tokens?.refresh_token;
+        if (!accessToken) {
+          this.isLoading = false;
+          this.errorMessage = 'Verification succeeded but no access token was returned. Please contact support.';
+          return;
+        }
+        this.finalizeLogin({ tokens: { access_token: accessToken, refresh_token: refreshToken } });
+      },
+      error: (err: any) => {
+        this.isLoading = false;
+        const detail = err?.error?.detail || err?.error?.message;
+        this.errorMessage = detail ? `Verification failed: ${detail}` : 'Invalid or expired code. Please try again.';
+      }
+    });
   }
 
   private decodeExp(token: string): number | null {
@@ -79,6 +177,7 @@ export class SigninFormComponent {
   onSignIn() {
     this.isLoading = true;
     this.errorMessage = '';
+    this.successMessage = '';
     this.emailError = '';
     this.passwordError = '';
 
@@ -89,62 +188,18 @@ export class SigninFormComponent {
 
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: (res) => {
-        console.log('Login successful:', res);
         const data = res as any;
-        const accessToken = data?.tokens?.access_token ?? data?.access_token;
-        const refreshToken = data?.tokens?.refresh_token ?? data?.refresh_token;
 
-        if (!accessToken) {
+        if (data?.requiresOtp || data?.challengeToken) {
+          this.requiresOtp = true;
+          this.challengeToken = data?.challengeToken ?? '';
+          this.otpSentTo = this.email;
+          this.resetOtpStep();
           this.isLoading = false;
-          this.errorMessage = 'Login succeeded but no access token was returned. Please contact support.';
           return;
         }
 
-        const exp = this.decodeExp(accessToken);
-        const expiresAt = String(exp ?? Date.now() + 24 * 60 * 60 * 1000);
-
-        localStorage.setItem('access_token_saas', accessToken);
-        localStorage.setItem('refresh_token', refreshToken ?? '');
-
-        if (this.isChecked) {
-          localStorage.setItem('remember_device', 'true');
-          localStorage.setItem('session_expires_at', expiresAt);
-        } else {
-          localStorage.removeItem('remember_device');
-          localStorage.removeItem('session_expires_at');
-          sessionStorage.setItem('access_token_saas', accessToken);
-          sessionStorage.setItem('refresh_token', refreshToken ?? '');
-          sessionStorage.setItem('session_expires_at', expiresAt);
-        }
-
-        const orgs = data?.tokens?.organizations ?? data?.organizations ?? [];
-        const storeOrg = (id: string, name?: string) => {
-          localStorage.setItem('org_id', id);
-          localStorage.setItem('organizationId', id);
-          if (name) {
-            localStorage.setItem('organizationName', name);
-            localStorage.setItem('org_name', name);
-          }
-        };
-        if (orgs?.length > 0) {
-          storeOrg(orgs[0].id, orgs[0].name);
-        } else {
-          this.authService.me(accessToken).subscribe({
-            next: (profile: any) => {
-              const profileOrgs = profile?.organizations ?? [];
-              if (profileOrgs?.length > 0) {
-                storeOrg(profileOrgs[0].id, profileOrgs[0].name);
-              }
-            },
-            error: () => {
-            }
-          });
-        }
-
-        this.permissionService.setServiceAccess((data?.serviceAccess as ServiceAccessGrant[]) ?? data?.tokens?.serviceAccess);
-
-        this.isLoading = false;
-        this.router.navigate(['/']);
+        this.finalizeLogin(data);
       },
       error: (err) => {
         console.error('Login error:', err);
@@ -159,5 +214,62 @@ export class SigninFormComponent {
         }
       }
     });
+  }
+
+  private finalizeLogin(data: any) {
+    const accessToken = data?.tokens?.access_token ?? data?.access_token;
+    const refreshToken = data?.tokens?.refresh_token ?? data?.refresh_token;
+
+    if (!accessToken) {
+      this.isLoading = false;
+      this.errorMessage = 'Login succeeded but no access token was returned. Please contact support.';
+      return;
+    }
+
+    const exp = this.decodeExp(accessToken);
+    const expiresAt = String(exp ?? Date.now() + 24 * 60 * 60 * 1000);
+
+    localStorage.setItem('access_token_saas', accessToken);
+    localStorage.setItem('refresh_token', refreshToken ?? '');
+
+    if (this.isChecked) {
+      localStorage.setItem('remember_device', 'true');
+      localStorage.setItem('session_expires_at', expiresAt);
+    } else {
+      localStorage.removeItem('remember_device');
+      localStorage.removeItem('session_expires_at');
+      sessionStorage.setItem('access_token_saas', accessToken);
+      sessionStorage.setItem('refresh_token', refreshToken ?? '');
+      sessionStorage.setItem('session_expires_at', expiresAt);
+    }
+
+    const orgs = data?.tokens?.organizations ?? data?.organizations ?? [];
+    const storeOrg = (id: string, name?: string) => {
+      localStorage.setItem('org_id', id);
+      localStorage.setItem('organizationId', id);
+      if (name) {
+        localStorage.setItem('organizationName', name);
+        localStorage.setItem('org_name', name);
+      }
+    };
+    if (orgs?.length > 0) {
+      storeOrg(orgs[0].id, orgs[0].name);
+    } else {
+      this.authService.me(accessToken).subscribe({
+        next: (profile: any) => {
+          const profileOrgs = profile?.organizations ?? [];
+          if (profileOrgs?.length > 0) {
+            storeOrg(profileOrgs[0].id, profileOrgs[0].name);
+          }
+        },
+        error: () => {
+        }
+      });
+    }
+
+    this.permissionService.setServiceAccess((data?.serviceAccess as ServiceAccessGrant[]) ?? data?.tokens?.serviceAccess);
+
+    this.isLoading = false;
+    this.router.navigate(['/']);
   }
 }

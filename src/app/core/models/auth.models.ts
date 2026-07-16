@@ -64,6 +64,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   requiresOtp?: boolean;
+  challengeToken?: string;
   tokens: {
     access_token: string;
     refresh_token: string;
