@@ -6,8 +6,7 @@ import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../core/services/auth.service';
 import { EdobService } from '../../core/services/edob.service';
 import { ServiceUser, CreateUserRequest, UpdateUserRequest } from '../../core/models/user.models';
-import { AssignRolesRequest } from '../../core/models/edob.models';
-import { Role } from '../../core/models/edob.models';
+import { AssignRolesRequest, Role } from '../../core/models/edob.models';
 import { MultiSelectComponent, Option as MultiOption } from '../../shared/components/form/multi-select/multi-select.component';
 
 @Component({
@@ -41,10 +40,7 @@ export class AddUserComponent implements OnInit {
 
   roles: Role[] = [];
   loadingRoles = false;
-
-  get roleOptions(): MultiOption[] {
-    return this.roles.map(r => ({ value: r.id, text: r.name }));
-  }
+  roleOptions: MultiOption[] = [];
 
   profileImage: string | null = null;
   avatarFile: File | null = null;
@@ -80,10 +76,12 @@ export class AddUserComponent implements OnInit {
     this.edobService.listRoles(orgId).subscribe({
       next: (roles: Role[]) => {
         this.roles = roles;
+        this.roleOptions = roles.filter(r => r.active).map(r => ({ value: r.id, text: r.name }));
         this.loadingRoles = false;
       },
       error: () => {
         this.roles = [];
+        this.roleOptions = [];
         this.loadingRoles = false;
       }
     });
@@ -122,7 +120,7 @@ export class AddUserComponent implements OnInit {
         this.form.location = user.location || '';
         this.form.canAccessWeb = user.canAccessWeb ?? true;
         this.form.canAccessMobile = user.canAccessMobile ?? true;
-        this.form.roleIds = user.roleIds || [];
+        this.form.roleIds = user.roleIds || (user.serviceAccess || []).find(s => s.serviceCode === 'edob')?.roleIds || [];
         this.profileImage = (user as any).profileImage || null;
         this.loading = false;
       },
@@ -207,6 +205,10 @@ export class AddUserComponent implements OnInit {
   }
 
   submit(): void {
+    if (this.saving) {
+      return;
+    }
+
     if (!this.form.firstName.trim() || !this.form.lastName.trim() || !this.form.email.trim()) {
       this.errorMessage = 'Please fill in all required fields.';
       return;
@@ -236,17 +238,19 @@ export class AddUserComponent implements OnInit {
 
       this.userService.updateUser(orgId, this.userId, payload, this.avatarFile).subscribe({
         next: () => {
-          if (this.form.roleIds.length && this.userId) {
+          if (this.form.roleIds.length) {
+            const userId = this.userId!;
             const rolesPayload: AssignRolesRequest = { roleIds: this.form.roleIds };
-            this.edobService.assignRolesToUser(orgId, this.userId, rolesPayload).subscribe({
+            this.edobService.assignRolesToUser(orgId, userId, rolesPayload).subscribe({
               next: () => {
                 this.saving = false;
                 this.successMessage = 'User updated successfully.';
                 setTimeout(() => this.router.navigate(['/user-management']), 1000);
               },
-              error: () => {
+              error: (err: any) => {
+                console.error('assignRolesToUser error:', err);
                 this.saving = false;
-                this.errorMessage = 'Failed to update user roles.';
+                this.errorMessage = err?.error?.message || 'Failed to update user roles.';
               }
             });
           } else {

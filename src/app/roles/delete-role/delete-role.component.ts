@@ -78,6 +78,9 @@ export class DeleteRoleComponent implements OnInit {
       next: (data) => {
         this.role = data;
         this.loading = false;
+        if (!data) {
+          this.errorMessage = 'Role details are empty.';
+        }
       },
       error: () => {
         this.errorMessage = 'Failed to load role details.';

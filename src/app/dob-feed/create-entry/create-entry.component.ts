@@ -1059,18 +1059,41 @@ export class CreateEntryComponent implements OnInit {
       parsed = { description: text };
     }
 
-    if (parsed.title) {
-      this.title = parsed.title;
-      this.incidentTitle = parsed.title;
-      this.handoverTitle = parsed.title;
-      this.followUpTitle = parsed.title;
+    const entryTypeCode = this.tabs[this.activeTab].entryTypeCode;
+
+    if (entryTypeCode === 'BASIC') {
+      this.applyBasicAiContent(parsed);
+    } else if (entryTypeCode === 'INCIDENT') {
+      this.applyIncidentAiContent(parsed);
+    } else if (entryTypeCode === 'HANDOVER') {
+      this.applyHandoverAiContent(parsed);
+    } else if (entryTypeCode === 'FOLLOW_UP') {
+      this.applyFollowUpAiContent(parsed);
     }
+  }
+
+  private applyBasicAiContent(parsed: any): void {
+    if (parsed.title) this.title = parsed.title;
     if (parsed.description) {
       this.description = parsed.description;
       this.descriptionLength = parsed.description.length;
+    }
+    if (parsed.priority) {
+      const upper = String(parsed.priority).toUpperCase();
+      const valid = this.priorities.find(p => p.value === upper);
+      if (valid) this.priority = valid.value;
+    }
+    if (parsed.category) {
+      const match = this.categories.find(c => c.name.toLowerCase() === String(parsed.category).toLowerCase());
+      if (match) this.categoryId = match.id;
+    }
+  }
+
+  private applyIncidentAiContent(parsed: any): void {
+    if (parsed.title) this.incidentTitle = parsed.title;
+    if (parsed.description) {
       this.incidentDescription = parsed.description;
-      this.operationalSummary = parsed.description;
-      this.operationalSummaryLength = parsed.description.length;
+      this.descriptionLength = parsed.description.length;
     }
     if (parsed.priority) {
       const upper = String(parsed.priority).toUpperCase();
@@ -1085,27 +1108,40 @@ export class CreateEntryComponent implements OnInit {
       const match = this.incidentTypes.find(t => t.name.toLowerCase() === String(parsed.incidentType).toLowerCase());
       if (match) this.incidentTypeId = match.id;
     }
-    if (parsed.handoverType) {
-      const match = this.handoverTypes.find(t => t.name.toLowerCase() === String(parsed.handoverType).toLowerCase());
-      if (match) this.handoverTypeId = match.id;
-    }
-    if (parsed.location) {
-      this.location = parsed.location;
-    }
-    if (parsed.occurredAt) {
-      this.occurredAt = parsed.occurredAt;
-    }
+    if (parsed.location) this.location = parsed.location;
+    if (parsed.occurredAt) this.occurredAt = parsed.occurredAt;
     if (parsed.peopleInvolved) {
       const arr = Array.isArray(parsed.peopleInvolved) ? parsed.peopleInvolved : [parsed.peopleInvolved];
       this.peopleInvolved = arr.join(', ');
       this.peopleInvolvedUserIds = arr.map((name: string) => this.matchUserId(name)).filter(Boolean);
     }
-    if (parsed.immediateActionsTaken) {
-      this.immediateActionsTaken = parsed.immediateActionsTaken;
+    if (parsed.immediateActionsTaken) this.immediateActionsTaken = parsed.immediateActionsTaken;
+    if (parsed.severityScore != null) this.severityScore = String(parsed.severityScore);
+  }
+
+  private applyHandoverAiContent(parsed: any): void {
+    if (parsed.title) this.handoverTitle = parsed.title;
+    if (parsed.description) {
+      this.operationalSummary = parsed.description;
+      this.operationalSummaryLength = parsed.description.length;
     }
-    if (parsed.severityScore != null) {
-      this.severityScore = String(parsed.severityScore);
+    if (parsed.priority) {
+      const upper = String(parsed.priority).toUpperCase();
+      const valid = this.priorities.find(p => p.value === upper);
+      if (valid) this.priority = valid.value;
     }
+    if (parsed.category) {
+      const match = this.categories.find(c => c.name.toLowerCase() === String(parsed.category).toLowerCase());
+      if (match) this.categoryId = match.id;
+    }
+    if (parsed.handoverType) {
+      const match = this.handoverTypes.find(t => t.name.toLowerCase() === String(parsed.handoverType).toLowerCase());
+      if (match) this.handoverTypeId = match.id;
+    }
+    if (parsed.occurredAt) this.handoverDateTime = parsed.occurredAt;
+    if (parsed.handoverFrom) this.handoverFrom = parsed.handoverFrom;
+    if (parsed.handoverTo) this.handoverTo = parsed.handoverTo;
+    if (parsed.handoverLocation) this.handoverLocation = parsed.handoverLocation;
     if (parsed.outstandingIssues) {
       this.outstandingIssues = Array.isArray(parsed.outstandingIssues) ? parsed.outstandingIssues.join('\n') : parsed.outstandingIssues;
     }
@@ -1116,12 +1152,25 @@ export class CreateEntryComponent implements OnInit {
         this.outstandingActions = parsed.outstandingActions;
       }
     }
-    if (parsed.importantInformation) {
-      this.importantInfo = parsed.importantInformation;
+    if (parsed.importantInformation) this.importantInfo = parsed.importantInformation;
+  }
+
+  private applyFollowUpAiContent(parsed: any): void {
+    if (parsed.title) this.followUpTitle = parsed.title;
+    if (parsed.description) {
+      this.description = parsed.description;
+      this.descriptionLength = parsed.description.length;
     }
-    if (parsed.parentEntryId) {
-      this.parentEntryId = parsed.parentEntryId;
+    if (parsed.priority) {
+      const upper = String(parsed.priority).toUpperCase();
+      const valid = this.priorities.find(p => p.value === upper);
+      if (valid) this.priority = valid.value;
     }
+    if (parsed.category) {
+      const match = this.categories.find(c => c.name.toLowerCase() === String(parsed.category).toLowerCase());
+      if (match) this.categoryId = match.id;
+    }
+    if (parsed.parentEntryId) this.parentEntryId = parsed.parentEntryId;
   }
 
   clearAiHistory(): void {

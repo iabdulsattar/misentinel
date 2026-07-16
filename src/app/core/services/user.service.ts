@@ -127,7 +127,7 @@ export class UserService {
   updateUser(orgId: string, userId: string, payload: UpdateUserRequest, avatar?: File | null): Observable<ServiceUser> {
     const fd = this.toUserFormData(payload, avatar);
     return this.api
-      .patch<any>(`${this.base(orgId)}/users/${userId}`, fd, this.formHeaders())
+      .put<any>(`${this.base(orgId)}/users/${userId}`, fd, this.formHeaders())
       .pipe(this.unwrap<ServiceUser>());
   }
 
