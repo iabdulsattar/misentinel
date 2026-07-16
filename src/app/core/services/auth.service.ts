@@ -122,6 +122,20 @@ export class AuthService {
     return sessionStorage.getItem('access_token_saas') || localStorage.getItem('access_token_saas');
   }
 
+  getOrgName(): string | null {
+    const remember = localStorage.getItem('remember_device');
+    if (remember === 'true') {
+      return localStorage.getItem('org_name') || localStorage.getItem('organizationName') || null;
+    }
+    return (
+      sessionStorage.getItem('org_name') ||
+      sessionStorage.getItem('organizationName') ||
+      localStorage.getItem('org_name') ||
+      localStorage.getItem('organizationName') ||
+      null
+    );
+  }
+
   inviteMember(orgId: string, payload: InviteMemberRequest, token?: string): Observable<InviteMemberResponse> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',

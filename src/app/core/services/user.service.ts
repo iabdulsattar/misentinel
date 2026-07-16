@@ -108,17 +108,17 @@ export class UserService {
 
   // 13.4 POST /api/v1/users/organizations/{orgId}/users
   // Body is multipart/form-data: a `payload` JSON part + optional `avatar` file.
-  // NOTE: the documented `X-Company-Name` header is intentionally omitted — it is a
-  // custom header that triggers a CORS preflight the API server rejects; the backend
-  // accepts the request (and resolves company context from the org) without it.
+  // Sends the documented `X-Company-Name` header (company/brand context for the new user).
   createUser(
     orgId: string,
     payload: CreateUserRequest,
     avatar?: File | null,
   ): Observable<ServiceUser> {
+    const companyName = this.auth.getOrgName();
+    const headers = companyName ? this.formHeaders({ 'X-Company-Name': companyName }) : this.formHeaders();
     const fd = this.toUserFormData(payload, avatar);
     return this.api
-      .post<any>(`${this.base(orgId)}/users`, fd, this.formHeaders())
+      .post<any>(`${this.base(orgId)}/users`, fd, headers)
       .pipe(this.unwrap<ServiceUser>());
   }
 
