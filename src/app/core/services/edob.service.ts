@@ -288,6 +288,17 @@ export class EdobService {
     return this.api.delete(`${this.basePath(orgId)}/roles/${roleId}`);
   }
 
+  // PUT /api/v1/edob/organizations/{orgId}/roles/{roleId}
+  deactivateRole(orgId: string, roleId: string): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.put(`${this.basePath(orgId)}/roles/${roleId}`, { active: false }, headers);
+  }
+
+  reactivateRole(orgId: string, roleId: string): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.put(`${this.basePath(orgId)}/roles/${roleId}`, { active: true }, headers);
+  }
+
   // GET /api/v1/edob/organizations/{orgId}/roles/{roleId}
   getRole(orgId: string, roleId: string): Observable<Role> {
     return this.api.get<ApiWrapper<Role>>(`${this.basePath(orgId)}/roles/${roleId}`).pipe(map(res => res.data));

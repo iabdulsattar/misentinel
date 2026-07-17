@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { EdobService } from '../../core/services/edob.service';
 import { Role, OrgUser } from '../../core/models/edob.models';
+import { DeleteRoleModalComponent } from '../delete-role-modal/delete-role-modal.component';
 
 interface AssignedUser {
   id: string;
@@ -19,7 +20,7 @@ interface AssignedUser {
 @Component({
   selector: 'app-delete-role',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, DeleteRoleModalComponent],
   templateUrl: './delete-role.component.html',
 })
 export class DeleteRoleComponent implements OnInit {
@@ -27,6 +28,8 @@ export class DeleteRoleComponent implements OnInit {
   loading = true;
   errorMessage = '';
   deleting = false;
+  showConfirmModal = false;
+  roleFeedback: { type: 'success' | 'error'; text: string } | null = null;
 
   roleId: string | null = null;
   orgId: string | null = null;
@@ -184,6 +187,21 @@ export class DeleteRoleComponent implements OnInit {
   }
 
   cancel(): void {
+    this.goBack();
+  }
+
+  openConfirm(): void {
+    this.showConfirmModal = true;
+  }
+
+  onModalClose(): void {
+    this.showConfirmModal = false;
+  }
+
+  onModalDeleted(): void {
+    this.showConfirmModal = false;
+    this.roleFeedback = { type: 'success', text: 'Role deleted successfully.' };
+    setTimeout(() => { if (this.roleFeedback?.text === 'Role deleted successfully.') this.roleFeedback = null; }, 4000);
     this.goBack();
   }
 

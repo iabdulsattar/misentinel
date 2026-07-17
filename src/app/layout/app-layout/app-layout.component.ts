@@ -5,6 +5,7 @@ import { AppSidebarComponent } from '../app-sidebar/app-sidebar.component';
 import { BackdropComponent } from '../backdrop/backdrop.component';
 import { RouterModule } from '@angular/router';
 import { AppHeaderComponent } from '../app-header/app-header.component';
+import { ToastComponent } from '../../shared/components/ui/toast/toast.component';
 
 @Component({
   selector: 'app-layout',
@@ -13,7 +14,8 @@ import { AppHeaderComponent } from '../app-header/app-header.component';
     RouterModule,
     AppSidebarComponent,
     BackdropComponent,
-    AppHeaderComponent
+    AppHeaderComponent,
+    ToastComponent
   ],
   templateUrl: './app-layout.component.html',
 })

@@ -244,16 +244,14 @@
   }
 </main>
 
+<app-deactivate-role-modal [role]="role" [orgId]="orgId || ''" (close)="onModalClose()" (deactivated)="onModalDeactivated()" />
+
 <!-- Sticky footer actions -->
 <footer class="sticky bottom-0 bg-white/95 backdrop-blur border-t border-slate-200/70">
   <div class="flex justify-end gap-3 px-6 lg:px-8 py-4">
-    <button (click)="cancel()" [disabled]="deactivating" class="h-10 px-6 rounded-lg border border-slate-200 bg-white text-[13.5px] font-semibold text-[#1e2044] hover:bg-slate-50 disabled:opacity-50">Cancel</button>
-    <button (click)="deactivate()" [disabled]="deactivating" class="h-10 px-6 rounded-lg bg-red-500 text-white text-[13.5px] font-semibold hover:bg-red-600 shadow-sm shadow-red-500/30 disabled:opacity-60 disabled:cursor-not-allowed">
-      @if (deactivating) {
-        Deactivating...
-      } @else {
-        Deactivate Role
-      }
+    <button (click)="cancel()" class="h-10 px-6 rounded-lg border border-slate-200 bg-white text-[13.5px] font-semibold text-[#1e2044] hover:bg-slate-50">Cancel</button>
+    <button (click)="openConfirm()" [disabled]="deactivating" class="h-10 px-6 rounded-lg bg-red-500 text-white text-[13.5px] font-semibold hover:bg-red-600 shadow-sm shadow-red-500/30 disabled:opacity-60 disabled:cursor-not-allowed">
+      Deactivate Role
     </button>
   </div>
 </footer>

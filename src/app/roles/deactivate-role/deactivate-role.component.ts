@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { EdobService } from '../../core/services/edob.service';
 import { Role, OrgUser } from '../../core/models/edob.models';
+import { DeactivateRoleModalComponent } from '../deactivate-role-modal/deactivate-role-modal.component';
 
 interface AssignedUser {
   id: string;
@@ -19,7 +20,7 @@ interface AssignedUser {
 @Component({
   selector: 'app-deactivate-role',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, DeactivateRoleModalComponent],
   templateUrl: './deactivate-role.component.html',
 })
 export class DeactivateRoleComponent implements OnInit {
@@ -27,6 +28,8 @@ export class DeactivateRoleComponent implements OnInit {
   loading = true;
   errorMessage = '';
   deactivating = false;
+  showConfirmModal = false;
+  roleFeedback: { type: 'success' | 'error'; text: string } | null = null;
 
   roleId: string | null = null;
   orgId: string | null = null;
@@ -176,6 +179,21 @@ export class DeactivateRoleComponent implements OnInit {
   }
 
   cancel(): void {
+    this.goBack();
+  }
+
+  openConfirm(): void {
+    this.showConfirmModal = true;
+  }
+
+  onModalClose(): void {
+    this.showConfirmModal = false;
+  }
+
+  onModalDeactivated(): void {
+    this.showConfirmModal = false;
+    this.roleFeedback = { type: 'success', text: 'Role deactivated successfully.' };
+    setTimeout(() => { if (this.roleFeedback?.text === 'Role deactivated successfully.') this.roleFeedback = null; }, 4000);
     this.goBack();
   }
 

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { of, catchError, map, Observable } from 'rxjs';
 import { EdobService } from '../../core/services/edob.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AIGenerationService, AIMessage } from '../../core/services/ai-generation.service';
@@ -852,6 +853,63 @@ export class CreateEntryComponent implements OnInit {
     });
   }
 
+  private ensureCategory(name: string): Observable<string> {
+    const trimmed = name.trim();
+    if (!trimmed) return of('');
+    const existing = this.categories.find(c => c.name.toLowerCase() === trimmed.toLowerCase());
+    if (existing) return of(existing.id);
+
+    const orgId = this.getOrgId();
+    if (!orgId) return of('');
+
+    const code = trimmed.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '') || 'CATEGORY';
+    return this.edobService.createCategory(orgId, { code, name: trimmed, active: true }).pipe(
+      map(cat => {
+        this.categories = [...this.categories, cat];
+        return cat.id;
+      }),
+      catchError(() => of(''))
+    );
+  }
+
+  private ensureIncidentType(name: string): Observable<string> {
+    const trimmed = name.trim();
+    if (!trimmed) return of('');
+    const existing = this.incidentTypes.find(t => t.name.toLowerCase() === trimmed.toLowerCase());
+    if (existing) return of(existing.id);
+
+    const orgId = this.getOrgId();
+    if (!orgId) return of('');
+
+    const code = trimmed.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '') || 'INCIDENT_TYPE';
+    return this.edobService.createIncidentType(orgId, { code, name: trimmed, active: true }).pipe(
+      map(t => {
+        this.incidentTypes = [...this.incidentTypes, t];
+        return t.id;
+      }),
+      catchError(() => of(''))
+    );
+  }
+
+  private ensureHandoverType(name: string): Observable<string> {
+    const trimmed = name.trim();
+    if (!trimmed) return of('');
+    const existing = this.handoverTypes.find(t => t.name.toLowerCase() === trimmed.toLowerCase());
+    if (existing) return of(existing.id);
+
+    const orgId = this.getOrgId();
+    if (!orgId) return of('');
+
+    const code = trimmed.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '') || 'HANDOVER_TYPE';
+    return this.edobService.createHandoverType(orgId, { code, name: trimmed, active: true }).pipe(
+      map(t => {
+        this.handoverTypes = [...this.handoverTypes, t];
+        return t.id;
+      }),
+      catchError(() => of(''))
+    );
+  }
+
   onHandoverFromChange(value: string): void {
     this.handoverFromUserId = value;
     this.handoverFromError = '';
@@ -1085,7 +1143,13 @@ export class CreateEntryComponent implements OnInit {
     }
     if (parsed.category) {
       const match = this.categories.find(c => c.name.toLowerCase() === String(parsed.category).toLowerCase());
-      if (match) this.categoryId = match.id;
+      if (match) {
+        this.categoryId = match.id;
+      } else {
+        this.ensureCategory(parsed.category).subscribe((id: string) => {
+          if (id) this.categoryId = id;
+        });
+      }
     }
   }
 
@@ -1102,11 +1166,23 @@ export class CreateEntryComponent implements OnInit {
     }
     if (parsed.category) {
       const match = this.categories.find(c => c.name.toLowerCase() === String(parsed.category).toLowerCase());
-      if (match) this.categoryId = match.id;
+      if (match) {
+        this.categoryId = match.id;
+      } else {
+        this.ensureCategory(parsed.category).subscribe((id: string) => {
+          if (id) this.categoryId = id;
+        });
+      }
     }
     if (parsed.incidentType) {
       const match = this.incidentTypes.find(t => t.name.toLowerCase() === String(parsed.incidentType).toLowerCase());
-      if (match) this.incidentTypeId = match.id;
+      if (match) {
+        this.incidentTypeId = match.id;
+      } else {
+        this.ensureIncidentType(parsed.incidentType).subscribe((id: string) => {
+          if (id) this.incidentTypeId = id;
+        });
+      }
     }
     if (parsed.location) this.location = parsed.location;
     if (parsed.occurredAt) this.occurredAt = parsed.occurredAt;
@@ -1132,11 +1208,23 @@ export class CreateEntryComponent implements OnInit {
     }
     if (parsed.category) {
       const match = this.categories.find(c => c.name.toLowerCase() === String(parsed.category).toLowerCase());
-      if (match) this.categoryId = match.id;
+      if (match) {
+        this.categoryId = match.id;
+      } else {
+        this.ensureCategory(parsed.category).subscribe((id: string) => {
+          if (id) this.categoryId = id;
+        });
+      }
     }
     if (parsed.handoverType) {
       const match = this.handoverTypes.find(t => t.name.toLowerCase() === String(parsed.handoverType).toLowerCase());
-      if (match) this.handoverTypeId = match.id;
+      if (match) {
+        this.handoverTypeId = match.id;
+      } else {
+        this.ensureHandoverType(parsed.handoverType).subscribe((id: string) => {
+          if (id) this.handoverTypeId = id;
+        });
+      }
     }
     if (parsed.occurredAt) this.handoverDateTime = parsed.occurredAt;
     if (parsed.handoverFrom) this.handoverFrom = parsed.handoverFrom;
@@ -1168,7 +1256,13 @@ export class CreateEntryComponent implements OnInit {
     }
     if (parsed.category) {
       const match = this.categories.find(c => c.name.toLowerCase() === String(parsed.category).toLowerCase());
-      if (match) this.categoryId = match.id;
+      if (match) {
+        this.categoryId = match.id;
+      } else {
+        this.ensureCategory(parsed.category).subscribe((id: string) => {
+          if (id) this.categoryId = id;
+        });
+      }
     }
     if (parsed.parentEntryId) this.parentEntryId = parsed.parentEntryId;
   }
