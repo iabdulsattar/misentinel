@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { UserService } from '../core/services/user.service';
 import { EdobService } from '../core/services/edob.service';
+import { PermissionService } from '../core/services/permission.service';
 import { SendInviteModalComponent } from './send-invite-modal/send-invite-modal.component';
 import { DeactivateUserModalComponent } from './deactivate-user-modal/deactivate-user-modal.component';
 import { ReactivateUserModalComponent } from './reactivate-user-modal/reactivate-user-modal.component';
@@ -344,7 +345,15 @@ export class UserManagementComponent implements OnInit {
     'Not Invited': { icon: 'ti-circle-minus', color: 'text-slate-400' },
   };
 
-  constructor(private userService: UserService, private edobService: EdobService, private router: Router, private sanitizer: DomSanitizer) {}
+  constructor(private userService: UserService, private edobService: EdobService, private router: Router, private sanitizer: DomSanitizer, private permissionService: PermissionService, private route: ActivatedRoute) {}
+
+  get canAddUser(): boolean {
+    return this.permissionService.hasPermission('admin.users.manage');
+  }
+
+  get canAddRole(): boolean {
+    return this.permissionService.hasPermission('admin.roles.manage');
+  }
 
   permIcon(name: string): SafeHtml {
     const inner = this.permissionIcons[name] || '';
@@ -354,6 +363,15 @@ export class UserManagementComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const tab = this.route.snapshot.queryParamMap.get('tab');
+    if (tab !== null) {
+      const parsed = parseInt(tab, 10);
+      if (parsed === 1 || parsed === 2) {
+        this.activeTab = parsed;
+        if (parsed === 1) this.loadRoles();
+        else if (parsed === 2) this.loadPermissions();
+      }
+    }
     this.loadUsers();
     this.loadStats();
   }
@@ -400,7 +418,7 @@ export class UserManagementComponent implements OnInit {
           lastLogin: item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleString() : '-',
           lastTime: item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleTimeString() : '-',
           created: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-',
-          img: 40 + (index % 10),
+           img: (index % 37) + 1,
           resend: item.invitationStatus === 'Pending',
           department: ['Operations', 'Security', 'Compliance', 'HR'][index % 4],
           phone: ['+91 98765 43210', '+91 98765 12345', '+91 99456 12345', '+91 99876 00000'][index % 4],

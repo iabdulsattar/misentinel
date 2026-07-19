@@ -285,7 +285,7 @@ export interface Comment {
   user?: string;
   role?: string;
   time?: string;
-  img?: number;
+  img?: number | string;
   [key: string]: any;
 }
 

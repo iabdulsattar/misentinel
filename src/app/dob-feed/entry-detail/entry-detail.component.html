@@ -82,7 +82,7 @@
         <div class="space-y-5">
           @for (comment of comments; track comment.id || $index) {
             <div class="flex gap-3">
-              <img [src]="'https://i.pravatar.cc/40?img=' + (comment.img || 14)" class="w-9 h-9 rounded-full shrink-0" />
+              <img [src]="comment.img || '/images/user/dummy-user.png'" class="w-9 h-9 rounded-full shrink-0" />
               <div class="flex-1 min-w-0">
                 <div class="flex flex-wrap items-center gap-2">
                   <span class="font-semibold text-slate-900 text-sm">{{ comment.user || 'User' }}</span>
@@ -98,6 +98,7 @@
           }
         </div>
 
+        @if (canComment) {
         <div class="flex items-center gap-3 mt-6 border border-slate-200 dark:border-gray-800 rounded-lg px-3 py-2">
           <input type="text" [(ngModel)]="newCommentText" placeholder="Add comment..." class="flex-1 min-w-0 text-sm outline-none placeholder:text-slate-400 bg-transparent dark:text-gray-100" (keyup.enter)="addComment()" />
           <button class="text-slate-400 hover:text-slate-600 shrink-0"><i class="ti ti-paperclip"></i></button>
@@ -106,6 +107,7 @@
             {{ isSubmittingComment ? 'Posting...' : 'Add Comment' }}
           </button>
         </div>
+        }
       </div>
 
     </div>

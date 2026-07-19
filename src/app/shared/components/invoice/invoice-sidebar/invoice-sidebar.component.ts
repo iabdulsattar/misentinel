@@ -15,23 +15,23 @@ export class InvoiceSidebarComponent {
     {
       name: 'Zain Geidt',
       id: '#348',
-      image: './images/user/user-19.jpg',
+      image: '/images/user/dummy-user.png',
       active: true,
     },
     {
       name: 'Carla George',
       id: '#982',
-      image: './images/user/user-17.jpg',
+      image: '/images/user/dummy-user.png',
     },
     {
       name: 'Abram Schleifer',
       id: '#289',
-      image: './images/user/user-20.jpg',
+      image: '/images/user/dummy-user.png',
     },
     {
       name: 'Lincoln Donin',
       id: '#522',
-      image: './images/user/user-34.jpg',
+      image: '/images/user/dummy-user.png',
     },
   ];
 

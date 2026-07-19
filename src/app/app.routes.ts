@@ -28,11 +28,13 @@ export const routes: Routes = [
           {
             path: 'entries',
             loadComponent: () => import('./dob-feed/entries.component').then(m => m.EntriesComponent),
+            canActivate: [authGuard, permissionGuard('entry.view')],
             title: 'Entries | eDOB'
           },
           {
             path: 'entries/:id',
             loadComponent: () => import('./dob-feed/entry-detail/entry-detail.component').then(m => m.EntryDetailComponent),
+            canActivate: [authGuard, permissionGuard('entry.view')],
             title: 'Entry Detail | eDOB'
           },
           {
@@ -92,21 +94,25 @@ export const routes: Routes = [
           {
             path: 'roles/view-role',
             loadComponent: () => import('./roles/view-role/view-role.component').then(m => m.ViewRoleComponent),
+            canActivate: [authGuard, permissionGuard('role.view')],
             title: 'View Role | eDOB'
           },
           {
             path: 'roles/deactivate-role',
             loadComponent: () => import('./roles/deactivate-role/deactivate-role.component').then(m => m.DeactivateRoleComponent),
+            canActivate: [authGuard, permissionGuard('role.deactivate')],
             title: 'Deactivate Role | eDOB'
           },
           {
             path: 'roles/reactivate-role',
             loadComponent: () => import('./roles/reactivate-role/reactivate-role.component').then(m => m.ReactivateRoleComponent),
+            canActivate: [authGuard, permissionGuard('role.reactivate')],
             title: 'Reactivate Role | eDOB'
           },
           {
             path: 'roles/delete-role',
             loadComponent: () => import('./roles/delete-role/delete-role.component').then(m => m.DeleteRoleComponent),
+            canActivate: [authGuard, permissionGuard('role.delete')],
             title: 'Delete Role | eDOB'
           },
           {

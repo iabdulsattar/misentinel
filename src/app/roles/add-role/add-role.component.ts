@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { EdobService } from '../../core/services/edob.service';
+import { PermissionService } from '../../core/services/permission.service';
 import { Role, CreateRoleRequest, UpdateRoleRequest } from '../../core/models/edob.models';
 
 interface Permission {
@@ -40,7 +41,11 @@ export class AddRoleComponent implements OnInit {
 
   groups: PermissionGroup[] = [];
 
-  constructor(private edobService: EdobService, private router: Router, private route: ActivatedRoute) {}
+  constructor(private edobService: EdobService, private router: Router, private route: ActivatedRoute, private permissionService: PermissionService) {}
+
+  get canSaveRole(): boolean {
+    return this.permissionService.hasPermission('admin.roles.manage');
+  }
 
   ngOnInit(): void {
     this.roleId = this.route.snapshot.queryParamMap.get('id');

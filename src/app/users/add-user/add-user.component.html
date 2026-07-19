@@ -189,7 +189,7 @@
 
       <div class="flex justify-end gap-3">
         <a routerLink="/user-management" class="px-5 py-2.5 rounded-lg border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 inline-flex items-center">Cancel</a>
-        <button (click)="submit()" [disabled]="saving" class="px-5 py-2.5 rounded-lg bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-70">
+        <button (click)="submit()" [disabled]="saving || !canSaveUser" class="px-5 py-2.5 rounded-lg bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-70">
           {{ isEditMode ? (saving ? 'Saving...' : 'Save Changes') : (saving ? 'Creating...' : 'Create User') }}
         </button>
       </div>

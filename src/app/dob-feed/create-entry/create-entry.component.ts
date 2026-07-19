@@ -37,7 +37,6 @@ type AttachmentType = 'pdf' | 'image' | 'audio';
 export class CreateEntryComponent implements OnInit {
   activeTab = 0;
   isSubmitting = false;
-  isSavingDraft = false;
   isLoadingEntry = false;
   errorMessage = '';
 
@@ -77,6 +76,14 @@ export class CreateEntryComponent implements OnInit {
   fileError = '';
   readonly maxFilesPerType = 2;
   readonly maxFileSize = 100 * 1024 * 1024;
+
+  // Audio recorder state
+  isRecording = false;
+  recordingTime = 0;
+  private mediaRecorder: MediaRecorder | null = null;
+  private audioChunks: Blob[] = [];
+  private recordingTimer: any = null;
+  readonly maxRecordingMs = 10 * 60 * 1000;
 
   // Incident fields
   incidentTitle = '';
@@ -569,32 +576,6 @@ export class CreateEntryComponent implements OnInit {
 
   // ==================== File handlers ====================
 
-  onFileSelected(event: Event, type: AttachmentType): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
-
-    const list = this.getFileList(type);
-    const remaining = this.maxFilesPerType - list.length;
-    if (remaining <= 0) {
-      this.fileError = `You can attach a maximum of ${this.maxFilesPerType} ${type} file(s).`;
-      input.value = '';
-      return;
-    }
-
-    const incoming = Array.from(input.files).slice(0, remaining);
-    for (const file of incoming) {
-      if (!this.validateFile(file, type)) continue;
-      const item: SelectedFile = { file };
-      if ((type === 'image' || type === 'audio') && file.type.startsWith(type + '/')) {
-        item.previewUrl = URL.createObjectURL(file);
-      }
-      list.push(item);
-    }
-
-    this.fileError = '';
-    input.value = '';
-  }
-
   private validateFile(file: File, type: AttachmentType): boolean {
     if (file.size > this.maxFileSize) {
       this.fileError = `"${file.name}" exceeds the 100MB limit.`;
@@ -659,6 +640,137 @@ export class CreateEntryComponent implements OnInit {
       }
       list.length = 0;
     }
+  }
+
+  startAudioRecording(): void {
+    if (this.isRecording) return;
+    if (this.audioFiles.length >= this.maxFilesPerType) {
+      this.fileError = `You can attach a maximum of ${this.maxFilesPerType} audio file(s).`;
+      return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+      this.audioChunks = [];
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : 'audio/webm';
+      this.mediaRecorder = new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 32000 });
+
+      this.mediaRecorder.ondataavailable = (e: BlobEvent) => {
+        if (e.data.size > 0) this.audioChunks.push(e.data);
+      };
+
+      this.mediaRecorder.onstop = () => {
+        const blob = new Blob(this.audioChunks, { type: mimeType });
+        const file = new File([blob], `recording-${Date.now()}.webm`, { type: mimeType });
+        this.addRecordedAudio(file);
+        stream.getTracks().forEach(t => t.stop());
+      };
+
+      this.mediaRecorder.start(250);
+      this.isRecording = true;
+      this.recordingTime = 0;
+      this.recordingTimer = setInterval(() => {
+        this.recordingTime += 100;
+        if (this.recordingTime >= this.maxRecordingMs) {
+          this.stopAudioRecording();
+        }
+      }, 100);
+    }).catch(() => {
+      this.fileError = 'Microphone access denied. Please allow microphone access or use file upload.';
+    });
+  }
+
+  stopAudioRecording(): void {
+    if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') return;
+    this.mediaRecorder.stop();
+    this.isRecording = false;
+    clearInterval(this.recordingTimer);
+  }
+
+  cancelAudioRecording(): void {
+    if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') return;
+    this.mediaRecorder.onstop = null;
+    this.mediaRecorder.stop();
+    this.audioChunks = [];
+    this.isRecording = false;
+    clearInterval(this.recordingTimer);
+  }
+
+  private addRecordedAudio(file: File): void {
+    const item: SelectedFile = {
+      file,
+      previewUrl: URL.createObjectURL(file),
+      fileName: file.name,
+      fileSize: file.size,
+    };
+    this.audioFiles.push(item);
+    this.fileError = '';
+  }
+
+  private async compressImage(file: File): Promise<File> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1920;
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            const ratio = Math.min(maxDim / width, maxDim / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              const compressed = new File([blob!], file.name, { type: 'image/jpeg', lastModified: Date.now() });
+              resolve(compressed);
+            },
+            'image/jpeg',
+            0.7
+          );
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ==================== File handlers ====================
+
+  async onFileSelected(event: Event, type: AttachmentType): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const list = this.getFileList(type);
+    const remaining = this.maxFilesPerType - list.length;
+    if (remaining <= 0) {
+      this.fileError = `You can attach a maximum of ${this.maxFilesPerType} ${type} file(s).`;
+      input.value = '';
+      return;
+    }
+
+    const incoming = Array.from(input.files).slice(0, remaining);
+    for (const file of incoming) {
+      if (!this.validateFile(file, type)) continue;
+      let processedFile = file;
+      if (type === 'image') {
+        processedFile = await this.compressImage(file);
+      }
+      const item: SelectedFile = { file: processedFile };
+      if (type === 'image') {
+        item.previewUrl = URL.createObjectURL(processedFile);
+      }
+      list.push(item);
+    }
+
+    this.fileError = '';
+    input.value = '';
   }
 
   allFiles(): File[] {
@@ -944,15 +1056,6 @@ export class CreateEntryComponent implements OnInit {
 
   // ==================== Save / Submit ====================
 
-  onSaveDraft(): void {
-    if (!this.validateForm()) return;
-    this.isSavingDraft = true;
-    this.errorMessage = '';
-
-    const formData = this.buildFormData();
-    this.persistEntry(formData);
-  }
-
   onSubmitEntry(): void {
     if (!this.validateForm()) return;
     this.isSubmitting = true;
@@ -967,18 +1070,15 @@ export class CreateEntryComponent implements OnInit {
     if (!orgId) {
       this.errorMessage = 'Organization not found. Please sign in again.';
       this.isSubmitting = false;
-      this.isSavingDraft = false;
       return;
     }
 
     const done = () => {
       this.isSubmitting = false;
-      this.isSavingDraft = false;
       this.router.navigate(['/entries']);
     };
     const fail = (err: any) => {
       this.isSubmitting = false;
-      this.isSavingDraft = false;
       this.errorMessage = err?.error?.message || 'Failed to save entry. Please try again.';
     };
 
@@ -1022,10 +1122,11 @@ export class CreateEntryComponent implements OnInit {
       entryPayload.title = this.handoverTitle;
       entryPayload.description = this.operationalSummary;
       if (this.categoryId) entryPayload.categoryId = this.categoryId;
-      if (this.assignedToUserId) entryPayload.assignedToUserId = this.assignedToUserId;
-      if (this.occurredAt) entryPayload.occurredAt = new Date(this.handoverDateTime).toISOString();
+      if (this.handoverToUserId) entryPayload.assignedToUserId = this.handoverToUserId;
+      if (this.handoverDateTime) entryPayload.occurredAt = new Date(this.handoverDateTime).toISOString();
       entryPayload.handoverTypeId = this.handoverTypeId;
       if (this.handoverFromUserId) entryPayload.handoverFromUserId = this.handoverFromUserId;
+      if (this.handoverLocation) entryPayload.location = this.handoverLocation;
 
       const data: any = {};
       if (this.handoverToUserId) {
@@ -1033,7 +1134,6 @@ export class CreateEntryComponent implements OnInit {
         data['handoverTo'] = user ? `${user.firstName} ${user.lastName}`.trim() : '';
         data['handoverToUserId'] = this.handoverToUserId;
       }
-      if (this.handoverLocation) data['handoverLocation'] = this.handoverLocation;
       const issuesArr = this.outstandingIssues.split('\n').map(s => s.trim()).filter(Boolean);
       if (issuesArr.length) data['outstandingIssues'] = issuesArr;
       data['outstandingActions'] = this.parseOutstandingActions(this.outstandingActions);

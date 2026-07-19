@@ -5,6 +5,7 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../core/services/auth.service';
 import { EdobService } from '../../core/services/edob.service';
+import { PermissionService } from '../../core/services/permission.service';
 import { ServiceUser, CreateUserRequest, UpdateUserRequest } from '../../core/models/user.models';
 import { AssignRolesRequest, Role } from '../../core/models/edob.models';
 import { MultiSelectComponent, Option as MultiOption } from '../../shared/components/form/multi-select/multi-select.component';
@@ -54,8 +55,13 @@ export class AddUserComponent implements OnInit {
     private authService: AuthService,
     private edobService: EdobService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private permissionService: PermissionService
   ) {}
+
+  get canSaveUser(): boolean {
+    return this.permissionService.hasPermission('admin.users.manage');
+  }
 
   ngOnInit(): void {
     this.userId = this.route.snapshot.queryParamMap.get('id');

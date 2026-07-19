@@ -4,7 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { EdobService } from '../../core/services/edob.service';
 import { AuthService } from '../../core/services/auth.service';
+import { PermissionService } from '../../core/services/permission.service';
 import { Entry, Comment } from '../../core/models/edob.models';
+import { getUserAvatar } from '../../shared/utils/avatar.utils';
 
 @Component({
   selector: 'app-entry-detail',
@@ -23,7 +25,7 @@ export class EntryDetailComponent implements OnInit {
   isSubmittingComment = false;
   currentUserName = '';
   currentUserRole = 'User';
-  currentUserImg = 14;
+  currentUserImg = '/images/user/dummy-user.png';
 
   private categoryMap = new Map<string, string>();
   private userMap = new Map<string, string>();
@@ -32,6 +34,7 @@ export class EntryDetailComponent implements OnInit {
   constructor(
     private edobService: EdobService,
     private authService: AuthService,
+    private permissionService: PermissionService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -95,7 +98,7 @@ export class EntryDetailComponent implements OnInit {
           const user = profile?.user || profile?.data || profile;
           this.currentUserName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User';
           this.currentUserRole = (user.roles?.[0]?.name || user.role || 'User') as string;
-          this.currentUserImg = user.img || user.avatarImg || 14;
+          this.currentUserImg = getUserAvatar(user);
         },
         error: () => {}
       });
@@ -114,15 +117,15 @@ export class EntryDetailComponent implements OnInit {
   }
 
   private mapComment(c: any): Comment {
-    const avatarNum = c.authorAvatarUrl
-      ? parseInt(c.authorAvatarUrl, 10)
-      : (c.authorUserId ? this.hashUserId(c.authorUserId) : 14);
+    const avatarUrl = c.authorAvatarUrl
+      ? (c.authorAvatarUrl.startsWith('http') ? c.authorAvatarUrl : `/images/user/${c.authorAvatarUrl}`)
+      : getUserAvatar({ firstName: c.authorName });
     return {
       ...c,
       user: c.authorName || 'User',
       role: this.userRoleMap.get(c.authorUserId) || 'User',
       time: c.createdAt || new Date().toISOString(),
-      img: isNaN(avatarNum) ? 14 : avatarNum,
+      img: avatarUrl,
     };
   }
 
@@ -135,11 +138,19 @@ export class EntryDetailComponent implements OnInit {
     return Math.abs(hash) % 70 + 1;
   }
 
+  get canComment(): boolean {
+    return this.permissionService.hasPermission('entry.comment');
+  }
+
   addComment(): void {
     const orgId = this.getOrgId();
     const entryId = this.entry?.id;
     const text = this.newCommentText.trim();
     if (!orgId || !entryId || !text || this.isSubmittingComment) return;
+
+    if (!this.canComment) {
+      return;
+    }
 
     this.isSubmittingComment = true;
     this.edobService.addComment(orgId, entryId, { body: text }).subscribe({

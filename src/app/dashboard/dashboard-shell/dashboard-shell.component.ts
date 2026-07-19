@@ -59,6 +59,14 @@ export class DashboardShellComponent implements OnInit {
     return this.quickEntries.filter((e) => !e.permission || this.permissionService.hasPermission(e.permission));
   }
 
+  get canViewEntries(): boolean {
+    return this.permissionService.hasPermission('entry.view');
+  }
+
+  get hasAnyDashboardAccess(): boolean {
+    return this.visibleQuickEntries.length > 0 || this.canViewEntries;
+  }
+
   metrics: {
     value: string;
     label: string;

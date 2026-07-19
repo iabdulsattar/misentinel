@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { EdobService } from '../../core/services/edob.service';
 import { AuthService } from '../../core/services/auth.service';
+import { PermissionService } from '../../core/services/permission.service';
 import { Role, Permission, PermissionsGrouped } from '../../core/models/edob.models';
 
 interface ActivityItem {
@@ -60,8 +61,13 @@ export class ViewRoleComponent implements OnInit {
     private edobService: EdobService,
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private permissionService: PermissionService
   ) {}
+
+  get canEditRole(): boolean {
+    return this.permissionService.hasPermission('admin.roles.manage');
+  }
 
   ngOnInit(): void {
     const roleId = this.route.snapshot.queryParamMap.get('id');
@@ -198,7 +204,7 @@ export class ViewRoleComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/user-management']);
+    this.router.navigate(['/user-management'], { queryParams: { tab: '1' } });
   }
 
   editRole(): void {

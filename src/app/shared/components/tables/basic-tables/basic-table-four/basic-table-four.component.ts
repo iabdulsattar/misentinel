@@ -18,7 +18,7 @@ export class BasicTableFourComponent {
     {
       id: 1,
       creator: {
-        image: '/images/user/user-01.jpg',
+        image: '/images/user/dummy-user.png',
         name: 'Wilson Gouse',
       },
       campaign: {
@@ -31,7 +31,7 @@ export class BasicTableFourComponent {
     {
       id: 2,
       creator: {
-        image: '/images/user/user-02.jpg',
+        image: '/images/user/dummy-user.png',
         name: 'Wilson Gouse',
       },
       campaign: {
@@ -44,7 +44,7 @@ export class BasicTableFourComponent {
     {
       id: 3,
       creator: {
-        image: '/images/user/user-03.jpg',
+        image: '/images/user/dummy-user.png',
         name: 'Wilson Gouse',
       },
       campaign: {
@@ -57,7 +57,7 @@ export class BasicTableFourComponent {
     {
       id: 4,
       creator: {
-        image: '/images/user/user-04.jpg',
+        image: '/images/user/dummy-user.png',
         name: 'Wilson Gouse',
       },
       campaign: {
@@ -70,7 +70,7 @@ export class BasicTableFourComponent {
     {
       id: 5,
       creator: {
-        image: '/images/user/user-05.jpg',
+        image: '/images/user/dummy-user.png',
         name: 'Wilson Gouse',
       },
       campaign: {
@@ -83,7 +83,7 @@ export class BasicTableFourComponent {
     {
       id: 6,
       creator: {
-        image: '/images/user/user-06.jpg',
+        image: '/images/user/dummy-user.png',
         name: 'Wilson Gouse',
       },
       campaign: {

@@ -190,12 +190,14 @@ export class EntriesComponent implements OnInit {
     const typeMap = new Map(this.entryTypes.map((t) => [t.code, t.name]));
     const typeMapById = new Map(this.entryTypes.map((t) => [t.id, t.name]));
     const userMap = new Map(this.orgUsers.map((u) => [u.id, `${u.firstName} ${u.lastName}`.trim() || u.email]));
+    const userImgMap = new Map(this.orgUsers.map((u: any) => [u.id, u['avatar'] || u['avatarUrl'] || u['profileImageUrl'] || '/images/user/dummy-user.png']));
 
     return raw.map((entry) => {
       const typeName = typeMap.get(entry.entryTypeCode) || typeMapById.get(entry.entryTypeId || '') || entry.entryTypeCode;
       const createdByName = userMap.get(entry.createdByUserId) || entry.createdByUserId;
       const assignedToName = entry.assignedToUserId ? (userMap.get(entry.assignedToUserId) || entry.assignedToUserId) : '-';
       const userName = createdByName;
+      const userImg = userImgMap.get(entry.createdByUserId) || '/images/user/dummy-user.png';
 
       return {
         id: entry.entryNumber || entry.id,
@@ -210,6 +212,7 @@ export class EntriesComponent implements OnInit {
         priorityCode: entry.priority,
         userName,
         userInitials: this.initials(userName),
+        userImg,
         assignedTo: assignedToName,
         raw: entry,
       };

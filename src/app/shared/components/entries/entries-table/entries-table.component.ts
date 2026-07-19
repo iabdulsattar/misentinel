@@ -15,6 +15,7 @@ export interface TableEntry {
   priorityCode: string;
   userName: string;
   userInitials: string;
+  userImg: string;
   assignedTo: string;
   raw: any;
 }
