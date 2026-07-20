@@ -5,7 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { EdobService } from '../../core/services/edob.service';
 import { PermissionService } from '../../core/services/permission.service';
 import { ProfileResponse } from '../../core/models/auth.models';
-import { DashboardData } from '../../core/models/edob.models';
+import { DashboardData, OrgUser } from '../../core/models/edob.models';
 import { SafeHtmlPipe } from '../../pipe/safe-html.pipe';
 
 @Component({
@@ -20,6 +20,7 @@ export class DashboardShellComponent implements OnInit {
   userName = '';
   loading = true;
   dashboardError = false;
+  orgUsers: OrgUser[] = [];
 
   // Each quick-entry card is gated by the permission needed to create that
   // entry type. Cards the user lacks permission for are hidden.
@@ -156,6 +157,15 @@ export class DashboardShellComponent implements OnInit {
       return;
     }
 
+    this.edobService.listOrgUsers(orgId).subscribe({
+      next: (users: OrgUser[]) => {
+        this.orgUsers = users;
+      },
+      error: () => {
+        this.orgUsers = [];
+      }
+    });
+
     this.edobService.getDashboard(orgId).subscribe({
       next: (data: DashboardData) => {
         this.applyDashboard(data);
@@ -210,17 +220,19 @@ export class DashboardShellComponent implements OnInit {
     ];
 
     // Recent entries use the real payload (status/priority are enums).
+    const userMap = new Map(this.orgUsers.map(u => [u.id, `${u.firstName} ${u.lastName}`.trim()]));
     this.recentEntries = (data.recentEntries ?? []).map((e) => {
       const status = this.titleCase(e.status ?? 'NEW');
       const priority = this.titleCase(e.priority ?? 'NORMAL');
+      const createdByName = e.createdBy || ((e as any)['createdByUserId'] ? userMap.get((e as any)['createdByUserId']) : undefined) || 'Unknown';
       return {
         title: e.title ?? 'Untitled entry',
         note: e.note ?? `#${e.entryNumber ?? ''}`.trim(),
-        type: 'Entry',
+        type: e.typeName || e.type || 'Entry',
         priority,
         status,
-        initials: this.initials(e.createdBy ?? e.title ?? '?'),
-        createdBy: e.createdBy ?? 'Unknown',
+        initials: this.initials(createdByName),
+        createdBy: createdByName,
         time: this.formatTime(e.createdAt),
         typeClass: 'bg-brand-50 text-brand-600',
         priorityClass: this.priorityClass(e.priority),

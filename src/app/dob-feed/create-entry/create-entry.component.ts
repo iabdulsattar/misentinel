@@ -28,10 +28,22 @@ interface SelectedFile {
 
 type AttachmentType = 'pdf' | 'image' | 'audio';
 
+import { AddCategoryModalComponent } from './add-category-modal/add-category-modal.component';
+import { AddEntryTypeModalComponent } from './add-entry-type-modal/add-entry-type-modal.component';
+
 @Component({
   selector: 'app-create-entry',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, DateTimePickerComponent, RichSelectComponent, MultiSelectComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    DateTimePickerComponent,
+    RichSelectComponent,
+    MultiSelectComponent,
+    AddCategoryModalComponent,
+    AddEntryTypeModalComponent,
+  ],
   templateUrl: './create-entry.component.html',
 })
 export class CreateEntryComponent implements OnInit {
@@ -80,6 +92,7 @@ export class CreateEntryComponent implements OnInit {
   // Audio recorder state
   isRecording = false;
   recordingTime = 0;
+  isProcessingAudio = false;
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
   private recordingTimer: any = null;
@@ -141,20 +154,9 @@ export class CreateEntryComponent implements OnInit {
   handoverToUserId = '';
   peopleInvolvedUserIds: string[] = [];
 
-  showCreateCategoryForm = false;
-  newCategoryName = '';
-  isCreatingCategory = false;
-  categoryCreateError = '';
-
-  showCreateIncidentTypeForm = false;
-  newIncidentTypeName = '';
-  isCreatingIncidentType = false;
-  incidentTypeCreateError = '';
-
-  showCreateHandoverTypeForm = false;
-  newHandoverTypeName = '';
-  isCreatingHandoverType = false;
-  handoverTypeCreateError = '';
+   showAddCategoryModal = false;
+  showAddEntryTypeModal = false;
+  entryTypeModalKind: 'incident' | 'handover' = 'incident';
 
   priorities = [
     { value: 'LOW', label: 'Low' },
@@ -446,7 +448,7 @@ export class CreateEntryComponent implements OnInit {
     }
   }
 
-  private getOrgId(): string | null {
+  getOrgId(): string | null {
     const remember = localStorage.getItem('remember_device');
     if (remember === 'true') {
       return localStorage.getItem('org_id') || localStorage.getItem('organizationId') || null;
@@ -456,8 +458,6 @@ export class CreateEntryComponent implements OnInit {
 
   setActiveTab(index: number): void {
     this.activeTab = index;
-    this.showCreateCategoryForm = false;
-    this.categoryCreateError = '';
     this.clearErrors();
   }
 
@@ -534,9 +534,6 @@ export class CreateEntryComponent implements OnInit {
     if (!this.priority) { this.priorityError = 'Priority is required'; valid = false; }
     if (!this.operationalSummary.trim()) { this.operationalSummaryError = 'Operational summary is required'; valid = false; }
     if (this.operationalSummary.length > 5000) { this.operationalSummaryError = 'Operational summary must be under 5000 characters'; valid = false; }
-    if (!this.outstandingIssues.trim()) { this.outstandingIssuesError = 'Outstanding issues are required'; valid = false; }
-    if (!this.outstandingActions.trim()) { this.outstandingActionsError = 'Outstanding actions are required'; valid = false; }
-    if (!this.importantInfo.trim()) { this.importantInfoError = 'Important information is required'; valid = false; }
 
     return valid;
   }
@@ -685,6 +682,7 @@ export class CreateEntryComponent implements OnInit {
     if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') return;
     this.mediaRecorder.stop();
     this.isRecording = false;
+    this.isProcessingAudio = true;
     clearInterval(this.recordingTimer);
   }
 
@@ -706,6 +704,7 @@ export class CreateEntryComponent implements OnInit {
     };
     this.audioFiles.push(item);
     this.fileError = '';
+    this.isProcessingAudio = false;
   }
 
   private async compressImage(file: File): Promise<File> {
@@ -830,138 +829,91 @@ export class CreateEntryComponent implements OnInit {
     this.importantInfo = '';
     this.followUpTitle = '';
     this.parentEntryId = '';
-    this.showCreateCategoryForm = false;
-    this.newCategoryName = '';
-    this.categoryCreateError = '';
-    this.showCreateIncidentTypeForm = false;
-    this.newIncidentTypeName = '';
-    this.incidentTypeCreateError = '';
-    this.showCreateHandoverTypeForm = false;
-    this.newHandoverTypeName = '';
-    this.handoverTypeCreateError = '';
+    this.showAddCategoryModal = false;
+    this.showAddEntryTypeModal = false;
     this.clearErrors();
   }
 
-  onCategoryChange(value: string): void {
-    if (value === '__create_new__') {
-      this.categoryId = '';
-      this.showCreateCategoryForm = true;
-    } else {
-      this.categoryId = value;
-      this.showCreateCategoryForm = false;
-    }
-    this.categoryCreateError = '';
+  onCategorySelect(value: string): void {
+    this.categoryId = value;
+    this.categoryError = '';
   }
 
-  createNewCategory(): void {
-    const name = this.newCategoryName.trim();
-    if (!name) return;
+  openAddCategoryModal(): void {
+    this.showAddCategoryModal = true;
+  }
 
-    this.isCreatingCategory = true;
-    this.categoryCreateError = '';
+  onCategoryCreated(cat: any): void {
+    this.refreshCategories();
+  }
 
-    const orgId = this.getOrgId();
-    if (!orgId) {
-      this.categoryCreateError = 'Organization not found.';
-      this.isCreatingCategory = false;
-      return;
+  onIncidentTypeSelect(value: string): void {
+    this.incidentTypeId = value;
+    this.incidentTypeError = '';
+  }
+
+  openAddEntryTypeModal(kind: 'incident' | 'handover'): void {
+    this.entryTypeModalKind = kind;
+    this.showAddEntryTypeModal = true;
+  }
+
+  onEntryTypeCreated(entryType: any): void {
+    if (this.entryTypeModalKind === 'incident') {
+      this.refreshIncidentTypes();
+      this.incidentTypeId = entryType.id;
+    } else {
+      this.refreshHandoverTypes();
+      this.handoverTypeId = entryType.id;
     }
+  }
 
-    const code = name.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '') || 'CATEGORY';
-    this.edobService.createCategory(orgId, { code, name, active: true }).subscribe({
-      next: (cat) => {
-        this.categories = [...this.categories, cat];
-        this.categoryId = cat.id;
-        this.newCategoryName = '';
-        this.showCreateCategoryForm = false;
-        this.isCreatingCategory = false;
+  onHandoverTypeSelect(value: string): void {
+    this.handoverTypeId = value;
+    this.handoverTypeError = '';
+  }
+
+  private refreshCategories(): void {
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+    this.edobService.listCategories(orgId).subscribe({
+      next: (cats) => {
+        const raw = cats as any;
+        let list: Category[] = [];
+        if (Array.isArray(raw)) list = raw;
+        else if (raw && typeof raw === 'object') list = raw.data ?? raw.categories ?? raw.content ?? raw.items ?? [];
+        this.categories = list.filter((c: Category) => c.active);
       },
-      error: (err) => {
-        this.categoryCreateError = err?.error?.message || 'Failed to create category.';
-        this.isCreatingCategory = false;
-      }
+      error: () => {}
     });
   }
 
-  onIncidentTypeChange(value: string): void {
-    if (value === '__create_new__') {
-      this.incidentTypeId = '';
-      this.showCreateIncidentTypeForm = true;
-    } else {
-      this.incidentTypeId = value;
-      this.showCreateIncidentTypeForm = false;
-    }
-    this.incidentTypeCreateError = '';
-  }
-
-  createNewIncidentType(): void {
-    const name = this.newIncidentTypeName.trim();
-    if (!name) return;
-
-    this.isCreatingIncidentType = true;
-    this.incidentTypeCreateError = '';
-
+  private refreshIncidentTypes(): void {
     const orgId = this.getOrgId();
-    if (!orgId) {
-      this.incidentTypeCreateError = 'Organization not found.';
-      this.isCreatingIncidentType = false;
-      return;
-    }
-
-    const code = name.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '') || 'INCIDENT_TYPE';
-    this.edobService.createIncidentType(orgId, { code, name, active: true }).subscribe({
-      next: (t) => {
-        this.incidentTypes = [...this.incidentTypes, t];
-        this.incidentTypeId = t.id;
-        this.newIncidentTypeName = '';
-        this.showCreateIncidentTypeForm = false;
-        this.isCreatingIncidentType = false;
+    if (!orgId) return;
+    this.edobService.listIncidentTypes(orgId).subscribe({
+      next: (types) => {
+        const raw = types as any;
+        let list: IncidentType[] = [];
+        if (Array.isArray(raw)) list = raw;
+        else if (raw && typeof raw === 'object') list = raw.data ?? raw.incidentTypes ?? raw.content ?? raw.items ?? [];
+        this.incidentTypes = list.filter((t: IncidentType) => t.active);
       },
-      error: (err) => {
-        this.incidentTypeCreateError = err?.error?.message || 'Failed to create incident type.';
-        this.isCreatingIncidentType = false;
-      }
+      error: () => {}
     });
   }
 
-  onHandoverTypeChange(value: string): void {
-    if (value === '__create_new__') {
-      this.handoverTypeId = '';
-      this.showCreateHandoverTypeForm = true;
-    } else {
-      this.handoverTypeId = value;
-      this.showCreateHandoverTypeForm = false;
-    }
-    this.handoverTypeCreateError = '';
-  }
-
-  createNewHandoverType(): void {
-    const name = this.newHandoverTypeName.trim();
-    if (!name) return;
-
-    this.isCreatingHandoverType = true;
-    this.handoverTypeCreateError = '';
-
+  private refreshHandoverTypes(): void {
     const orgId = this.getOrgId();
-    if (!orgId) {
-      this.handoverTypeCreateError = 'Organization not found.';
-      this.isCreatingHandoverType = false;
-      return;
-    }
-
-    const code = name.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '') || 'HANDOVER_TYPE';
-    this.edobService.createHandoverType(orgId, { code, name, active: true }).subscribe({
-      next: (t) => {
-        this.handoverTypes = [...this.handoverTypes, t];
-        this.handoverTypeId = t.id;
-        this.newHandoverTypeName = '';
-        this.showCreateHandoverTypeForm = false;
-        this.isCreatingHandoverType = false;
+    if (!orgId) return;
+    this.edobService.listHandoverTypes(orgId).subscribe({
+      next: (types) => {
+        const raw = types as any;
+        let list: HandoverType[] = [];
+        if (Array.isArray(raw)) list = raw;
+        else if (raw && typeof raw === 'object') list = raw.data ?? raw.handoverTypes ?? raw.content ?? raw.items ?? [];
+        this.handoverTypes = list.filter((t: HandoverType) => t.active);
       },
-      error: (err) => {
-        this.handoverTypeCreateError = err?.error?.message || 'Failed to create handover type.';
-        this.isCreatingHandoverType = false;
-      }
+      error: () => {}
     });
   }
 

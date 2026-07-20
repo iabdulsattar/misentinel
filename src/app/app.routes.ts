@@ -164,6 +164,11 @@ export const routes: Routes = [
     title:'Sign In | eDOB'
   },
   {
+    path:'login',
+    loadComponent: () => import('./auth/pages/sign-in/sign-in.component').then(m => m.SignInComponent),
+    title:'Sign In | eDOB'
+  },
+  {
     path:'activate-account',
     loadComponent: () => import('./auth/pages/activate-account/activate-account.component').then(m => m.ActivateAccountComponent),
     title:'Activate Your Account | eDOB'

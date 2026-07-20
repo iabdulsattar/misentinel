@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 export interface TableUser {
   id: string;
   name: string;
   email: string;
-  role: string;
+  roles: string[];
   status: 'Active' | 'Inactive';
   lastLogin: string;
   created: string;
@@ -17,7 +18,7 @@ export interface TableUser {
 @Component({
   selector: 'app-users-table',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './users-table.component.html',
 })
 export class UsersTableComponent {

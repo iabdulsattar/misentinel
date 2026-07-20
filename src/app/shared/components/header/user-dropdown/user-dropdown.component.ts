@@ -62,15 +62,19 @@ export class UserDropdownComponent implements OnInit {
   onSignOut(): void {
     const refreshToken = localStorage.getItem('refresh_token_saas') || sessionStorage.getItem('refresh_token_saas');
     const token = this.authService.getAccessToken();
-    if (token) {
-      this.authService.logout({ refreshToken: refreshToken || '' }, token).subscribe({
-        next: () => {
-          this.toastService.success('Signed out successfully');
-        },
-        error: () => {
-          this.toastService.error('Sign out failed. Please try again.');
-        }
+
+    const finish = () => {
+      this.authService.clearTokens();
+      window.location.href = '/signin';
+    };
+
+    if (token && refreshToken) {
+      this.authService.logout({ refreshToken }, token).subscribe({
+        next: () => finish(),
+        error: () => finish(),
       });
+    } else {
+      finish();
     }
     this.closeDropdown();
   }

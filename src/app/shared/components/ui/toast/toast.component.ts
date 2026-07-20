@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastService, Toast } from '../../../../core/services/toast.service';
 
@@ -21,14 +21,29 @@ import { ToastService, Toast } from '../../../../core/services/toast.service';
     .toast-item {
       animation: toast-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
+    @keyframes toast-progress {
+      from { width: 100%; }
+      to { width: 0%; }
+    }
+    .toast-progress {
+      animation: toast-progress linear forwards;
+    }
   `]
 })
-export class ToastComponent {
+export class ToastComponent implements OnDestroy {
   private toastService = inject(ToastService);
   toasts = this.toastService.toasts$;
 
   dismiss(id: number): void {
     this.toastService.dismiss(id);
+  }
+
+  getProgressStyle(toast: Toast): { animationDuration: string; display: string } {
+    const duration = toast.duration ?? 4000;
+    if (duration === 0) {
+      return { animationDuration: '0s', display: 'none' };
+    }
+    return { animationDuration: `${duration}ms`, display: 'block' };
   }
 
   getIcon(type: Toast['type']): string {
@@ -74,4 +89,6 @@ export class ToastComponent {
         };
     }
   }
+
+  ngOnDestroy(): void {}
 }

@@ -158,54 +158,25 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   private getAccessToken(): string | null {
-    const remember = localStorage.getItem('remember_device');
-    if (remember === 'true') {
-      return localStorage.getItem('access_token_saas');
-    }
-    return sessionStorage.getItem('access_token_saas') || localStorage.getItem('access_token_saas');
+    return this.authService.getAccessToken();
   }
 
   private getRefreshToken(): string | null {
-    const remember = localStorage.getItem('remember_device');
-    if (remember === 'true') {
-      return localStorage.getItem('refresh_token');
-    }
-    return sessionStorage.getItem('refresh_token') || localStorage.getItem('refresh_token');
+    return this.authService.getRefreshToken();
   }
 
   private setAccessToken(token: string) {
     const exp = this.decodeExp(token) ?? Date.now() + this.DEFAULT_EXPIRY_MS;
-    const remember = localStorage.getItem('remember_device');
-    if (remember === 'true') {
-      localStorage.setItem('access_token_saas', token);
-      localStorage.setItem('session_expires_at', String(exp));
-    } else {
-      sessionStorage.setItem('access_token_saas', token);
-      sessionStorage.setItem('session_expires_at', String(exp));
-    }
+    const expiresAt = String(exp);
+    this.authService.setTokens(token, this.getRefreshToken(), expiresAt);
   }
 
   private setRefreshToken(token: string) {
-    const remember = localStorage.getItem('remember_device');
-    if (remember === 'true') {
-      localStorage.setItem('refresh_token', token);
-    } else {
-      sessionStorage.setItem('refresh_token', token);
-    }
+    this.authService.setRefreshToken(token);
   }
 
   private clearTokens() {
-    localStorage.removeItem('access_token_saas');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('remember_device');
-    localStorage.removeItem('session_expires_at');
-    localStorage.removeItem('org_id');
-    localStorage.removeItem('organizationId');
-    sessionStorage.removeItem('access_token_saas');
-    sessionStorage.removeItem('refresh_token');
-    sessionStorage.removeItem('session_expires_at');
-    sessionStorage.removeItem('org_id');
-    sessionStorage.removeItem('organizationId');
+    this.authService.clearTokens();
     this.permissionService.clear();
   }
 }

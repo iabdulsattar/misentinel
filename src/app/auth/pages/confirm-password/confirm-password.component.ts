@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ConfirmpasswordFormComponent } from '../../components/confirmpassword-form/confirmpassword-form.component';
+import { ConfirmpasswordFormComponent } from '../../../shared/components/auth/confirmpassword-form/confirmpassword-form.component';
 import { AuthPageLayoutComponent } from '../../../layout/auth-page-layout/auth-page-layout.component';
 
 @Component({

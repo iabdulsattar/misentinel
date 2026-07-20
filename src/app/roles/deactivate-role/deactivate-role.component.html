@@ -29,8 +29,6 @@
     <div class="mt-10 rounded-2xl bg-white border border-slate-200/70 shadow-card p-10 text-center text-slate-400">
       Loading role details...
     </div>
-  } @else if (errorMessage && !role) {
-    <div class="mt-10 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ errorMessage }}</div>
   } @else if (role) {
 
   <!-- Role summary card -->
@@ -96,10 +94,6 @@
       </dl>
     </div>
   </section>
-
-  @if (errorMessage) {
-    <div class="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ errorMessage }}</div>
-  }
 
   <!-- Two-column body -->
   <div class="mt-6 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-6 items-stretch">
@@ -244,7 +238,7 @@
   }
 </main>
 
-<app-deactivate-role-modal [role]="role" [orgId]="orgId || ''" (close)="onModalClose()" (deactivated)="onModalDeactivated()" />
+<app-deactivate-role-modal [role]="role" [orgId]="orgId || ''" [isOpen]="showConfirmModal" (close)="onModalClose()" (confirm)="deactivate()" />
 
 <!-- Sticky footer actions -->
 <footer class="sticky bottom-0 bg-white/95 backdrop-blur border-t border-slate-200/70">

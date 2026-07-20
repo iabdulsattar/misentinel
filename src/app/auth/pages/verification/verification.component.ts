@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { VerificationFormComponent } from '../../components/verification-form/verification-form.component';
+import { VerificationFormComponent } from '../../../shared/components/auth/verification-form/verification-form.component';
 import { AuthPageLayoutComponent } from '../../../layout/auth-page-layout/auth-page-layout.component';
 
 @Component({

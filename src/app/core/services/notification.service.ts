@@ -1,6 +1,7 @@
 import { HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import {
   ListNotificationsRequest,
@@ -23,17 +24,36 @@ export class NotificationService {
     if (payload.page !== undefined) params.set('page', String(payload.page));
     if (payload.size !== undefined) params.set('size', String(payload.size));
     if (payload.unreadOnly) params.set('unreadOnly', 'true');
-    return this.api.get(`/api/v1/notifications?${params.toString()}`);
+    return this.api.get<any>(`/api/v1/notifications?${params.toString()}`).pipe(
+      map((res) => {
+        if (res && typeof res === 'object' && 'data' in res) {
+          return res.data as ListNotificationsResponse;
+        }
+        return res as ListNotificationsResponse;
+      })
+    );
   }
 
   // GET /api/v1/notifications/unread-count
   unreadCount(userId: string): Observable<UnreadCountResponse> {
-    return this.api.get(`/api/v1/notifications/unread-count?userId=${encodeURIComponent(userId)}`);
+    return this.api.get<any>(`/api/v1/notifications/unread-count?userId=${encodeURIComponent(userId)}`).pipe(
+      map((res) => {
+        if (res && typeof res === 'object' && 'data' in res) {
+          return res.data as UnreadCountResponse;
+        }
+        return res as UnreadCountResponse;
+      })
+    );
   }
 
   // POST /api/v1/notifications/read-all
   markAllRead(userId: string): Observable<any> {
     return this.api.post(`/api/v1/notifications/read-all?userId=${encodeURIComponent(userId)}`, {});
+  }
+
+  // PATCH /api/v1/notifications/{notificationId}
+  markOneRead(notificationId: string): Observable<any> {
+    return this.api.patch(`/api/v1/notifications/${encodeURIComponent(notificationId)}`, { read: true });
   }
 
   // PUT /api/v1/notifications/contacts/email

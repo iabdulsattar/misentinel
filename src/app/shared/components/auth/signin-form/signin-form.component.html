@@ -1,24 +1,27 @@
-
-  <div class="w-full max-w-lg pt-10 mx-auto">
-    <a
-      routerLink="/"
-      class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20" fill="none" class="size-5"><path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-      Back to dashboard
-    </a>
-  </div>
-
+  
   <div class="flex flex-col justify-center flex-1 w-full max-w-lg mx-auto">
     <div>
+       <!-- Error Message -->
+      @if (errorMessage) {
+      <div class="mb-5 p-4 rounded-lg bg-error-50 border border-error-200">
+        <p class="text-sm text-error-700">{{ errorMessage }}</p>
+      </div>
+      }
+
+      @if (successMessage) {
+      <div class="mb-5 p-4 rounded-lg bg-success-50 border border-success-200">
+        <p class="text-sm text-success-700">{{ successMessage }}</p>
+      </div>
+      }
+
       <div class="mb-5 sm:mb-8">
         <h1 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
           Welcome
         </h1>
         <p class="text-sm text-gray-500 dark:text-gray-400">
-          Sign in to access your eDOB account          
+          Sign in to access your eDOB account
         </p>
-        
+
       </div>
 
       <!-- OAuth Buttons -->
@@ -77,8 +80,72 @@
         </div>
       </div> -->
 
-      <!-- Form -->
-      <form (ngSubmit)="onSignIn()" class="space-y-6">
+      <!-- OTP (2FA) verification step -->
+      @if (requiresOtp) {
+      <div class="mb-5 sm:mb-8">
+        <h1 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
+          Two-Factor Verification
+        </h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          We've sent a 6-digit verification code to
+          <span class="text-brand-500 dark:text-brand-400">{{ otpSentTo }}</span>.
+          Please check your inbox and enter the code to continue.
+        </p>
+      </div>
+
+      <form (ngSubmit)="onVerifyOtp()" class="space-y-6">
+        <div class="flex">
+          <div class="w-1/6 mr-2">
+            <app-input-field type="text" placeholder="" name="d1" class="form-input" [maxlength]="1" [error]="digitError" [(value)]="d1" (paste)="onOtpPaste($event)" className="text-center h-14 font-medium text-[16px]" required />
+          </div>
+          <div class="w-1/6 mr-2">
+            <app-input-field type="text" placeholder="" name="d2" class="form-input" [maxlength]="1" [error]="digitError" [(value)]="d2" (paste)="onOtpPaste($event)" className="text-center h-14 font-medium text-[16px]" required />
+          </div>
+          <div class="w-1/6 mr-2">
+            <app-input-field type="text" placeholder="" name="d3" class="form-input" [maxlength]="1" [error]="digitError" [(value)]="d3" (paste)="onOtpPaste($event)" className="text-center h-14 font-medium text-[16px]" required />
+          </div>
+          <div class="w-1/6 mr-2">
+            <app-input-field type="text" placeholder="" name="d4" class="form-input" [maxlength]="1" [error]="digitError" [(value)]="d4" (paste)="onOtpPaste($event)" className="text-center h-14 font-medium text-[16px]" required />
+          </div>
+          <div class="w-1/6 mr-2">
+            <app-input-field type="text" placeholder="" name="d5" class="form-input" [maxlength]="1" [error]="digitError" [(value)]="d5" (paste)="onOtpPaste($event)" className="text-center h-14 font-medium text-[16px]" required />
+          </div>
+          <div class="w-1/6">
+            <app-input-field type="text" placeholder="" name="d6" class="form-input" [maxlength]="1" [error]="digitError" [(value)]="d6" (paste)="onOtpPaste($event)" className="text-center h-14 font-medium text-[16px]" required />
+          </div>
+        </div>
+
+        <div class="mt-2 mb-2">
+          <p class="text-sm font-normal text-center text-gray-700 dark:text-gray-400">
+            Didn't receive the code?
+            <a (click)="resendOtp()" class="text-brand-500 hover:text-brand-600 dark:text-brand-400 cursor-pointer">
+              Resend Code
+            </a>
+          </p>
+        </div>
+
+        <app-button className="w-full mb-5" size="sm" variant="outline" [disabled]="isLoading" (btnClick)="onVerifyOtp()">
+          @if (isLoading) {
+          <span class="flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Verifying...
+          </span>
+          } @else {
+          Verify Code
+          }
+        </app-button>
+
+        <app-button className="w-full" size="sm" variant="outline" (btnClick)="backToSignIn()">
+          Back to Sign In
+        </app-button>
+      </form>
+      }
+
+      <!-- Email / Password form -->
+      <form (ngSubmit)="onSignIn()" class="space-y-6" [class.hidden]="requiresOtp">
         <div>
           <app-label>Email address <span class="text-error-500">*</span></app-label>
           <div class="relative">
@@ -86,34 +153,40 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg> 
           </span>
                 
-          <app-input-field
-            type="email"
-            placeholder="info@gmail.com"
-            [(value)]="email"
-            name="email"
-            class="form-input"
-            className="pl-[62px]"
-            required
-          />
-          </div>
-        </div> 
-        
-        <div>
-          <app-label>Password <span class="text-error-500">*</span></app-label>
-          <div class="relative">
-            <span class="absolute z-10 left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-keyhole-icon lucide-lock-keyhole"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
-            </span>
-           
-            <app-input-field
-              [type]="showPassword ? 'text' : 'password'"
-              placeholder="Enter your password"
-              [(value)]="password"
-              name="password"
-              class="form-input"
-              className="pl-[62px]"            
-              required
-            />
+           <app-input-field
+             type="email"
+             placeholder="info@gmail.com"
+             [(value)]="email"
+             name="email"
+             class="form-input"
+             className="pl-[62px]"
+             required
+           />
+           @if (emailError) {
+           <p class="mt-1 text-xs text-error-500">{{ emailError }}</p>
+           }
+           </div>
+         </div>
+         
+         <div>
+           <app-label>Password <span class="text-error-500">*</span></app-label>
+           <div class="relative">
+             <span class="absolute z-10 left-0 top-1/2 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-keyhole-icon lucide-lock-keyhole"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
+             </span>
+            
+             <app-input-field
+               [type]="showPassword ? 'text' : 'password'"
+               placeholder="Enter your password"
+               [(value)]="password"
+               name="password"
+               class="form-input"
+               className="pl-[62px]"            
+               required
+             />
+             @if (passwordError) {
+             <p class="mt-1 text-xs text-error-500">{{ passwordError }}</p>
+             }
             <span
               (click)="togglePasswordVisibility()"
               class="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
@@ -147,8 +220,19 @@
           size="sm"
           variant="outline"
           (btnClick)="onSignIn()"
+          [disabled]="isLoading"
         >
+          @if (isLoading) {
+          <span class="flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Signing in...
+          </span>
+          } @else {
           Log in
+          }
         </app-button>
 
         <app-button

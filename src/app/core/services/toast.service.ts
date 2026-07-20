@@ -8,6 +8,7 @@ export interface Toast {
   type: ToastType;
   message: string;
   duration?: number;
+  createdAt: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -36,9 +37,10 @@ export class ToastService {
     this.show({ type: 'info', message, duration });
   }
 
-  show(toast: Omit<Toast, 'id'>): void {
+  show(toast: Omit<Toast, 'id' | 'createdAt'>): void {
     const id = ++this.idCounter;
-    this.toasts = [...this.toasts, { ...toast, id }];
+    const createdAt = Date.now();
+    this.toasts = [...this.toasts, { ...toast, id, createdAt }];
     this.toastSubject.next([...this.toasts]);
 
     if (toast.duration !== 0) {

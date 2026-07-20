@@ -68,16 +68,6 @@
           </div>
         </div>
 
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div class="relative w-full max-w-md">
-            <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()" placeholder="Search by name or email..." class="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
-          </div>
-          <button class="flex items-center gap-2 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-            <i class="ti ti-download"></i> Export <i class="ti ti-chevron-down text-xs"></i>
-          </button>
-        </div>
-
         <app-users-table
           [users]="tableUsers"
           [loading]="loading"
@@ -125,8 +115,15 @@
                   <span class="flex items-center gap-1.5 font-medium text-slate-800 break-all">{{ detailEmail }} <i class="ti ti-copy text-sm text-slate-400 cursor-pointer"></i></span>
                 </div>
                 <div class="flex items-center justify-between text-sm">
-                  <span class="flex items-center gap-2 text-slate-500"><i class="ti ti-badge-check text-sm"></i> Role</span>
-                  <span class="font-medium text-slate-800 break-all">{{ detailRole }}</span>
+                  <span class="flex items-center gap-2 text-slate-500"><i class="ti ti-badge-check text-sm"></i> Roles</span>
+                  <div class="flex flex-wrap gap-1.5 justify-end">
+                    @for (r of (detailUser?.roles || selectedUser?.roles || []); track r.name || r) {
+                      <span class="bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-full">{{ r.name || r }}</span>
+                    }
+                    @if ((detailUser?.roles || selectedUser?.roles || []).length === 0) {
+                      <span class="font-medium text-slate-800 break-all">{{ detailRole }}</span>
+                    }
+                  </div>
                 </div>
                 <div class="flex items-center justify-between text-sm">
                   <span class="flex items-center gap-2 text-slate-500"><i class="ti ti-building-2 text-sm"></i> Department</span>
@@ -238,13 +235,6 @@
             <p class="mt-2 text-xs text-slate-400">Across all roles</p>
           </div>
         </div>
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div class="relative w-full max-w-md">
-            <i class="ti ti-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" [(ngModel)]="rolesSearchQuery" (ngModelChange)="onRolesSearch()" placeholder="Search roles..." class="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
-          </div>
-        </div>
-
         @if (roleFeedback) {
           <div class="flex items-start gap-2.5 rounded-xl p-3.5"
                [class.bg-green-50]="roleFeedback.type === 'success'"
@@ -315,15 +305,6 @@
             <option [value]="opt">{{ opt === 'All' ? 'All Statuses' : opt }}</option>
           }
         </select>
-
-        <div class="ml-auto flex items-center gap-3">
-          <button (click)="resetPermissionFilters()" class="inline-flex items-center gap-2 h-10 px-4 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-slate-700 transition hover:bg-gray-50">
-            <i class="ti ti-adjustments-horizontal text-base"></i> Filters
-          </button>
-          <button class="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-brand-500 text-white text-sm font-semibold transition hover:bg-brand-600">
-            <i class="ti ti-download text-base"></i> Export
-          </button>
-        </div>
       </div>
 
       <div class="rounded-2xl border border-gray-200 bg-white shadow-theme-xs overflow-hidden">

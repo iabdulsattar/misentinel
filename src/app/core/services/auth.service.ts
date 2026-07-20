@@ -1,6 +1,6 @@
 import { HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import {
@@ -119,7 +119,69 @@ export class AuthService {
     if (remember === 'true') {
       return localStorage.getItem('access_token_saas');
     }
-    return sessionStorage.getItem('access_token_saas') || localStorage.getItem('access_token_saas');
+    return sessionStorage.getItem('access_token_saas');
+  }
+
+  getRefreshToken(): string | null {
+    const remember = localStorage.getItem('remember_device');
+    if (remember === 'true') {
+      return localStorage.getItem('refresh_token');
+    }
+    return sessionStorage.getItem('refresh_token');
+  }
+
+  isRemembered(): boolean {
+    return localStorage.getItem('remember_device') === 'true';
+  }
+
+  private cachedUserId: string | null = null;
+
+  getUserId(): Observable<string> {
+    if (this.cachedUserId) {
+      return of(this.cachedUserId);
+    }
+    return this.me().pipe(
+      map((profile) => {
+        this.cachedUserId = profile.id;
+        return profile.id;
+      })
+    );
+  }
+
+  setTokens(accessToken: string, refreshToken: string | null, expiresAt: string): void {
+    const remember = localStorage.getItem('remember_device');
+    if (remember === 'true') {
+      localStorage.setItem('access_token_saas', accessToken);
+      localStorage.setItem('refresh_token', refreshToken ?? '');
+      localStorage.setItem('session_expires_at', expiresAt);
+    } else {
+      sessionStorage.setItem('access_token_saas', accessToken);
+      sessionStorage.setItem('refresh_token', refreshToken ?? '');
+      sessionStorage.setItem('session_expires_at', expiresAt);
+    }
+  }
+
+  setRefreshToken(refreshToken: string): void {
+    const accessToken = this.getAccessToken();
+    const remember = localStorage.getItem('remember_device');
+    const expiresAt = remember === 'true'
+      ? (localStorage.getItem('session_expires_at') ?? String(Date.now() + 24 * 60 * 60 * 1000))
+      : (sessionStorage.getItem('session_expires_at') ?? String(Date.now() + 24 * 60 * 60 * 1000));
+    this.setTokens(accessToken ?? '', refreshToken, expiresAt);
+  }
+
+  clearTokens(): void {
+    localStorage.removeItem('access_token_saas');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('remember_device');
+    localStorage.removeItem('session_expires_at');
+    localStorage.removeItem('org_id');
+    localStorage.removeItem('organizationId');
+    sessionStorage.removeItem('access_token_saas');
+    sessionStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('session_expires_at');
+    sessionStorage.removeItem('org_id');
+    sessionStorage.removeItem('organizationId');
   }
 
   getOrgName(): string | null {

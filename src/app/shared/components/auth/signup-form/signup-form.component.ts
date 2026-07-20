@@ -1,30 +1,46 @@
-
-import { Component } from '@angular/core';
-import { LabelComponent } from '../../form/label/label.component';
-import { CheckboxComponent } from '../../form/input/checkbox.component';
-import { InputFieldComponent } from '../../form/input/input-field.component';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { SelectComponent } from '../../form/select/select.component';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Router } from '@angular/router';
+import { InputFieldComponent } from '../../form/input/input-field.component';
+import { LabelComponent } from '../../form/label/label.component';
+import { CheckboxComponent } from '../../form/input/checkbox.component';
+import { SelectComponent } from '../../form/select/select.component';
 
 @Component({
   selector: 'app-signup-form',
   imports: [
-    LabelComponent,
-    CheckboxComponent,
-    InputFieldComponent,
     RouterModule,
     FormsModule,
+    InputFieldComponent,
+    LabelComponent,
+    CheckboxComponent,
     SelectComponent
-],
+  ],
   templateUrl: './signup-form.component.html',
-  styles: ``
+  styles: ''
 })
-export class SignupFormComponent {
+export class SignupFormComponent implements OnInit {
 
   constructor(private authService: AuthService, private router: Router) {}
+
+  ngOnInit(): void {
+    this.country = this.detectCountry();
+  }
+
+  private detectCountry(): string {
+    try {
+      const locale = (navigator.language || (navigator as any).userLanguage || '') as string;
+      const parts = locale.split(/[-_]/);
+      if (parts.length >= 2 && parts[1].length === 2) {
+        return parts[1].toUpperCase();
+      }
+    } catch {
+      // ignore
+    }
+    return '';
+  }
   
   showPassword = false;
   confirmPassword = false;
@@ -41,20 +57,17 @@ export class SignupFormComponent {
   password = '';
   confirmpassword = '';
 
-  // NEW
   country = '';
 
   isLoading = false;
   successMessage = '';
   errorMessage = '';
 
-  // Validation errors
   errors = {
     fname: '',
     lname: '',
     jtitle: '',
     cname: '',
-    country: '',
     pnumber: '',
     email: '',
     password: '',
@@ -62,8 +75,12 @@ export class SignupFormComponent {
   };
 
   options = [
-    { value: '5', label: '5' },
+    { value: '1-50', label: '1–50' },
+    { value: '51-100', label: '51–100' },
+    { value: '101-500', label: '101–500' },
+    { value: '500+', label: '500+' },
   ];
+
 
   handleSelectChange(value: string) {
     this.selectedValue = value;
@@ -78,7 +95,6 @@ export class SignupFormComponent {
     this.confirmPassword = !this.confirmPassword;
   }
 
-  // NEW
   generateSlug(name: string) {
     return name.toLowerCase().replace(/\s+/g, '-');
   }
@@ -90,45 +106,60 @@ export class SignupFormComponent {
       lname: '',
       jtitle: '',
       cname: '',
-      country: '',
       pnumber: '',
       email: '',
       password: '',
       confirmpassword: ''
     };
 
+    const nameAlphaRegex = /^[A-Za-z]+$/;
+    const employeeAllowed = new Set(['1-50', '51-100', '101-500', '500+']);
+
+
     if (!this.fname.trim()) {
       this.errors.fname = 'First name is required';
+      isValid = false;
+    } else if (!nameAlphaRegex.test(this.fname.trim())) {
+      this.errors.fname = 'First name must contain alphabets only';
       isValid = false;
     }
 
     if (!this.lname.trim()) {
       this.errors.lname = 'Last name is required';
       isValid = false;
-    }
-
-    if (!this.jtitle.trim()) {
-      this.errors.jtitle = 'Job title is required';
+    } else if (!nameAlphaRegex.test(this.lname.trim())) {
+      this.errors.lname = 'Last name must contain alphabets only';
       isValid = false;
     }
+
+
+    // Job Title (optional): do not enforce any character validation
+    // (If provided, we only send it to the API as-is.)
+
 
     if (!this.cname.trim()) {
       this.errors.cname = 'Company name is required';
       isValid = false;
+    } else {
+      const companyRegex = /^[A-Za-z0-9\s\-\.,&()'"/]+$/;
+      if (!companyRegex.test(this.cname.trim())) {
+        this.errors.cname = 'Company name contains invalid characters';
+        isValid = false;
+      }
     }
 
-    if (!this.country.trim()) {
-      this.errors.country = 'Country is required';
-      isValid = false;
-    } else if (this.country.length !== 2) {
-      this.errors.country = 'Country must be a 2-letter code (e.g., US, PK)';
-      isValid = false;
-    }
 
     if (!this.pnumber.trim()) {
       this.errors.pnumber = 'Phone number is required';
       isValid = false;
+    } else {
+      const phoneDigitsRegex = /^[0-9]+$/;
+      if (!phoneDigitsRegex.test(this.pnumber.trim())) {
+        this.errors.pnumber = 'Phone number must contain digits only';
+        isValid = false;
+      }
     }
+
 
     if (!this.email.trim()) {
       this.errors.email = 'Email is required';
@@ -141,16 +172,34 @@ export class SignupFormComponent {
     if (!this.password) {
       this.errors.password = 'Password is required';
       isValid = false;
-    } else if (this.password.length < 12) {
-      this.errors.password = 'Password must be at least 12 characters';
-      isValid = false;
+    } else {
+      // Must include: uppercase, lowercase, number, special character
+      const upperRegex = /[A-Z]/;
+      const lowerRegex = /[a-z]/;
+      const numberRegex = /[0-9]/;
+      const specialRegex = /[^A-Za-z0-9]/;
+
+      if (this.password.length < 12) {
+        this.errors.password = 'Password must be at least 12 characters';
+        isValid = false;
+      } else if (!upperRegex.test(this.password) || !lowerRegex.test(this.password) || !numberRegex.test(this.password) || !specialRegex.test(this.password)) {
+        this.errors.password = 'Password must include uppercase, lowercase, number, and special character';
+        isValid = false;
+      }
     }
+
 
     if (!this.confirmpassword) {
       this.errors.confirmpassword = 'Please confirm your password';
       isValid = false;
     } else if (this.password !== this.confirmpassword) {
       this.errors.confirmpassword = 'Passwords do not match';
+      isValid = false;
+    }
+
+    // Number of Employees (optional): if selected, must be one of allowed values
+    if (this.selectedValue && !employeeAllowed.has(this.selectedValue)) {
+      this.isLoading = false;
       isValid = false;
     }
 
@@ -162,9 +211,22 @@ export class SignupFormComponent {
     return isValid;
   }
 
+
   isValidEmail(email: string): boolean {
     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     return emailRegex.test(email);
+  }
+
+  private extractOrgId(res: any): string | null {
+    if (!res || typeof res !== 'object') return null;
+    return (
+      res?.membership?.id ||
+      res?.organization?.id ||
+      res?.orgId ||
+      res?.organizationId ||
+      res?.org?.id ||
+      null
+    );
   }
   
   // onSignIn() {
@@ -185,91 +247,73 @@ export class SignupFormComponent {
   //   console.log('Remember Me:', this.isChecked);
   // }
 
-onSignUp() {
-  if (!this.validateForm()) {
-    return;
-  }
+  onSignUp() {
+    if (!this.validateForm()) {
+      return;
+    }
 
-  const payload = {
-    organizationName: this.cname,
-    organizationSlug: this.generateSlug(this.cname),
-    country: this.country,
-    email: this.email,
-    password: this.password,
-    firstName: this.fname,
-    lastName: this.lname,
-    jobTitle: this.jtitle,
-    phoneNumber: this.pnumber,
-    employeeCount: this.selectedValue,
-    receiveProductUpdates: this.isChecked,
-    acceptedTerms: this.isChecked
-  };
+    const payload: any = {
+      country: this.country,
+      email: this.email,
+      password: this.password,
+      firstName: this.fname,
+      lastName: this.lname,
+      phoneNumber: this.pnumber,
+      receiveProductUpdates: this.isCheckedOne,
+      acceptedTerms: this.isChecked,
+      organizationSlug: this.generateSlug(this.cname),
+      organizationName: this.cname.trim(),
+    };
 
-  this.isLoading = true;
-  this.successMessage = '';
-  this.errorMessage = '';
+    if (this.jtitle.trim()) payload.jobTitle = this.jtitle.trim();
+    if (this.selectedValue) payload.employeeCount = this.selectedValue;
 
-  this.authService.signup(payload).subscribe({
-    next: (res) => {
-      console.log('Signup successful:', res);
-      localStorage.setItem('org_id', res.organization.id);
-      localStorage.setItem('organizationId', res.organization.id);
-      const companyName = this.cname?.trim();
-      if (companyName) {
-        localStorage.setItem('organizationName', companyName);
-        localStorage.setItem('org_name', companyName);
-      }
-      this.successMessage = 'Account created successfully! Signing you in...';
+    this.isLoading = true;
+    this.successMessage = '';
+    this.errorMessage = '';
 
-      // Auto-login after signup
-      const loginPayload = {
-        email: this.email,
-        password: this.password
-      };
+    this.authService.signup(payload).subscribe({
+      next: (res) => {
+        console.log('Signup successful. Full response:', JSON.stringify(res, null, 2));
 
-      this.authService.login(loginPayload).subscribe({
-        next: (loginRes) => {
-          console.log('Login successful:', loginRes);
-          const data = loginRes as any;
-          const accessToken = data?.tokens?.access_token ?? data?.access_token;
-          const refreshToken = data?.tokens?.refresh_token ?? data?.refresh_token;
+        const orgId = this.extractOrgId(res);
+        const userEmail = res?.user?.email || this.email;
 
-          localStorage.setItem('access_token_saas', accessToken);
-          localStorage.setItem('refresh_token', refreshToken ?? '');
-
-          localStorage.setItem('org_id', res.organization.id);
-          localStorage.setItem('organizationId', res.organization.id);
+        if (orgId) {
+          localStorage.setItem('org_id', orgId);
+          localStorage.setItem('organizationId', orgId);
           const companyName = this.cname?.trim();
           if (companyName) {
             localStorage.setItem('organizationName', companyName);
             localStorage.setItem('org_name', companyName);
           }
-          this.isLoading = false;
-          this.router.navigate(['/']);
-        },
-        error: (loginErr) => {
-          console.error('Auto-login error:', loginErr);
-          this.isLoading = false;
-          this.successMessage = 'Account created! Please sign in manually.';
-          setTimeout(() => {
-            this.router.navigate(['/sign-in']);
-          }, 2000);
+        } else {
+          console.warn('Organization ID not found in signup response. Available keys:', Object.keys(res || {}));
         }
-      });
-    },
-    error: (err) => {
-      console.error('Signup error:', err);
-      console.error('Error status:', err.status);
-      console.error('Error message:', err.message);
-      console.error('Error body:', JSON.stringify(err.error, null, 2));
-      console.error('Payload being sent:', JSON.stringify(payload, null, 2));
-      
-      if (err.status === 409) {
-        this.errorMessage = err.error?.detail || 'Email or company name already registered. Please use a different email or sign in.';
+        this.successMessage = 'Account created successfully! Please verify your email.';
+
+        try {
+          localStorage.setItem('verification_email', userEmail);
+          sessionStorage.setItem('verification_password', this.password);
+        } catch {
+        }
+        this.isLoading = false;
+        this.router.navigate(['/verification']);
+      },
+      error: (err) => {
+        console.error('Signup error:', err);
+        console.error('Error status:', err.status);
+        console.error('Error message:', err.message);
+        console.error('Error body:', JSON.stringify(err.error, null, 2));
+        console.error('Payload being sent:', JSON.stringify(payload, null, 2));
+
+        if (err.status === 409) {
+          this.errorMessage = err.error?.detail || 'Email or company name already registered. Please use a different email or sign in.';
+        }
+
+        this.isLoading = false;
       }
-      
-      this.isLoading = false;
-    }
-  });
-}  
+    });
+  }
 }
+

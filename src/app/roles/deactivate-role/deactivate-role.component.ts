@@ -5,6 +5,7 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { EdobService } from '../../core/services/edob.service';
 import { Role, OrgUser } from '../../core/models/edob.models';
 import { DeactivateRoleModalComponent } from '../deactivate-role-modal/deactivate-role-modal.component';
+import { ToastService } from '../../core/services/toast.service';
 
 interface AssignedUser {
   id: string;
@@ -26,10 +27,8 @@ interface AssignedUser {
 export class DeactivateRoleComponent implements OnInit {
   role: Role | null = null;
   loading = true;
-  errorMessage = '';
   deactivating = false;
   showConfirmModal = false;
-  roleFeedback: { type: 'success' | 'error'; text: string } | null = null;
 
   roleId: string | null = null;
   orgId: string | null = null;
@@ -53,19 +52,18 @@ export class DeactivateRoleComponent implements OnInit {
     private edobService: EdobService,
     private router: Router,
     private route: ActivatedRoute,
+    private toastService: ToastService,
   ) {}
 
   ngOnInit(): void {
     this.roleId = this.route.snapshot.queryParamMap.get('id');
     if (!this.roleId) {
-      this.errorMessage = 'Role not found.';
       this.loading = false;
       return;
     }
 
     this.orgId = this.getOrgId();
     if (!this.orgId) {
-      this.errorMessage = 'Organization not found.';
       this.loading = false;
       return;
     }
@@ -81,11 +79,11 @@ export class DeactivateRoleComponent implements OnInit {
         this.role = data;
         this.loading = false;
         if (!data) {
-          this.errorMessage = 'Role details are empty.';
+          this.toastService.error('Role details are empty.');
         }
       },
       error: () => {
-        this.errorMessage = 'Failed to load role details.';
+        this.toastService.error('Failed to load role details.');
         this.loading = false;
       },
     });
@@ -190,25 +188,18 @@ export class DeactivateRoleComponent implements OnInit {
     this.showConfirmModal = false;
   }
 
-  onModalDeactivated(): void {
-    this.showConfirmModal = false;
-    this.roleFeedback = { type: 'success', text: 'Role deactivated successfully.' };
-    setTimeout(() => { if (this.roleFeedback?.text === 'Role deactivated successfully.') this.roleFeedback = null; }, 4000);
-    this.goBack();
-  }
-
   deactivate(): void {
     if (!this.orgId || !this.roleId || this.deactivating) return;
     this.deactivating = true;
-    this.errorMessage = '';
-    this.edobService.updateRole(this.orgId, this.roleId, { active: false }).subscribe({
+    this.edobService.deactivateRole(this.orgId, this.roleId).subscribe({
       next: () => {
         this.deactivating = false;
+        this.toastService.success('Role deactivated successfully.');
         this.router.navigate(['/roles/view-role'], { queryParams: { id: this.roleId } });
       },
       error: () => {
         this.deactivating = false;
-        this.errorMessage = 'Failed to deactivate role. Please try again.';
+        this.toastService.error('Failed to deactivate role. Please try again.');
       },
     });
   }

@@ -341,6 +341,8 @@ export interface DashboardRecentEntry {
   title?: string;
   note?: string;
   type?: string;
+  typeName?: string;
+  entryTypeCode?: string;
   priority?: string;
   status?: string;
   initials?: string;

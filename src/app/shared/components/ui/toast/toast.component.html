@@ -4,23 +4,19 @@
       class="pointer-events-auto toast-item relative flex items-start gap-3 p-4 rounded-xl border shadow-lg overflow-hidden"
       [ngClass]="getTypeStyles(toast.type).container"
     >
-      <!-- Progress bar -->
       @if (toast.duration !== 0) {
-        <div class="absolute bottom-0 left-0 h-1 rounded-b-xl transition-all duration-100 ease-linear"
+        <div class="absolute bottom-0 left-0 h-1 rounded-b-xl toast-progress"
              [ngClass]="getTypeStyles(toast.type).progress"
-             [style.width.%]="100">
+             [style.animation-duration]="getProgressStyle(toast).animationDuration">
         </div>
       }
 
-      <!-- Icon -->
       <div class="shrink-0 mt-0.5" [innerHTML]="getIcon(toast.type)" [class]="getTypeStyles(toast.type).icon + ' rounded-full p-1'"></div>
 
-      <!-- Message -->
       <div class="flex-1 min-w-0 pr-6">
         <p class="text-sm font-medium text-gray-900 leading-relaxed">{{ toast.message }}</p>
       </div>
 
-      <!-- Close button -->
       <button 
         (click)="dismiss(toast.id)" 
         class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"

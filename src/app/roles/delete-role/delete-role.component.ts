@@ -5,6 +5,7 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { EdobService } from '../../core/services/edob.service';
 import { Role, OrgUser } from '../../core/models/edob.models';
 import { DeleteRoleModalComponent } from '../delete-role-modal/delete-role-modal.component';
+import { ToastService } from '../../core/services/toast.service';
 
 interface AssignedUser {
   id: string;
@@ -26,10 +27,8 @@ interface AssignedUser {
 export class DeleteRoleComponent implements OnInit {
   role: Role | null = null;
   loading = true;
-  errorMessage = '';
   deleting = false;
   showConfirmModal = false;
-  roleFeedback: { type: 'success' | 'error'; text: string } | null = null;
 
   roleId: string | null = null;
   orgId: string | null = null;
@@ -54,19 +53,18 @@ export class DeleteRoleComponent implements OnInit {
     private edobService: EdobService,
     private router: Router,
     private route: ActivatedRoute,
+    private toastService: ToastService,
   ) {}
 
   ngOnInit(): void {
     this.roleId = this.route.snapshot.queryParamMap.get('id');
     if (!this.roleId) {
-      this.errorMessage = 'Role not found.';
       this.loading = false;
       return;
     }
 
     this.orgId = this.getOrgId();
     if (!this.orgId) {
-      this.errorMessage = 'Organization not found.';
       this.loading = false;
       return;
     }
@@ -82,11 +80,11 @@ export class DeleteRoleComponent implements OnInit {
         this.role = data;
         this.loading = false;
         if (!data) {
-          this.errorMessage = 'Role details are empty.';
+          this.toastService.error('Role details are empty.');
         }
       },
       error: () => {
-        this.errorMessage = 'Failed to load role details.';
+        this.toastService.error('Failed to load role details.');
         this.loading = false;
       },
     });
@@ -198,25 +196,18 @@ export class DeleteRoleComponent implements OnInit {
     this.showConfirmModal = false;
   }
 
-  onModalDeleted(): void {
-    this.showConfirmModal = false;
-    this.roleFeedback = { type: 'success', text: 'Role deleted successfully.' };
-    setTimeout(() => { if (this.roleFeedback?.text === 'Role deleted successfully.') this.roleFeedback = null; }, 4000);
-    this.goBack();
-  }
-
   delete(): void {
     if (!this.orgId || !this.roleId || this.deleting || this.blocked) return;
     this.deleting = true;
-    this.errorMessage = '';
     this.edobService.deleteRole(this.orgId, this.roleId).subscribe({
       next: () => {
         this.deleting = false;
+        this.toastService.success('Role deleted successfully.');
         this.router.navigate(['/user-management']);
       },
       error: () => {
         this.deleting = false;
-        this.errorMessage = 'Failed to delete role. Please try again.';
+        this.toastService.error('Failed to delete role. Please try again.');
       },
     });
   }

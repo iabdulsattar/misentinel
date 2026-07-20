@@ -75,45 +75,25 @@
                   <p class="mt-1 text-xs text-red-500">{{ titleError }}</p>
                 }
               </div>
-              <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Category <span class="text-red-500">*</span></label>
-                <div class="mt-1.5">
-                  <app-rich-select
-                    [options]="categoryRichOptions"
-                    [value]="categoryId"
-                    [disabled]="isLoadingData"
-                    placeholder="Select category"
-                    [showSearch]="true"
-                    [allowAddNew]="!isLoadingData && categories.length > 0"
-                    addNewLabel="Add new category"
-                    (valueChange)="onCategoryChange($event)"
-                    (addNew)="onCategoryChange('__create_new__')"
-                  />
-                </div>
-                @if (categoryError) {
-                  <p class="mt-1 text-xs text-red-500">{{ categoryError }}</p>
-                }
-                @if (showCreateCategoryForm) {
-                  <div class="mt-2 flex gap-2">
-                    <input
-                      type="text"
-                      [(ngModel)]="newCategoryName"
-                      name="newCategoryName"
-                      placeholder="New category name"
-                      class="flex-1 h-10 rounded-lg border border-gray-200 dark:border-gray-700 px-3 text-sm focus:outline-none focus:border-indigo-500">
-                    <button
-                      type="button"
-                      (click)="createNewCategory()"
-                      [disabled]="isCreatingCategory"
-                      class="h-10 px-4 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
-                      {{ isCreatingCategory ? 'Saving...' : 'Save' }}
-                    </button>
+                <div>
+                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Category <span class="text-red-500">*</span></label>
+                  <div class="mt-1.5">
+                    <app-rich-select
+                      [options]="categoryRichOptions"
+                      [value]="categoryId"
+                      [disabled]="isLoadingData"
+                      placeholder="Select category"
+                      [showSearch]="true"
+                      [allowAddNew]="!isLoadingData && categories.length > 0"
+                      addNewLabel="Add new category"
+                      (valueChange)="onCategorySelect($event)"
+                      (addNew)="openAddCategoryModal()"
+                    />
                   </div>
-                  @if (categoryCreateError) {
-                    <p class="mt-1 text-xs text-red-500">{{ categoryCreateError }}</p>
+                  @if (categoryError) {
+                    <p class="mt-1 text-xs text-red-500">{{ categoryError }}</p>
                   }
-                }
-              </div>
+                </div>
               <div>
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority <span class="text-red-500">*</span></label>
                 <div class="mt-1.5">
@@ -153,34 +133,10 @@
                     placeholder="Select incident type"
                     [allowAddNew]="!isLoadingData"
                     addNewLabel="Add new incident type"
-                    (valueChange)="onIncidentTypeChange($event)"
-                    (addNew)="onIncidentTypeChange('__create_new__')"
+                    (valueChange)="onIncidentTypeSelect($event)"
+                    (addNew)="openAddEntryTypeModal('incident')"
                   />
-                  @if (!isLoadingData) {
-                    <button type="button" (click)="onIncidentTypeChange('__create_new__')" class="mt-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
-                      + Create new incident type
-                    </button>
-                  }
                 </div>
-                @if (showCreateIncidentTypeForm) {
-                  <div class="mt-2 flex gap-2">
-                    <input
-                      type="text"
-                      [(ngModel)]="newIncidentTypeName" name="newIncidentTypeName"
-                      placeholder="New incident type name"
-                      class="flex-1 h-10 rounded-lg border border-gray-200 dark:border-gray-700 px-3 text-sm focus:outline-none focus:border-indigo-500">
-                    <button
-                      type="button"
-                      (click)="createNewIncidentType()"
-                      [disabled]="isCreatingIncidentType"
-                      class="h-10 px-4 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
-                      {{ isCreatingIncidentType ? 'Saving...' : 'Save' }}
-                    </button>
-                  </div>
-                  @if (incidentTypeCreateError) {
-                    <p class="mt-1 text-xs text-red-500">{{ incidentTypeCreateError }}</p>
-                  }
-                }
                 @if (incidentTypeError) {
                   <p class="mt-1 text-xs text-red-500">{{ incidentTypeError }}</p>
                 }
@@ -281,34 +237,10 @@
                     placeholder="Select type"
                     [allowAddNew]="!isLoadingData"
                     addNewLabel="Add new handover type"
-                    (valueChange)="onHandoverTypeChange($event)"
-                    (addNew)="onHandoverTypeChange('__create_new__')"
+                    (valueChange)="onHandoverTypeSelect($event)"
+                    (addNew)="openAddEntryTypeModal('handover')"
                   />
-                  @if (!isLoadingData) {
-                    <button type="button" (click)="onHandoverTypeChange('__create_new__')" class="mt-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
-                      + Create new handover type
-                    </button>
-                  }
                 </div>
-                @if (showCreateHandoverTypeForm) {
-                  <div class="mt-2 flex gap-2">
-                    <input
-                      type="text"
-                      [(ngModel)]="newHandoverTypeName" name="newHandoverTypeName"
-                      placeholder="New handover type name"
-                      class="flex-1 h-10 rounded-lg border border-gray-200 dark:border-gray-700 px-3 text-sm focus:outline-none focus:border-indigo-500">
-                    <button
-                      type="button"
-                      (click)="createNewHandoverType()"
-                      [disabled]="isCreatingHandoverType"
-                      class="h-10 px-4 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
-                      {{ isCreatingHandoverType ? 'Saving...' : 'Save' }}
-                    </button>
-                  </div>
-                  @if (handoverTypeCreateError) {
-                    <p class="mt-1 text-xs text-red-500">{{ handoverTypeCreateError }}</p>
-                  }
-                }
                 @if (handoverTypeError) {
                   <p class="mt-1 text-xs text-red-500">{{ handoverTypeError }}</p>
                 }
@@ -377,7 +309,6 @@
                 <div class="relative mt-1.5">
                   <select
                     [(ngModel)]="categoryId" name="category"
-                    (ngModelChange)="onCategoryChange($event)"
                     [disabled]="isLoadingData"
                     class="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-9 py-2.5 text-sm bg-white dark:bg-white/[0.03] outline-none focus:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">
                     <option value="" disabled>Select category</option>
@@ -390,31 +321,10 @@
                         <option [value]="cat.id">{{ cat.name }}</option>
                       }
                     }
-                    <option value="__create_new__">+ Create new category</option>
                   </select>
                   <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/><path d="M12 8v4M12 15h.01"/></svg>
                   <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
                 </div>
-                @if (showCreateCategoryForm) {
-                  <div class="mt-2 flex gap-2">
-                    <input
-                      type="text"
-                      [(ngModel)]="newCategoryName"
-                      name="newCategoryName"
-                      placeholder="New category name"
-                      class="flex-1 h-10 rounded-lg border border-gray-200 dark:border-gray-700 px-3 text-sm focus:outline-none focus:border-indigo-500">
-                    <button
-                      type="button"
-                      (click)="createNewCategory()"
-                      [disabled]="isCreatingCategory"
-                      class="h-10 px-4 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
-                      {{ isCreatingCategory ? 'Saving...' : 'Save' }}
-                    </button>
-                  </div>
-                  @if (categoryCreateError) {
-                    <p class="mt-1 text-xs text-red-500">{{ categoryCreateError }}</p>
-                  }
-                }
                 @if (categoryError) {
                   <p class="mt-1 text-xs text-red-500">{{ categoryError }}</p>
                 }
@@ -448,25 +358,25 @@
                 <p class="mt-1 text-xs text-red-500">{{ followUpTitleError }}</p>
               }
             </div>
-            <div>
-              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Category <span class="text-red-500">*</span></label>
-              <div class="mt-1.5">
-                <app-rich-select
-                  [options]="categoryRichOptions"
-                  [value]="categoryId"
-                  [disabled]="isLoadingData"
-                  placeholder="Select category"
-                  [showSearch]="true"
-                  [allowAddNew]="!isLoadingData && categories.length > 0"
-                  addNewLabel="Add new category"
-                  (valueChange)="onCategoryChange($event)"
-                  (addNew)="onCategoryChange('__create_new__')"
-                />
-              </div>
-              @if (categoryError) {
-                <p class="mt-1 text-xs text-red-500">{{ categoryError }}</p>
-              }
-            </div>
+             <div>
+               <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Category <span class="text-red-500">*</span></label>
+               <div class="mt-1.5">
+                  <app-rich-select
+                    [options]="categoryRichOptions"
+                    [value]="categoryId"
+                    [disabled]="isLoadingData"
+                    placeholder="Select category"
+                    [showSearch]="true"
+                    [allowAddNew]="!isLoadingData && categories.length > 0"
+                    addNewLabel="Add new category"
+                    (valueChange)="onCategorySelect($event)"
+                    (addNew)="openAddCategoryModal()"
+                  />
+                </div>
+                @if (categoryError) {
+                  <p class="mt-1 text-xs text-red-500">{{ categoryError }}</p>
+                }
+             </div>
             <div>
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority <span class="text-red-500">*</span></label>
               <div class="mt-1.5">
@@ -721,7 +631,7 @@
                   <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Audio</h3>
                   <span class="text-[11px] text-gray-400">{{ audioFiles.length }} / {{ maxFilesPerType }}</span>
                 </div>
-                @if (!isRecording && audioFiles.length === 0) {
+                @if (!isRecording && !isProcessingAudio && audioFiles.length === 0) {
                   <button (click)="startAudioRecording()" class="text-left w-full border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-gray-300 dark:hover:border-gray-700 dark:border-gray-700 hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800">
                     <div class="w-11 h-11 rounded-full bg-violet-50 text-violet-500 flex items-center justify-center">
                       <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
@@ -740,6 +650,16 @@
                     <div class="flex gap-2 mt-3">
                       <button (click)="stopAudioRecording()" class="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700">Stop</button>
                       <button (click)="cancelAudioRecording()" class="px-4 py-2 rounded-lg border border-red-200 text-red-700 text-sm font-semibold hover:bg-red-100">Cancel</button>
+                    </div>
+                  </div>
+                } @else if (isProcessingAudio) {
+                  <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-gray-50 dark:bg-gray-900/50">
+                    <div class="flex items-center gap-3">
+                      <svg class="animate-spin h-5 w-5 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+                      <div>
+                        <div class="text-sm font-semibold text-gray-800 dark:text-white/90">Processing audio...</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Please wait while we prepare your recording.</div>
+                      </div>
                     </div>
                   </div>
                 } @else {
@@ -1015,5 +935,22 @@
 
     </div>
   </div>
+
+  @if (showAddCategoryModal) {
+    <app-add-category-modal
+      [orgId]="getOrgId() || ''"
+      (close)="showAddCategoryModal = false"
+      (created)="onCategoryCreated($event)"
+    />
+  }
+
+  @if (showAddEntryTypeModal) {
+    <app-add-entry-type-modal
+      [orgId]="getOrgId() || ''"
+      [type]="entryTypeModalKind"
+      (close)="showAddEntryTypeModal = false"
+      (created)="onEntryTypeCreated($event)"
+    />
+  }
 
 </main>

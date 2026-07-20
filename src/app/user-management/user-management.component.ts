@@ -18,7 +18,7 @@ interface User {
   id?: string;
   name: string;
   email: string;
-  role: string;
+  roles: string[];
   status: 'Active' | 'Inactive';
   invite: 'Accepted' | 'Pending' | 'Expired' | 'Not Invited';
   inviteSub: string;
@@ -411,8 +411,8 @@ export class UserManagementComponent implements OnInit {
           id: item.id,
           name: [item.firstName, item.lastName].filter(Boolean).join(' ') || item.name || item.email || 'Unknown',
           email: item.email || '-',
-          role: item.roleName || item.role?.name || 'Member',
-          status: (item.status || item.accountStatus || '').toLowerCase() === 'inactive' ? 'Inactive' : 'Active',
+          roles: (item.roles || []).map((r: any) => r.name).filter(Boolean),
+          status: (item.status || '').toLowerCase() === 'inactive' ? 'Inactive' : 'Active',
           invite: item.invitationStatus || 'Not Invited',
           inviteSub: item.invitationUpdatedAt ? new Date(item.invitationUpdatedAt).toLocaleString() : '-',
           lastLogin: item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleString() : '-',
@@ -420,10 +420,10 @@ export class UserManagementComponent implements OnInit {
           created: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-',
            img: (index % 37) + 1,
           resend: item.invitationStatus === 'Pending',
-          department: ['Operations', 'Security', 'Compliance', 'HR'][index % 4],
-          phone: ['+91 98765 43210', '+91 98765 12345', '+91 99456 12345', '+91 99876 00000'][index % 4],
-          location: ['Head Office', 'North Gate', 'Control Room', 'Central Hub'][index % 4],
-          employeeId: `EMP-${String(12 + index).padStart(5, '0')}`,
+          department: item.department || ['Operations', 'Security', 'Compliance', 'HR'][index % 4],
+          phone: item.phoneNumber || ['+91 98765 43210', '+91 98765 12345', '+91 99456 12345', '+91 99876 00000'][index % 4],
+          location: item.location || ['Head Office', 'North Gate', 'Control Room', 'Central Hub'][index % 4],
+          employeeId: item.employeeId || `EMP-${String(12 + index).padStart(5, '0')}`,
           joined: item.createdAt ? new Date(item.createdAt).toLocaleString() : '-',
         }));
 
@@ -606,7 +606,7 @@ export class UserManagementComponent implements OnInit {
       id: u.id || '',
       name: u.name,
       email: u.email,
-      role: u.role,
+      roles: u.roles,
       status: u.status,
       lastLogin: u.lastLogin,
       created: u.created,
@@ -646,7 +646,8 @@ export class UserManagementComponent implements OnInit {
   }
 
   get detailRole(): string {
-    return this.detailUser?.roleNames?.[0] || this.detailUser?.roleName || this.selectedUser?.role || 'Member';
+    const roles = this.detailUser?.roles || this.selectedUser?.roles || [];
+    return (roles[0]?.name || roles[0] || 'Member');
   }
 
   get detailStatus(): string {
