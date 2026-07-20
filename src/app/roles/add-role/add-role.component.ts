@@ -35,6 +35,7 @@ export class AddRoleComponent implements OnInit {
   roleId: string | null = null;
   saving = false;
   errorMessage = '';
+  permissionsError = '';
 
   readonly maxNameLength = 100;
   readonly maxDescLength = 300;
@@ -202,6 +203,19 @@ export class AddRoleComponent implements OnInit {
       return;
     }
 
+    if (!this.roleName.trim()) {
+      this.errorMessage = 'Role name is required.';
+      return;
+    }
+
+    if (this.selectedPermissions.length === 0) {
+      this.permissionsError = 'Please select at least one permission.';
+      return;
+    }
+
+    this.permissionsError = '';
+    this.errorMessage = '';
+
     const payload: CreateRoleRequest = {
       code: this.roleName.trim().toUpperCase().replace(/\s+/g, '_'),
       name: this.roleName.trim(),
@@ -211,7 +225,6 @@ export class AddRoleComponent implements OnInit {
     };
 
     this.saving = true;
-    this.errorMessage = '';
 
     if (this.isEditMode && this.roleId) {
       const updatePayload: UpdateRoleRequest = { ...payload };

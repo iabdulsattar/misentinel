@@ -13,7 +13,19 @@ import { SafeHtmlPipe } from '../../pipe/safe-html.pipe';
   standalone: true,
   imports: [CommonModule, RouterModule, SafeHtmlPipe],
   templateUrl: './dashboard-shell.component.html',
-  styles: ''
+  styles: `
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(14deg); }
+      40% { transform: rotate(-8deg); }
+      60% { transform: rotate(14deg); }
+      80% { transform: rotate(-4deg); }
+    }
+    .animate-wave {
+      animation: wave 2.5s ease-in-out infinite;
+      display: inline-block;
+    }
+  `
 })
 export class DashboardShellComponent implements OnInit {
   greeting = 'Good morning';

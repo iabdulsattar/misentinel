@@ -83,6 +83,9 @@
               class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-200 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500" />
           </div>
         </div>
+        @if (permissionsError) {
+          <p class="mt-2 text-xs text-red-500">{{ permissionsError }}</p>
+        }
       </div>
 
       <div class="flex-1 overflow-y-auto px-6 pb-6">
