@@ -5,6 +5,7 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { UserService } from '../core/services/user.service';
 import { EdobService } from '../core/services/edob.service';
+import { AuthService } from '../core/services/auth.service';
 import { PermissionService } from '../core/services/permission.service';
 import { SendInviteModalComponent } from './send-invite-modal/send-invite-modal.component';
 import { DeactivateUserModalComponent } from './deactivate-user-modal/deactivate-user-modal.component';
@@ -70,6 +71,7 @@ export class UserManagementComponent implements OnInit {
   loading = false;
   errorMessage = '';
   stats: any = null;
+  currentUserEmail: string = '';
   users: User[] = [];
   selectedUser: User | null = null;
   detailUser: any = null;
@@ -345,14 +347,14 @@ export class UserManagementComponent implements OnInit {
     'Not Invited': { icon: 'ti-circle-minus', color: 'text-slate-400' },
   };
 
-  constructor(private userService: UserService, private edobService: EdobService, private router: Router, private sanitizer: DomSanitizer, private permissionService: PermissionService, private route: ActivatedRoute) {}
+  constructor(private userService: UserService, private edobService: EdobService, private router: Router, private sanitizer: DomSanitizer, private permissionService: PermissionService, private route: ActivatedRoute, private authService: AuthService) {}
 
   get canAddUser(): boolean {
-    return this.permissionService.hasPermission('admin.users.manage');
+    return this.permissionService.hasPermission('admin.users.manage') || !this.permissionService.hasAnyService();
   }
 
   get canAddRole(): boolean {
-    return this.permissionService.hasPermission('admin.roles.manage');
+    return this.permissionService.hasPermission('admin.roles.manage') || !this.permissionService.hasAnyService();
   }
 
   permIcon(name: string): SafeHtml {

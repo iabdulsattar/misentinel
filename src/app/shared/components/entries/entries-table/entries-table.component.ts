@@ -79,4 +79,18 @@ export class EntriesTableComponent {
       this.pageChange.emit(target);
     }
   }
+
+  priorityClass(code: string): string {
+    switch ((code || '').toUpperCase()) {
+      case 'CRITICAL':
+      case 'HIGH':
+        return 'bg-error-50 text-error-600';
+      case 'MEDIUM':
+        return 'bg-warning-50 text-warning-700';
+      case 'LOW':
+      case 'NORMAL':
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  }
 }
