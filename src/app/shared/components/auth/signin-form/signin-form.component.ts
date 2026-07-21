@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PermissionService, ServiceAccessGrant } from '../../../../core/services/permission.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { InputFieldComponent } from '../../form/input/input-field.component';
 import { LabelComponent } from '../../form/label/label.component';
 import { CheckboxComponent } from '../../form/input/checkbox.component';
@@ -28,6 +28,7 @@ export class SigninFormComponent {
     private authService: AuthService,
     private permissionService: PermissionService,
     private router: Router,
+    private route: ActivatedRoute,
   ) {}
 
   showPassword = false;
@@ -270,7 +271,8 @@ export class SigninFormComponent {
     this.permissionService.setServiceAccess((data?.serviceAccess as ServiceAccessGrant[]) ?? data?.tokens?.serviceAccess);
 
     this.isLoading = false;
-    this.router.navigate(['/']);
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
+    this.router.navigateByUrl(returnUrl);
   }
 }
 
