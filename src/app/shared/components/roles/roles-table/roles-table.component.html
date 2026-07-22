@@ -34,7 +34,6 @@
         <thead>
           <tr class="text-left text-slate-500 border-b border-slate-200">
                 <th class="font-semibold px-5 py-3 whitespace-nowrap first:rounded-tl-xl">Role Name</th>
-                <th class="font-semibold px-5 py-3 whitespace-nowrap">Code</th>
                 <th class="font-semibold px-5 py-3 whitespace-nowrap">Description</th>
                 <th class="font-semibold px-5 py-3 whitespace-nowrap">Status</th>
                 <th class="font-semibold px-5 py-3 whitespace-nowrap text-center">Permissions</th>
@@ -53,9 +52,6 @@
                   </span>
                   <span class="font-semibold text-slate-800">{{ role.name }}</span>
                 </div>
-              </td>
-              <td class="px-5 py-3.5 whitespace-nowrap">
-                <span class="font-mono text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded">{{ role.code }}</span>
               </td>
               <td class="px-5 py-3.5 text-slate-500 whitespace-nowrap max-w-xs truncate">{{ role.description || '-' }}</td>
               <td class="px-5 py-3.5 whitespace-nowrap">

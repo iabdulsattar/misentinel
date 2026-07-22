@@ -84,7 +84,7 @@ export class EntriesTypesComponent {
 
   get statusOptions(): SelectOption[] {
     return [
-      { value: '', label: 'All Statuses' },
+      { value: '', label: 'All Status' },
       ...this.statuses.map((s) => ({ value: s.code, label: s.label })),
     ];
   }
