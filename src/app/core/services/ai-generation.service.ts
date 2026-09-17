@@ -1,8 +1,9 @@
 import { HttpClient, HttpBackend, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of, Subject, from } from 'rxjs';
+import { map, switchMap, take } from 'rxjs/operators';
+import { AuthService } from './auth.service';
 
 export interface AIMessage {
   role: 'user' | 'assistant' | 'system';
@@ -18,12 +19,40 @@ export type EntryTypeCode = 'BASIC' | 'INCIDENT' | 'HANDOVER' | 'FOLLOW_UP';
 @Injectable({ providedIn: 'root' })
 export class AIGenerationService {
   private readonly apiUrl = environment.OPENROUTER_API_URL;
-  private readonly apiKey = environment.OPENROUTER_API_KEY;
   private readonly model = environment.OPENROUTER_MODEL;
+  private readonly chatbotKeyEndpoint = 'https://sbs.misentinel.com/api/v1/edob/chatbot/apikey';
   private http: HttpClient;
 
-  constructor(handler: HttpBackend) {
+  private cachedApiKey: string | null = null;
+  private keyLoadPromise: Promise<string> | null = null;
+
+  constructor(handler: HttpBackend, private authService: AuthService) {
     this.http = new HttpClient(handler);
+  }
+
+  private ensureApiKey(): Promise<string> {
+    if (this.cachedApiKey) {
+      return Promise.resolve(this.cachedApiKey);
+    }
+    if (!this.keyLoadPromise) {
+      const accessToken = this.authService.getAccessToken();
+      const headers = accessToken
+        ? new HttpHeaders({ Authorization: `Bearer ${accessToken}` })
+        : new HttpHeaders({ 'Content-Type': 'application/json' });
+
+      this.keyLoadPromise = this.http.get<{ data: { key: string } }>(this.chatbotKeyEndpoint, { headers }).pipe(
+        map(res => (res?.data?.key || '') as string),
+        take(1)
+      ).toPromise().then((key?: string) => {
+        this.cachedApiKey = key || '';
+        return this.cachedApiKey;
+      }).catch(err => {
+        console.error('[AI Generation] Failed to fetch chatbot API key', err);
+        this.keyLoadPromise = null;
+        return '' as string;
+      });
+    }
+    return this.keyLoadPromise;
   }
 
   private buildSystemPrompt(entryTypeCode: EntryTypeCode, categories: string[] = [], priorities: string[] = []): string {
@@ -60,24 +89,34 @@ export class AIGenerationService {
       { role: 'user', content: prompt }
     ];
 
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.apiKey}`,
-      'HTTP-Referer': 'https://essentiatech.com',
-      'X-Title': 'My DOB App'
-    });
+    return from(this.ensureApiKey()).pipe(
+      switchMap(apiKey => {
+        if (!apiKey) {
+          throw new Error('AI API key is not available. Please contact support.');
+        }
 
-    const body = {
-      model: this.model,
-      messages: messages,
-      max_tokens: 1024,
-      temperature: 0.7
-    };
+        const headers = new HttpHeaders({
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': 'https://essentiatech.com',
+          'X-Title': 'My DOB App'
+        });
 
-    return this.http.post<any>(this.apiUrl, body, { headers }).pipe(
-      map(res => ({
-        content: res?.choices?.[0]?.message?.content || ''
-      }))
+        const body = {
+          model: this.model,
+          messages: messages,
+          max_tokens: 638,
+          temperature: 0.7
+        };
+
+        return this.http.post<any>(this.apiUrl, body, { headers });
+      }),
+      map(res => {
+        console.log('[AI Generation] Raw OpenRouter response:', res);
+        const content = res?.choices?.[0]?.message?.content || '';
+        console.log('[AI Generation] Extracted content:', content);
+        return { content };
+      })
     );
   }
 }

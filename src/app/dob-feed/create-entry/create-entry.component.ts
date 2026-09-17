@@ -1162,11 +1162,18 @@ export class CreateEntryComponent implements OnInit {
 
   applyAiContent(text: string): void {
     let parsed: any = {};
+    const cleaned = text.replace(/```json\n?|\n?```/g, '').trim();
+    
+    if (!cleaned) {
+      this.aiError = 'AI returned an empty response. Please try again with a more detailed description.';
+      return;
+    }
+    
     try {
-      const cleaned = text.replace(/```json\n?|\n?```/g, '').trim();
       parsed = JSON.parse(cleaned);
     } catch {
-      parsed = { description: text };
+      this.aiError = 'AI returned an unexpected response. Please try again with a more detailed description. Check browser console for raw response.';
+      return;
     }
 
     const entryTypeCode = this.tabs[this.activeTab].entryTypeCode;
