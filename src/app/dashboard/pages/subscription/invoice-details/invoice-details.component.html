@@ -1,0 +1,337 @@
+<main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+
+  <div>
+    <h1 class="text-2xl sm:text-3xl font-extrabold dark:text-white">Invoice Details</h1>
+    <p class="text-gray-500 mt-1 text-sm sm:text-base dark:text-gray-400">View invoice information, billing details and make a payment.</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="border-b border-gray-200 dark:border-gray-700 flex gap-6 text-sm">
+    @for (tab of tabs; track tab.value) {
+      <a
+        [routerLink]="tab.path"
+        [class]="activeTabClass(tab.value)"
+      >
+        {{ tab.label }}
+      </a>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="flex items-center justify-center rounded-xl border border-gray-200 bg-white py-20 text-sm text-gray-400 dark:border-gray-800 dark:bg-gray-900">
+      Loading invoice details...
+    </div>
+  }
+
+  @if (notFound) {
+    <div class="flex flex-col items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-20 text-sm text-gray-500 dark:border-gray-800 dark:bg-gray-900">
+      <p class="font-medium text-gray-700 dark:text-gray-300">Invoice not found</p>
+    </div>
+  }
+
+  @if (invoice && !loading && !notFound) {
+    <!-- Invoice summary bar -->
+    <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 dark:bg-gray-900 dark:border-gray-800">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4 lg:divide-x divide-gray-100 dark:divide-gray-700">
+        <div class="flex items-start gap-3 lg:pr-4">
+          <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"></path>
+              <path d="M14 3v6h6"></path>
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs text-slate-400 font-medium dark:text-gray-500">Invoice Number</p>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span class="font-bold text-slate-900 dark:text-white">{{ invoice.number }}</span>
+              <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full border" [ngClass]="invoice.statusClass">{{ invoice.status }}</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5 dark:text-gray-400">{{ invoice.description }}</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 lg:px-4">
+          <svg class="text-slate-400 dark:text-slate-500 shrink-0 mt-0.5" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+            <path d="M16 2v4M8 2v4M3 10h18"></path>
+          </svg>
+          <div>
+            <p class="text-xs text-slate-400 font-medium dark:text-gray-500">Invoice Date</p>
+            <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ invoice.issueDate }}</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 lg:px-4">
+          <svg class="text-slate-400 dark:text-slate-500 shrink-0 mt-0.5" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 6v6l4 2"></path>
+          </svg>
+          <div>
+            <p class="text-xs text-slate-400 font-medium dark:text-gray-500">Due Date</p>
+            <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ invoice.dueDate }}</p>
+            <p class="text-xs font-semibold text-red-500 mt-0.5">{{ invoice.dueIn }}</p>
+          </div>
+        </div>
+
+        <div class="lg:pl-4">
+          <p class="text-xs text-slate-400 font-medium dark:text-gray-500">Amount Due</p>
+          <p class="font-extrabold text-blue-600 text-2xl mt-0.5">{{ invoice.amountDue }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Content grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+
+      <!-- Left column -->
+      <div class="xl:col-span-2 space-y-6">
+
+        <!-- Invoice items -->
+        <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 dark:bg-gray-900 dark:border-gray-800">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Invoice Items</h2>
+
+          <div class="mt-5 -mx-5 sm:mx-0 overflow-x-auto">
+            <table class="w-full min-w-[560px] text-sm">
+              <thead>
+                <tr class="bg-blue-50 dark:bg-gray-800/50 text-slate-500 dark:text-slate-400 text-xs font-semibold">
+                  <th class="text-left font-semibold px-5 sm:px-4 py-3 rounded-l-lg">Item Description</th>
+                  <th class="text-right font-semibold px-4 py-3">Quantity</th>
+                  <th class="text-right font-semibold px-4 py-3">Unit Price</th>
+                  <th class="text-right font-semibold px-5 sm:px-4 py-3 rounded-r-lg">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of invoice.items; track item.description) {
+                  <tr class="border-b border-gray-100 dark:border-gray-800">
+                    <td class="px-5 sm:px-4 py-4 align-top">
+                      <p class="font-semibold text-slate-900 dark:text-white">{{ item.description }}</p>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ item.detail }}</p>
+                    </td>
+                    <td class="px-4 py-4 text-right font-semibold text-slate-900 dark:text-white align-top">{{ item.quantity }}</td>
+                    <td class="px-4 py-4 text-right font-semibold text-slate-900 dark:text-white align-top">{{ item.unitPrice }}</td>
+                    <td class="px-5 sm:px-4 py-4 text-right font-semibold text-slate-900 dark:text-white align-top">{{ item.amount }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-2 space-y-2.5 text-sm">
+            <div class="flex justify-between">
+              <span class="text-slate-500 dark:text-slate-400">Subtotal</span>
+              <span class="font-semibold text-slate-900 dark:text-white">{{ invoice.subtotal }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500 dark:text-slate-400">VAT (20%)</span>
+              <span class="font-semibold text-slate-900 dark:text-white">{{ invoice.vat }}</span>
+            </div>
+          </div>
+
+          <div class="mt-4 bg-blue-50 dark:bg-gray-800/30 rounded-xl px-5 py-4 flex items-center justify-between">
+            <span class="font-bold text-slate-900 dark:text-white">Total Due</span>
+            <span class="font-extrabold text-blue-600 text-2xl">{{ invoice.totalDue }}</span>
+          </div>
+        </section>
+
+        <!-- Subscription details -->
+        <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 dark:bg-gray-900 dark:border-gray-800">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Subscription Details</h2>
+
+          <div class="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-gray-50 dark:bg-gray-800/30 rounded-xl p-5 flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"></path>
+                </svg>
+              </div>
+              <div>
+                <p class="font-semibold text-slate-900 dark:text-white">{{ invoice.subscription.title }}</p>
+                <p class="mt-1">
+                  <span class="text-2xl font-extrabold text-blue-600">{{ invoice.subscription.userCount }}</span>
+                  <span class="font-bold text-slate-900 dark:text-white"> {{ invoice.subscription.userLabel }}</span>
+                </p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ invoice.subscription.billingPeriod }}<br />{{ invoice.subscription.unitPrice }}</p>
+              </div>
+            </div>
+
+            <dl class="text-sm divide-y divide-gray-100 dark:divide-gray-800">
+              <div class="flex items-center justify-between py-2.5 first:pt-0">
+                <dt class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <svg class="text-blue-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                    <path d="M16 2v4M8 2v4M3 10h18"></path>
+                  </svg>
+                  Billing Period
+                </dt>
+                <dd class="font-semibold text-slate-900 dark:text-white text-right">{{ invoice.billingPeriod }}</dd>
+              </div>
+              <div class="flex items-center justify-between py-2.5">
+                <dt class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <svg class="text-blue-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 1l4 4-4 4"></path>
+                    <path d="M3 11V9a4 4 0 014-4h14"></path>
+                    <path d="M7 23l-4-4 4-4"></path>
+                    <path d="M21 13v2a4 4 0 01-4 4H3"></path>
+                  </svg>
+                  Billing Cycle
+                </dt>
+                <dd class="font-semibold text-slate-900 dark:text-white">{{ invoice.cycle }}</dd>
+              </div>
+              <div class="flex items-center justify-between py-2.5">
+                <dt class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <svg class="text-blue-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                  </svg>
+                  Number of Users
+                </dt>
+                <dd class="font-semibold text-slate-900 dark:text-white">{{ invoice.userCount }}</dd>
+              </div>
+              <div class="flex items-center justify-between py-2.5">
+                <dt class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <svg class="text-blue-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                    <path d="M1 10h22"></path>
+                  </svg>
+                  Next Billing Date
+                </dt>
+                <dd class="font-semibold text-slate-900 dark:text-white">{{ invoice.nextBilling }}</dd>
+              </div>
+              <div class="flex items-center justify-between py-2.5 last:pb-0">
+                <dt class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <svg class="text-blue-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"></path>
+                    <path d="M14 3v6h6"></path>
+                  </svg>
+                  Plan Type
+                </dt>
+                <dd class="font-semibold text-slate-900 dark:text-white text-right">{{ invoice.planType }}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <!-- Invoice notes -->
+        <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 sm:p-5 flex gap-3 dark:bg-gray-800/30 dark:border-gray-700">
+          <svg class="shrink-0 mt-0.5 text-blue-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 16v-4M12 8h.01"></path>
+          </svg>
+          <div class="text-sm">
+            <p class="font-bold text-slate-900 dark:text-white">Invoice Notes</p>
+            <p class="text-slate-600 dark:text-slate-400 mt-0.5">{{ invoice.notes }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div>
+        <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 dark:bg-gray-900 dark:border-gray-800">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Billing Information</h2>
+            <button class="flex items-center gap-1.5 text-xs font-semibold border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Edit
+            </button>
+          </div>
+
+          <div class="mt-5 space-y-5 text-sm">
+            <div class="flex items-start gap-3">
+              <svg class="text-blue-500 shrink-0 mt-0.5" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 7h-3V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a1 1 0 00-1 1v11a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1zM9 5h6v2H9z"></path>
+              </svg>
+              <div>
+                <p class="text-slate-400 dark:text-gray-500 text-xs">Company Name</p>
+                <p class="font-semibold text-slate-900 dark:text-white mt-0.5">{{ invoice.companyName }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <svg class="text-blue-500 shrink-0 mt-0.5" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <path d="M22 6l-10 7L2 6"></path>
+              </svg>
+              <div>
+                <p class="text-slate-400 dark:text-gray-500 text-xs">Billing Email</p>
+                <p class="font-semibold text-slate-900 dark:text-white mt-0.5 break-all">{{ invoice.billingEmail }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <svg class="text-blue-500 shrink-0 mt-0.5" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <div>
+                <p class="text-slate-400 dark:text-gray-500 text-xs">Billing Address</p>
+                <p class="font-semibold text-slate-900 dark:text-white mt-0.5 leading-relaxed">
+                  @for (line of formatAddress(invoice.billingAddress); track $index) {
+                    {{ line }}<br />
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800 space-y-4 text-sm">
+            <div class="flex items-start gap-3">
+              <svg class="text-blue-500 shrink-0 mt-0.5" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 1l4 4-4 4"></path>
+                <path d="M3 11V9a4 4 0 014-4h14"></path>
+                <path d="M7 23l-4-4 4-4"></path>
+                <path d="M21 13v2a4 4 0 01-4 4H3"></path>
+              </svg>
+              <div>
+                <p class="text-slate-400 dark:text-gray-500 text-xs">Billing Cycle</p>
+                <p class="font-semibold text-slate-900 dark:text-white mt-0.5">{{ invoice.cycle }}</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <svg class="text-blue-500 shrink-0 mt-0.5" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                <path d="M1 10h22"></path>
+              </svg>
+              <div>
+                <p class="text-slate-400 dark:text-gray-500 text-xs">Next Billing Date</p>
+                <p class="font-semibold text-slate-900 dark:text-white mt-0.5">{{ invoice.nextBilling }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800">
+            <h3 class="font-bold text-slate-900 dark:text-white">Payment</h3>
+            <p class="text-sm text-slate-500 mt-1 dark:text-slate-400">Settle this invoice using your saved payment method.</p>
+
+            <button class="mt-4 w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold rounded-xl py-3 flex items-center justify-center gap-2 text-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                <path d="M7 11V7a5 5 0 0110 0v4"></path>
+              </svg>
+              Pay {{ invoice.totalDue }} Now
+            </button>
+
+            <p class="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 text-center">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"></path>
+              </svg>
+              Your payment information is secure and encrypted.
+            </p>
+          </div>
+        </section>
+      </div>
+    </div>
+  }
+
+  <!-- Footer -->
+  <div class="flex flex-wrap items-center justify-end gap-x-6 gap-y-2 text-sm text-blue-600 font-medium pt-2 pb-4">
+    @for (link of footerLinks; track link.label) {
+      <a [href]="link.href" class="hover:underline">{{ link.label }}</a>
+    }
+  </div>
+
+</main>

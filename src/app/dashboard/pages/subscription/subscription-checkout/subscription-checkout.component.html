@@ -1,0 +1,373 @@
+<main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+
+  <div>
+    <h1 class="text-2xl sm:text-3xl font-extrabold dark:text-white">Complete Your Subscription</h1>
+    <p class="text-gray-500 mt-1 text-sm sm:text-base dark:text-gray-400">Provide your billing details and payment information to activate your eDOB subscription.</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="border-b border-gray-200 dark:border-gray-700 flex gap-6 text-sm">
+    <a routerLink="/subscription" class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-medium">
+      Overview
+    </a>
+    <a routerLink="/subscription" class="pb-3 border-b-2 border-blue-600 text-blue-600 font-medium">
+      Invoices
+    </a>
+  </div>
+
+  <!-- Stepper -->
+  <div class="mt-8 flex items-start">
+    @for (step of steps; track step.label; let i = $index) {
+      <div class="flex items-center gap-3">
+        @if (step.completed) {
+          <div class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+          </div>
+        } @else if (step.current) {
+          <div class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm shrink-0">
+            {{ i + 1 }}
+          </div>
+        } @else {
+          <div class="w-9 h-9 rounded-full border-2 border-gray-300 text-slate-400 flex items-center justify-center font-semibold text-sm shrink-0">
+            {{ i + 1 }}
+          </div>
+        }
+        <div class="hidden sm:block">
+          <p class="font-semibold text-sm" [class.text-slate-900]="step.current || step.completed" [class.text-slate-400]="!step.current && !step.completed">{{ step.label }}</p>
+          <p class="text-xs text-slate-500 dark:text-gray-500">{{ step.hint }}</p>
+        </div>
+      </div>
+
+      @if (!$last) {
+        @if (steps[i + 1].completed || steps[i + 1].current) {
+          <div class="flex-1 h-0.5 bg-blue-600 mt-4 sm:mt-[18px] mx-3 sm:mx-4 min-w-[24px]"></div>
+        } @else {
+          <div class="flex-1 h-0.5 border-t-2 border-dashed border-gray-300 mt-4 sm:mt-[18px] mx-3 sm:mx-4 min-w-[24px]"></div>
+        }
+      }
+    }
+  </div>
+
+  <!-- Content grid -->
+  <div class="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch">
+
+    <!-- Left column -->
+    <div class="xl:col-span-2 space-y-6">
+
+      <!-- Billing details -->
+      <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 dark:bg-gray-900 dark:border-gray-800">
+        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Billing Details</h2>
+        <p class="text-sm text-slate-500 dark:text-gray-400 mt-1">These details will be used for your invoice and billing communications.</p>
+
+        <form [formGroup]="billingForm" (ngSubmit)="onSubmit()" class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+          <div>
+            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Company Name</label>
+            <input
+              type="text"
+              formControlName="companyName"
+              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+            />
+            @if (isBillingFieldInvalid('companyName')) {
+              <p class="text-xs text-red-500 mt-1">Company name is required</p>
+            }
+          </div>
+
+          <div>
+            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Billing Contact Name</label>
+            <input
+              type="text"
+              formControlName="contactName"
+              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+            />
+            @if (isBillingFieldInvalid('contactName')) {
+              <p class="text-xs text-red-500 mt-1">Contact name is required</p>
+            }
+          </div>
+
+          <div>
+            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Billing Email</label>
+            <input
+              type="email"
+              formControlName="billingEmail"
+              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+            />
+            @if (isBillingFieldInvalid('billingEmail')) {
+              <p class="text-xs text-red-500 mt-1">A valid email is required</p>
+            }
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Phone Number</label>
+            <input
+              type="text"
+              formControlName="phoneNumber"
+              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+            />
+          </div>
+
+          <div>
+            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Address Line 1</label>
+            <input
+              type="text"
+              formControlName="addressLine1"
+              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+            />
+            @if (isBillingFieldInvalid('addressLine1')) {
+              <p class="text-xs text-red-500 mt-1">Address line 1 is required</p>
+            }
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Address Line 2 (Optional)</label>
+            <input
+              type="text"
+              formControlName="addressLine2"
+              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+            />
+          </div>
+
+          <div>
+            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">City</label>
+            <input
+              type="text"
+              formControlName="city"
+              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+            />
+            @if (isBillingFieldInvalid('city')) {
+              <p class="text-xs text-red-500 mt-1">City is required</p>
+            }
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 sm:contents">
+            <div>
+              <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Postcode</label>
+              <input
+                type="text"
+                formControlName="postcode"
+                class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              />
+              @if (isBillingFieldInvalid('postcode')) {
+                <p class="text-xs text-red-500 mt-1">Postcode is required</p>
+              }
+            </div>
+            <div>
+              <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Country</label>
+              <div class="relative">
+                <select
+                  formControlName="country"
+                  class="w-full appearance-none rounded-lg border border-gray-300 pl-3.5 pr-9 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+                >
+                  @for (country of countries; track country.value) {
+                    <option [value]="country.value">{{ country.label }}</option>
+                  }
+                </select>
+                <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 9l6 6 6-6"></path>
+                </svg>
+              </div>
+              @if (isBillingFieldInvalid('country')) {
+                <p class="text-xs text-red-500 mt-1">Country is required</p>
+              }
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Payment method -->
+      <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 dark:bg-gray-900 dark:border-gray-800">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Payment Method</h2>
+            <p class="text-sm text-slate-500 dark:text-gray-400 mt-1">Your payment information is secure and encrypted.</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-[11px] font-bold px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-blue-700">VISA</span>
+            <span class="text-[11px] font-bold px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-orange-600">MC</span>
+            <span class="text-[11px] font-bold px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sky-700">AMEX</span>
+            <span class="text-[11px] font-bold px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-slate-700 dark:text-slate-400"> Pay</span>
+          </div>
+        </div>
+
+        <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+          <div>
+            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Cardholder Name</label>
+            <input
+              type="text"
+              formControlName="cardholderName"
+              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+            />
+            @if (isPaymentFieldInvalid('cardholderName')) {
+              <p class="text-xs text-red-500 mt-1">Cardholder name is required</p>
+            }
+          </div>
+
+          <div>
+            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Card Number</label>
+            <div class="relative">
+              <input
+                type="text"
+                formControlName="cardNumber"
+                class="w-full rounded-lg border border-gray-300 pl-3.5 pr-14 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              />
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-blue-700">VISA</span>
+            </div>
+            @if (isPaymentFieldInvalid('cardNumber')) {
+              <p class="text-xs text-red-500 mt-1">Card number is required</p>
+            }
+          </div>
+
+          <div>
+            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Expiry Date</label>
+            <input
+              type="text"
+              formControlName="expiryDate"
+              placeholder="MM / YY"
+              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+            />
+            @if (isPaymentFieldInvalid('expiryDate')) {
+              <p class="text-xs text-red-500 mt-1">Expiry date is required</p>
+            }
+          </div>
+
+          <div>
+            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">CVV</label>
+            <div class="relative">
+              <input
+                type="text"
+                formControlName="cvv"
+                class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              />
+              <svg class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 16v-4M12 8h.01"></path>
+              </svg>
+            </div>
+            @if (isPaymentFieldInvalid('cvv')) {
+              <p class="text-xs text-red-500 mt-1">CVV must be at least 3 digits</p>
+            }
+          </div>
+        </form>
+
+        <label class="mt-5 flex items-center gap-2.5 text-sm font-medium text-slate-800 dark:text-slate-300 select-none cursor-pointer">
+          <input
+            type="checkbox"
+            formControlName="sameAsCompany"
+            class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:bg-gray-950 dark:border-gray-700"
+          />
+          Use company address as billing address
+        </label>
+      </section>
+    </div>
+
+    <!-- Right column: order summary -->
+    <div class="flex flex-col h-full">
+      <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 h-full flex flex-col dark:bg-gray-900 dark:border-gray-800">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Order Summary</h2>
+          <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">eDOB</span>
+        </div>
+        <p class="text-sm text-slate-500 dark:text-gray-400 mt-1">Please review your selected plan and charges.</p>
+
+        <div class="mt-5 flex items-start gap-3">
+          <div class="w-11 h-11 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"></path>
+              <path d="M14 3v6h6"></path>
+            </svg>
+          </div>
+          <div>
+            <p class="font-semibold text-sm text-slate-900 dark:text-white">eDOB Subscription</p>
+            <p class="text-xs text-slate-500 dark:text-gray-400">Monthly subscription</p>
+          </div>
+        </div>
+
+        <div class="mt-5 space-y-3 text-sm">
+          <div class="flex justify-between">
+            <span class="text-slate-500 dark:text-slate-400">User licences</span>
+            <span class="font-medium text-slate-900 dark:text-white">{{ orderSummary.userLicenses }}</span>
+          </div>
+          <div class="border-t border-gray-100 dark:border-gray-800 pt-3 flex justify-between">
+            <span class="text-slate-500 dark:text-slate-400">Subtotal</span>
+            <span class="font-medium text-slate-900 dark:text-white">{{ orderSummary.subtotal }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500 dark:text-slate-400">VAT (20%)</span>
+            <span class="font-medium text-slate-900 dark:text-white">{{ orderSummary.vat }}</span>
+          </div>
+        </div>
+
+        <div class="mt-4 bg-blue-50 dark:bg-gray-800/30 rounded-lg px-4 py-3.5 flex items-center justify-between">
+          <span class="font-bold text-slate-900 dark:text-white text-sm">Total due today</span>
+          <span class="font-extrabold text-blue-600 text-xl">{{ orderSummary.total }}</span>
+        </div>
+
+        <div class="mt-4 space-y-2.5 text-sm">
+          <div class="flex justify-between">
+            <span class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                <path d="M16 2v4M8 2v4M3 10h18"></path>
+              </svg>
+              Next billing date
+            </span>
+            <span class="font-medium text-slate-900 dark:text-white">{{ orderSummary.nextBilling }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 1l4 4-4 4"></path>
+                <path d="M3 11V9a4 4 0 014-4h14"></path>
+                <path d="M7 23l-4-4 4-4"></path>
+                <path d="M21 13v2a4 4 0 01-4 4H3"></path>
+              </svg>
+              Recurring payment
+            </span>
+            <span class="font-medium text-slate-900 dark:text-white">{{ orderSummary.recurring }}</span>
+          </div>
+        </div>
+
+        <div class="mt-4 bg-blue-50 dark:bg-gray-800/30 rounded-lg px-4 py-3 flex gap-2.5 text-sm text-blue-700">
+          <svg class="shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 16v-4M12 8h.01"></path>
+          </svg>
+          <span>Your subscription will automatically renew each month until it is cancelled.</span>
+        </div>
+
+        <button
+          type="button"
+          (click)="onSubmit()"
+          class="mt-5 w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold rounded-xl py-3 flex items-center justify-center gap-2 text-sm"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+          </svg>
+          Pay {{ orderSummary.total }} &amp; Subscribe
+        </button>
+
+        <button
+          type="button"
+          routerLink="/subscription"
+          class="mt-3 w-full border border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors font-semibold rounded-xl py-3 text-sm"
+        >
+          Back to Subscription
+        </button>
+
+        <p class="mt-auto pt-4 text-xs text-slate-400 text-center leading-relaxed">
+          By confirming your subscription, you authorise recurring monthly payments until the subscription is cancelled.
+        </p>
+      </section>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="flex flex-wrap items-center justify-end gap-x-6 gap-y-2 text-sm text-blue-600 font-medium pt-2 pb-4">
+    @for (link of footerLinks; track link.label) {
+      <a [href]="link.href" class="hover:underline">{{ link.label }}</a>
+    }
+  </div>
+
+</main>

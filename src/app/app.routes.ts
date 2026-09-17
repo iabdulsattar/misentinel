@@ -80,6 +80,24 @@ export const routes: Routes = [
             title: 'User Management | eDOB'
           },
           {
+            path: 'subscription',
+            loadComponent: () => import('./dashboard/pages/subscription/subscription.component').then(m => m.SubscriptionComponent),
+            canActivate: [authGuard],
+            title: 'Subscription | eDOB'
+          },
+          {
+            path: 'invoice-details/:id',
+            loadComponent: () => import('./dashboard/pages/subscription/invoice-details/invoice-details.component').then(m => m.InvoiceDetailsComponent),
+            canActivate: [authGuard],
+            title: 'Invoice Details | eDOB'
+          },
+          {
+            path: 'subscription/checkout',
+            loadComponent: () => import('./dashboard/pages/subscription/subscription-checkout/subscription-checkout.component').then(m => m.SubscriptionCheckoutComponent),
+            canActivate: [authGuard],
+            title: 'Complete Your Subscription | eDOB'
+          },
+          {
             path: 'users/add-user',
             loadComponent: () => import('./users/add-user/add-user.component').then(m => m.AddUserComponent),
             canActivate: [authGuard, permissionGuard('admin.users.manage')],
