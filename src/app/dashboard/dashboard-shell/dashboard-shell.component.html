@@ -1,6 +1,6 @@
 <section class="min-h-[calc(100vh-120px)] bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
-  <div class="mx-auto w-full max-w-full space-y-8">
-    <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+  <div class="mx-auto w-full max-w-full pace-y-8">
+    <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between mb-6">
       <div>
         <h1 class="text-[32px] font-semibold leading-tight text-gray-950 dark:text-white">
           {{ greeting }}, {{ userName }} <span class="inline-block origin-bottom-right animate-wave">👋</span>
@@ -31,38 +31,48 @@
     <div class="grid grid-cols-12 gap-4">
       <div class="col-span-12 xl:col-span-12">
         <!-- Trial banner -->
-      <div class="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 flex flex-col xl:flex-row xl:items-center gap-4">
-        <div class="flex items-start gap-4 flex-1 min-w-0">
-          <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center shrink-0">
-            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+      <div class="bg-white border border-slate-200 rounded-md p-4 sm:p-6 flex flex-col xl:flex-row xl:items-center gap-4 mb-4">
+        <div class="flex items-center gap-4 flex-1 min-w-0">
+          <div class="w-12 h-12 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3731_600)">
+<path d="M10.9994 8.41667V21.25M10.9994 8.41667C10.9994 7.44421 10.6131 6.51158 9.9254 5.82394C9.23772 5.13631 8.30501 4.75 7.33247 4.75H2.74877C2.50564 4.75 2.27246 4.84658 2.10054 5.01849C1.92862 5.19039 1.83203 5.42355 1.83203 5.66667V17.5833C1.83203 17.8264 1.92862 18.0596 2.10054 18.2315C2.27246 18.4034 2.50564 18.5 2.74877 18.5H8.24921C8.97862 18.5 9.67815 18.7897 10.1939 19.3055C10.7097 19.8212 10.9994 20.5207 10.9994 21.25M10.9994 8.41667C10.9994 7.44421 11.3858 6.51158 12.0735 5.82394C12.7611 5.13631 13.6939 4.75 14.6664 4.75H19.2501C19.4932 4.75 19.7264 4.84658 19.8983 5.01849C20.0702 5.19039 20.1668 5.42355 20.1668 5.66667V17.5833C20.1668 17.8264 20.0702 18.0596 19.8983 18.2315C19.7264 18.4034 19.4932 18.5 19.2501 18.5H13.7497C13.0202 18.5 12.3207 18.7897 11.805 19.3055C11.2892 19.8212 10.9994 20.5207 10.9994 21.25" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3731_600">
+<rect width="22" height="22" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
           </div>
           <div class="min-w-0">
             <div class="flex items-center flex-wrap gap-2">
-              <h2 class="font-bold text-base sm:text-lg">eDOB Free Trial</h2>
-              <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">Active</span>
+              <h2 class="font-semibold text-base text-slate-900">eDOB Free Trial</h2>
+              <span class="text-[10px] font-bold text-emerald-500 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
             </div>
-            <p class="text-gray-500 text-sm mt-1">You are currently exploring all features of eDOB with full access.</p>
+            <p class="text-slate-500 text-xs mt-1">You are currently exploring all features of eDOB with full access.</p>
           </div>
         </div>
 
-        <div class="flex flex-wrap gap-6 sm:gap-10 xl:border-l xl:border-gray-200 xl:pl-6">
+        <div class="flex flex-wrap gap-6 xl:pl-6">
           <div>
-            <p class="text-xs font-semibold text-gray-400 tracking-wide">TRIAL STARTED</p>
-            <p class="font-bold mt-0.5">9 Sept 2026</p>
+            <p class="text-xs font-bold text-slate-500 tracking-wide">TRIAL STARTED</p>
+            <p class="font-semibold text-slate-900 text-base mt-0.5">9 Sept 2026</p>
           </div>
-          <div>
-            <p class="text-xs font-semibold text-gray-400 tracking-wide">TRIAL ENDS</p>
-            <p class="font-bold mt-0.5">23 Sept 2026</p>
-            <p class="text-xs text-gray-400">14 days</p>
+          <div class="border-l border-slate-200 pl-6">
+            <p class="text-xs font-bold text-slate-500 tracking-wide">TRIAL ENDS</p>
+            <p class="font-semibold text-slate-900 text-base mt-0.5">23 Sept 2026</p>
+            <p class="text-xs text-slate-500 mt-0.5">14 days</p>
           </div>
-          <div>
-            <p class="text-xs font-semibold text-gray-400 tracking-wide">DAYS REMAINING</p>
-            <p class="font-bold mt-0.5 text-blue-600">14</p>
-            <p class="text-xs text-gray-400">days</p>
+          <div class="border-l border-slate-200 pl-6">
+            <p class="text-xs font-bold text-slate-500 tracking-wide">DAYS REMAINING</p>
+            <p class="font-bold mt-0.5 text-blue-600 text-base">14</p>
+            <p class="text-xs text-slate-500">days</p>
           </div>
         </div>
 
-        <button class="bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold px-5 py-3 rounded-xl whitespace-nowrap w-full xl:w-auto">
+        <button class="bg-blue-600 hover:bg-blue-700 transition-colors text-white text-sm font-bold px-5 py-3 rounded-md whitespace-nowrap w-full xl:w-auto xl:ml-6">
           Manage Subscription
         </button>
       </div>
@@ -72,11 +82,11 @@
 
     <div class="grid grid-cols-12 gap-4">
       <div class="col-span-12 xl:col-span-9">
-      <main class="space-y-8">
+      <main class="space-y-4">
       
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           @for (entry of visibleQuickEntries; track entry.title) {
-            <a [routerLink]="['/create-entry']" [queryParams]="{ tab: entry.tab }" class="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left transition hover:border-slate-300 dark:border-gray-800 dark:bg-white/[0.03]">
+            <a [routerLink]="['/create-entry']" [queryParams]="{ tab: entry.tab }" class="flex items-start gap-4 rounded-md border border-slate-200 bg-white p-5 text-left transition hover:border-slate-300 dark:border-gray-800 dark:bg-white/[0.03]">
               <div class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                 <span [innerHTML]="entry.icon | safeHtml" class="text-slate-700 dark:text-gray-200"></span>
               </div>
@@ -91,7 +101,7 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           @if (canViewEntries) {
             @for (metric of metrics; track metric.label) {
-              <article class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+              <article class="flex flex-col gap-3 rounded-md border border-slate-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="flex items-center gap-3">
                   <div class="flex size-10 items-center justify-center rounded-lg" [ngClass]="metric.iconWrap">
                     <span [innerHTML]="metric.icon | safeHtml"></span>
@@ -120,7 +130,7 @@
             <a routerLink="/entries" class="text-sm font-medium text-brand-600 hover:text-brand-700">View all</a>
           </div>
 
-          <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+          <div class="overflow-hidden rounded-md border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
             <div class="grid min-w-[760px] grid-cols-[1.45fr_0.55fr_0.55fr_0.65fr_0.8fr_0.45fr_40px] border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400">
               <span>Title</span>
               <span>Type</span>
@@ -164,8 +174,8 @@
 
       @if (canViewEntries) {
         <div class="col-span-12 xl:col-span-3 "> 
-        <aside class="space-y-5">
-        <section class="rounded-lg border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+        <aside class="space-y-4">
+        <section class="rounded-md border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
           <div class="mb-5 flex items-center justify-between">
             <h2 class="text-base font-semibold text-gray-950 dark:text-white">Critical</h2>
             <a routerLink="/entries" class="text-sm font-medium text-brand-600 hover:text-brand-700">View all</a>
@@ -185,7 +195,7 @@
           </div>
         </section>
 
-        <section class="rounded-lg border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+        <section class="rounded-md border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
           <div class="mb-5 flex items-center justify-between">
             <h2 class="text-base font-semibold text-gray-950 dark:text-white">Most Active Types</h2>
             <button class="inline-flex items-center gap-1 text-sm text-gray-500">
@@ -211,7 +221,7 @@
           </div>
         </section>
 
-        <section class="rounded-lg border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+        <section class="rounded-md border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
           <div class="mb-5 flex items-center justify-between">
             <h2 class="text-base font-semibold text-gray-950 dark:text-white">Activity Snapshot</h2>
             <button class="inline-flex items-center gap-1 text-sm text-gray-500">
