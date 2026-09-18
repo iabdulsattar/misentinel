@@ -1,20 +1,11 @@
 <main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
 
   <div>
-    <h1 class="text-2xl sm:text-3xl font-extrabold dark:text-white">Complete Your Subscription</h1>
-    <p class="text-gray-500 mt-1 text-sm sm:text-base dark:text-gray-400">Provide your billing details and payment information to activate your eDOB subscription.</p>
+    <h1 class="text-3xl font-semibold text-slate-900 dark:text-white">Complete Your Subscription</h1>
+    <p class="text-gray-500 mt-1 text-sm dark:text-gray-400">Provide your billing details and payment information to activate your eDOB subscription.</p>
   </div>
 
-  <!-- Tabs -->
-  <div class="border-b border-gray-200 dark:border-gray-700 flex gap-6 text-sm">
-    <a routerLink="/subscription" class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-medium">
-      Overview
-    </a>
-    <a routerLink="/subscription" class="pb-3 border-b-2 border-blue-600 text-blue-600 font-medium">
-      Invoices
-    </a>
-  </div>
-
+  
   <!-- Stepper -->
   <div class="mt-8 flex items-start">
     @for (step of steps; track step.label; let i = $index) {
@@ -26,17 +17,17 @@
             </svg>
           </div>
         } @else if (step.current) {
-          <div class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm shrink-0">
+          <div class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
             {{ i + 1 }}
           </div>
         } @else {
-          <div class="w-9 h-9 rounded-full border-2 border-gray-300 text-slate-400 flex items-center justify-center font-semibold text-sm shrink-0">
+          <div class="w-9 h-9 rounded-full border-2 border-slate-200 text-gray-400 flex items-center justify-center font-bold text-sm shrink-0">
             {{ i + 1 }}
           </div>
         }
         <div class="hidden sm:block">
-          <p class="font-semibold text-sm" [class.text-slate-900]="step.current || step.completed" [class.text-slate-400]="!step.current && !step.completed">{{ step.label }}</p>
-          <p class="text-xs text-slate-500 dark:text-gray-500">{{ step.hint }}</p>
+          <p class="font-bold text-sm text-slate-900" [class.text-slate-900]="step.current || step.completed" [class.text-gray-400]="!step.current && !step.completed">{{ step.label }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-500">{{ step.hint }}</p>
         </div>
       </div>
 
@@ -51,23 +42,24 @@
   </div>
 
   <!-- Content grid -->
-  <div class="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch">
+  <div class="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-4 items-stretch">
 
     <!-- Left column -->
-    <div class="xl:col-span-2 space-y-6">
+    <div class="xl:col-span-2 space-y-4">
 
       <!-- Billing details -->
-      <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 dark:bg-gray-900 dark:border-gray-800">
-        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Billing Details</h2>
-        <p class="text-sm text-slate-500 dark:text-gray-400 mt-1">These details will be used for your invoice and billing communications.</p>
+      <section class="bg-white border border-slate-200 rounded-md p-5 sm:p-7 dark:bg-gray-900 dark:border-gray-800">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Billing Details</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">These details will be used for your invoice and billing communications.</p>
 
-        <form [formGroup]="billingForm" (ngSubmit)="onSubmit()" class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+        <form [formGroup]="billingForm" (ngSubmit)="onSubmit()" class="mt-6 ">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 mb-5">
           <div>
-            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Company Name</label>
+            <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Company Name <span class="text-red-500">*</span></label>
             <input
               type="text"
               formControlName="companyName"
-              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
             />
             @if (isBillingFieldInvalid('companyName')) {
               <p class="text-xs text-red-500 mt-1">Company name is required</p>
@@ -75,23 +67,25 @@
           </div>
 
           <div>
-            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Billing Contact Name</label>
+            <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Billing Contact Name <span class="text-red-500">*</span></label>
             <input
               type="text"
               formControlName="contactName"
-              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
             />
             @if (isBillingFieldInvalid('contactName')) {
               <p class="text-xs text-red-500 mt-1">Contact name is required</p>
             }
           </div>
+          </div>
 
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 mb-5">          
           <div>
-            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Billing Email</label>
+            <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Billing Email <span class="text-red-500">*</span></label>
             <input
               type="email"
               formControlName="billingEmail"
-              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
             />
             @if (isBillingFieldInvalid('billingEmail')) {
               <p class="text-xs text-red-500 mt-1">A valid email is required</p>
@@ -99,20 +93,23 @@
           </div>
 
           <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Phone Number</label>
+            <label class="block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Phone Number <span class="text-red-500">*</span></label>
             <input
               type="text"
               formControlName="phoneNumber"
-              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
             />
           </div>
+          </div>
 
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 mb-5">
+          
           <div>
-            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Address Line 1</label>
+            <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Address Line 1 <span class="text-red-500">*</span></label>
             <input
               type="text"
               formControlName="addressLine1"
-              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
             />
             @if (isBillingFieldInvalid('addressLine1')) {
               <p class="text-xs text-red-500 mt-1">Address line 1 is required</p>
@@ -120,44 +117,46 @@
           </div>
 
           <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Address Line 2 (Optional)</label>
+            <label class="block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Address Line 2 (Optional)</label>
             <input
               type="text"
               formControlName="addressLine2"
-              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
             />
           </div>
-
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 mb-5">
+          
           <div>
-            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">City</label>
+            <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">City <span class="text-red-500">*</span></label>
             <input
               type="text"
               formControlName="city"
-              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
             />
             @if (isBillingFieldInvalid('city')) {
               <p class="text-xs text-red-500 mt-1">City is required</p>
             }
           </div>
 
-          <div class="grid grid-cols-2 gap-4 sm:contents">
             <div>
-              <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Postcode</label>
+              <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Postcode <span class="text-red-500">*</span></label>
               <input
                 type="text"
                 formControlName="postcode"
-                class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+                class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
               />
               @if (isBillingFieldInvalid('postcode')) {
                 <p class="text-xs text-red-500 mt-1">Postcode is required</p>
               }
             </div>
             <div>
-              <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Country</label>
+              <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Country <span class="text-red-500">*</span></label>
               <div class="relative">
                 <select
                   formControlName="country"
-                  class="w-full appearance-none rounded-lg border border-gray-300 pl-3.5 pr-9 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+                  class="w-full appearance-none rounded-lg border border-slate-200 pl-3.5 pr-9 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
                 >
                   @for (country of countries; track country.value) {
                     <option [value]="country.value">{{ country.label }}</option>
@@ -176,27 +175,38 @@
       </section>
 
       <!-- Payment method -->
-      <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 dark:bg-gray-900 dark:border-gray-800">
+      <section class="bg-white border border-slate-200 rounded-md p-5 sm:p-7 dark:bg-gray-900 dark:border-gray-800">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Payment Method</h2>
-            <p class="text-sm text-slate-500 dark:text-gray-400 mt-1">Your payment information is secure and encrypted.</p>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Payment Method</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Your payment information is secure and encrypted.</p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            <span class="text-[11px] font-bold px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-blue-700">VISA</span>
-            <span class="text-[11px] font-bold px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-orange-600">MC</span>
-            <span class="text-[11px] font-bold px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sky-700">AMEX</span>
-            <span class="text-[11px] font-bold px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-slate-700 dark:text-slate-400"> Pay</span>
+            <span class="text-[10px] font-bold px-2 py-1 border border-slate-200 dark:border-gray-600 rounded-sm text-violet-950">VISA</span>
+            <span class="text-[10px] font-bold px-2 py-1 border border-slate-200 dark:border-gray-600 rounded-sm text-orange-600">
+              <svg width="16" height="16" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<rect width="27" height="27" fill="url(#pattern0_3745_1455)"/>
+<defs>
+<pattern id="pattern0_3745_1455" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image0_3745_1455" transform="scale(0.00195312)"/>
+</pattern>
+<image id="image0_3745_1455" width="512" height="512" preserveAspectRatio="none" xlink:href="data:image/png;base64,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"/>
+</defs>
+</svg>
+
+            </span>
+            <span class="text-[10px] font-bold px-2 py-1 border border-slate-200 dark:border-gray-600 rounded-sm text-sky-600">AMEX</span>
+            <span class="text-[10px] font-bold px-2 py-1 border border-slate-200 dark:border-gray-600 rounded-sm text-black dark:text-slate-400"> Pay</span>
           </div>
         </div>
 
         <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
           <div>
-            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Cardholder Name</label>
+            <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Cardholder Name <span class="text-red-500">*</span></label>
             <input
               type="text"
               formControlName="cardholderName"
-              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
             />
             @if (isPaymentFieldInvalid('cardholderName')) {
               <p class="text-xs text-red-500 mt-1">Cardholder name is required</p>
@@ -204,14 +214,14 @@
           </div>
 
           <div>
-            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Card Number</label>
+            <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Card Number <span class="text-red-500">*</span></label>
             <div class="relative">
               <input
                 type="text"
                 formControlName="cardNumber"
-                class="w-full rounded-lg border border-gray-300 pl-3.5 pr-14 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+                class="w-full rounded-lg border border-slate-200 pl-3.5 pr-14 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
               />
-              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-blue-700">VISA</span>
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-violet-950">VISA</span>
             </div>
             @if (isPaymentFieldInvalid('cardNumber')) {
               <p class="text-xs text-red-500 mt-1">Card number is required</p>
@@ -219,12 +229,12 @@
           </div>
 
           <div>
-            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">Expiry Date</label>
+            <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Expiry Date <span class="text-red-500">*</span></label>
             <input
               type="text"
               formControlName="expiryDate"
               placeholder="MM / YY"
-              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
             />
             @if (isPaymentFieldInvalid('expiryDate')) {
               <p class="text-xs text-red-500 mt-1">Expiry date is required</p>
@@ -232,17 +242,25 @@
           </div>
 
           <div>
-            <label class="req block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-300">CVV</label>
+            <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">CVV <span class="text-red-500">*</span></label>
             <div class="relative">
               <input
                 type="text"
                 formControlName="cvv"
-                class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+                class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
               />
-              <svg class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M12 16v-4M12 8h.01"></path>
-              </svg>
+              
+              <svg width="16" height="16" class="absolute right-3 top-1/2 -translate-y-1/2 " viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3745_1489)">
+<path d="M7.99923 10.6669V8.00003M7.99923 5.33314H8.0059M14.6664 8.00003C14.6664 11.6822 11.6814 14.6672 7.99923 14.6672C4.31704 14.6672 1.33203 11.6822 1.33203 8.00003C1.33203 4.31783 4.31704 1.33282 7.99923 1.33282C11.6814 1.33282 14.6664 4.31783 14.6664 8.00003Z" stroke="#9AA4B2" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3745_1489">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
             </div>
             @if (isPaymentFieldInvalid('cvv')) {
               <p class="text-xs text-red-500 mt-1">CVV must be at least 3 digits</p>
@@ -250,7 +268,7 @@
           </div>
         </form>
 
-        <label class="mt-5 flex items-center gap-2.5 text-sm font-medium text-slate-800 dark:text-slate-300 select-none cursor-pointer">
+        <label class="mt-5 flex items-center gap-2.5 text-sm font-medium text-slate-900 dark:text-slate-300 select-none cursor-pointer">
           <input
             type="checkbox"
             formControlName="sameAsCompany"
@@ -263,83 +281,88 @@
 
     <!-- Right column: order summary -->
     <div class="flex flex-col h-full">
-      <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 h-full flex flex-col dark:bg-gray-900 dark:border-gray-800">
+      <section class="bg-white border border-slate-200 rounded-md p-5 sm:p-6 h-full flex flex-col dark:bg-gray-900 dark:border-gray-800">
         <div class="flex items-center justify-between">
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Order Summary</h2>
-          <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">eDOB</span>
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Order Summary</h2>
+          <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-600">eDOB</span>
         </div>
-        <p class="text-sm text-slate-500 dark:text-gray-400 mt-1">Please review your selected plan and charges.</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Please review your selected plan and charges.</p>
 
-        <div class="mt-5 flex items-start gap-3">
+        <div class="mt-6 flex items-center gap-3">
           <div class="w-11 h-11 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"></path>
-              <path d="M14 3v6h6"></path>
-            </svg>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M11.6684 1.66599H5.00244C4.56045 1.66599 4.13657 1.8416 3.82404 2.15418C3.51151 2.46677 3.33594 2.89072 3.33594 3.33279V16.6672C3.33594 17.1092 3.51151 17.5332 3.82404 17.8458C4.13657 18.1584 4.56045 18.334 5.00244 18.334H15.0014C15.4434 18.334 15.8673 18.1584 16.1798 17.8458C16.4924 17.5332 16.6679 17.1092 16.6679 16.6672V6.66639M11.6684 1.66599C11.9322 1.66556 12.1935 1.71733 12.4371 1.81831C12.6808 1.91929 12.9021 2.06749 13.0883 2.25437L16.078 5.24461C16.2653 5.43088 16.4139 5.65243 16.5152 5.89646C16.6165 6.14049 16.6684 6.40217 16.6679 6.66639M11.6684 1.66599V5.83298C11.6684 6.05402 11.7562 6.26599 11.9125 6.42229C12.0688 6.57858 12.2807 6.66638 12.5017 6.66638L16.6679 6.66639M8.33544 7.49978H6.66894M13.3349 10.8334H6.66894M13.3349 14.167H6.66894" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</svg>
+
           </div>
           <div>
-            <p class="font-semibold text-sm text-slate-900 dark:text-white">eDOB Subscription</p>
-            <p class="text-xs text-slate-500 dark:text-gray-400">Monthly subscription</p>
+            <p class="font-bold text-sm text-slate-900 dark:text-white">eDOB Subscription</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Monthly subscription</p>
           </div>
         </div>
 
-        <div class="mt-5 space-y-3 text-sm">
+        <div class="mt-6 space-y-3 text-sm font-medium">
           <div class="flex justify-between">
-            <span class="text-slate-500 dark:text-slate-400">User licences</span>
+            <span class="text-gray-500 dark:text-slate-400">User licences</span>
             <span class="font-medium text-slate-900 dark:text-white">{{ orderSummary.userLicenses }}</span>
           </div>
-          <div class="border-t border-gray-100 dark:border-gray-800 pt-3 flex justify-between">
-            <span class="text-slate-500 dark:text-slate-400">Subtotal</span>
+          <div class="border-t border-slate-200 dark:border-gray-800 pt-3 flex justify-between">
+            <span class="text-gray-500 dark:text-slate-400">Subtotal</span>
             <span class="font-medium text-slate-900 dark:text-white">{{ orderSummary.subtotal }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500 dark:text-slate-400">VAT (20%)</span>
+            <span class="text-gray-500 dark:text-slate-400">VAT (20%)</span>
             <span class="font-medium text-slate-900 dark:text-white">{{ orderSummary.vat }}</span>
           </div>
         </div>
 
-        <div class="mt-4 bg-blue-50 dark:bg-gray-800/30 rounded-lg px-4 py-3.5 flex items-center justify-between">
-          <span class="font-bold text-slate-900 dark:text-white text-sm">Total due today</span>
-          <span class="font-extrabold text-blue-600 text-xl">{{ orderSummary.total }}</span>
+        <div class="mt-6 bg-indigo-50 dark:bg-gray-800/30 rounded-lg px-4 py-3.5 flex items-center justify-between">
+          <span class="font-bold text-slate-900 dark:text-white text-base">Total due today</span>
+          <span class="font-bold text-blue-600 text-xl">{{ orderSummary.total }}</span>
         </div>
 
-        <div class="mt-4 space-y-2.5 text-sm">
+        <div class="mt-6 space-y-2.5 text-sm font-medium">
           <div class="flex justify-between">
-            <span class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-                <path d="M16 2v4M8 2v4M3 10h18"></path>
-              </svg>
+            <span class="flex items-center gap-2 text-gray-500 dark:text-slate-400">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.33333 1.33282V3.9997M10.6667 1.33282V3.9997M2 6.66658H14M3.33333 2.66626H12.6667C13.403 2.66626 14 3.26327 14 3.9997V13.3338C14 14.0702 13.403 14.6672 12.6667 14.6672H3.33333C2.59695 14.6672 2 14.0702 2 13.3338V3.9997C2 3.26327 2.59695 2.66626 3.33333 2.66626Z" stroke="#5A6578" stroke-width="2" stroke-linecap="round"/>
+</svg>
+
               Next billing date
             </span>
             <span class="font-medium text-slate-900 dark:text-white">{{ orderSummary.nextBilling }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 1l4 4-4 4"></path>
-                <path d="M3 11V9a4 4 0 014-4h14"></path>
-                <path d="M7 23l-4-4 4-4"></path>
-                <path d="M21 13v2a4 4 0 01-4 4H3"></path>
-              </svg>
+            <span class="flex items-center gap-2 text-gray-500 dark:text-slate-400">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2 8C2 6.4087 2.63214 4.88258 3.75736 3.75736C4.88258 2.63214 6.4087 2 8 2C9.67737 2.00631 11.2874 2.66082 12.4933 3.82667L14 5.33333M10.6667 5.33333H14V2M14 8C14 9.5913 13.3679 11.1174 12.2426 12.2426C11.1174 13.3679 9.5913 14 8 14C6.32263 13.9937 4.71265 13.3392 3.50667 12.1733L2 10.6667M2 14V10.6667H5.33333" stroke="#5A6578" stroke-width="2" stroke-linecap="round"/>
+</svg>
+
               Recurring payment
             </span>
             <span class="font-medium text-slate-900 dark:text-white">{{ orderSummary.recurring }}</span>
           </div>
         </div>
 
-        <div class="mt-4 bg-blue-50 dark:bg-gray-800/30 rounded-lg px-4 py-3 flex gap-2.5 text-sm text-blue-700">
-          <svg class="shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 16v-4M12 8h.01"></path>
-          </svg>
+        <div class="mt-6 bg-indigo-50 dark:bg-gray-800/30 rounded-lg px-4 py-3 flex gap-2.5 text-xs text-blue-600">
+          <svg width="18" height="18" class="shrink-0" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3745_1538)">
+<path d="M9.0006 12.0002V8.99999M9.0006 5.99975H9.0081M16.5012 8.99999C16.5012 13.1425 13.1431 16.5006 9.0006 16.5006C4.85813 16.5006 1.5 13.1425 1.5 8.99999C1.5 4.85752 4.85813 1.49939 9.0006 1.49939C13.1431 1.49939 16.5012 4.85752 16.5012 8.99999Z" stroke="#0066FF" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3745_1538">
+<rect width="18" height="18" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
           <span>Your subscription will automatically renew each month until it is cancelled.</span>
         </div>
 
         <button
           type="button"
           (click)="onSubmit()"
-          class="mt-5 w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold rounded-xl py-3 flex items-center justify-center gap-2 text-sm"
+          class="mt-5 w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold rounded-lg py-3 flex items-center justify-center gap-2 text-sm"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="11" width="18" height="11" rx="2"></rect>
@@ -351,12 +374,12 @@
         <button
           type="button"
           routerLink="/subscription"
-          class="mt-3 w-full border border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors font-semibold rounded-xl py-3 text-sm"
+          class="mt-4 w-full border border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors font-bold rounded-lg py-3 text-sm"
         >
           Back to Subscription
         </button>
 
-        <p class="mt-auto pt-4 text-xs text-slate-400 text-center leading-relaxed">
+        <p class="mt-4  text-xs text-gray-400 text-center leading-relaxed">
           By confirming your subscription, you authorise recurring monthly payments until the subscription is cancelled.
         </p>
       </section>
