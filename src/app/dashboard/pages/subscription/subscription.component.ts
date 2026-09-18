@@ -98,7 +98,7 @@ export class SubscriptionComponent implements OnInit {
       period: '01 Sep 2026 - 30 Sep 2026',
       amount: '£60.00',
       status: 'Pending',
-      statusClass: 'bg-amber-50 text-amber-600 border-amber-200',
+      statusClass: 'bg-amber-100 text-orange-400 border-amber-200',
     },
     {
       id: 'INV-2026-0011',
@@ -107,7 +107,7 @@ export class SubscriptionComponent implements OnInit {
       period: '01 Aug 2026 - 31 Aug 2026',
       amount: '£60.00',
       status: 'Paid',
-      statusClass: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+      statusClass: 'bg-emerald-50 text-emerald-500 border-emerald-200',
     },
     {
       id: 'INV-2026-0010',
@@ -116,7 +116,7 @@ export class SubscriptionComponent implements OnInit {
       period: '01 Jul 2026 - 31 Jul 2026',
       amount: '£60.00',
       status: 'Paid',
-      statusClass: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+      statusClass: 'bg-emerald-50 text-emerald-500 border-emerald-200',
     },
     {
       id: 'INV-2026-0009',
@@ -125,7 +125,7 @@ export class SubscriptionComponent implements OnInit {
       period: '01 Jun 2026 - 30 Jun 2026',
       amount: '£60.00',
       status: 'Paid',
-      statusClass: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+      statusClass: 'bg-emerald-50 text-emerald-500 border-emerald-200',
     },
     {
       id: 'INV-2026-0008',
@@ -134,7 +134,7 @@ export class SubscriptionComponent implements OnInit {
       period: '01 May 2026 - 31 May 2026',
       amount: '£60.00',
       status: 'Paid',
-      statusClass: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+      statusClass: 'bg-emerald-50 text-emerald-500 border-emerald-200',
     },
     {
       id: 'INV-2026-0007',
@@ -143,7 +143,7 @@ export class SubscriptionComponent implements OnInit {
       period: '01 Apr 2026 - 30 Apr 2026',
       amount: '£60.00',
       status: 'Overdue',
-      statusClass: 'bg-red-50 text-red-500 border-red-200',
+      statusClass: 'bg-red-100 text-red-500 border-red-200',
     },
   ];
 
@@ -155,7 +155,7 @@ export class SubscriptionComponent implements OnInit {
       label: 'Total Invoices',
       value: '12',
       sub: 'All time',
-      subClass: 'text-slate-400',
+      subClass: 'text-slate-400 font-medium',
     },
     {
       iconBg: 'bg-emerald-50',
@@ -164,25 +164,25 @@ export class SubscriptionComponent implements OnInit {
       label: 'Paid Invoices',
       value: '9',
       sub: '£540.00',
-      subClass: 'text-emerald-600 font-semibold',
+      subClass: 'text-emerald-500 font-bold',
     },
     {
-      iconBg: 'bg-amber-50',
+      iconBg: 'bg-yellow-50',
       iconColor: 'text-amber-500',
       icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`,
       label: 'Pending Invoices',
       value: '2',
       sub: '£120.00',
-      subClass: 'text-amber-500 font-semibold',
+      subClass: 'text-amber-500 font-bold',
     },
     {
-      iconBg: 'bg-red-50',
+      iconBg: 'bg-rose-50',
       iconColor: 'text-red-500',
       icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>`,
       label: 'Overdue Invoices',
       value: '1',
       sub: '£60.00',
-      subClass: 'text-red-500 font-semibold',
+      subClass: 'text-red-500 font-bold',
     },
   ];
 

@@ -1,25 +1,25 @@
-<main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+<main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
 
   <div>
-    <h1 class="text-2xl sm:text-[28px] font-extrabold">Subscription</h1>
-    <p class="text-gray-500 mt-1 text-sm sm:text-base">Manage your eDOB subscription, view your trial status and choose the right plan for your organisation.</p>
+    <h1 class="text-3xl font-semibold text-slate-900">Subscription</h1>
+    <p class="text-slate-500 mt-1 text-base">Manage your eDOB subscription, view your trial status and choose the right plan for your organisation.</p>
   </div>
 
   <!-- Tabs -->
-  <div class="border-b border-gray-200 dark:border-gray-700 flex gap-6 text-sm">
+  <div class="border-b border-slate-200 dark:border-gray-700 flex gap-6 text-xs">
     <button
       (click)="setActiveTab('overview')"
       [class]="activeTab === 'overview'
-        ? 'pb-3 border-b-2 border-blue-600 text-blue-600 font-medium'
-        : 'pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-medium'"
+        ? 'pb-1 border-b-2 border-blue-600 text-blue-600 font-normal'
+        : 'pb-1 border-b-2 border-transparent text-gray-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-normal'"
     >
       Overview
     </button>
     <button
       (click)="setActiveTab('invoices')"
       [class]="activeTab === 'invoices'
-        ? 'pb-3 border-b-2 border-blue-600 text-blue-600 font-medium'
-        : 'pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-medium'"
+        ? 'pb-1 border-b-2 border-blue-600 text-blue-600 font-normal'
+        : 'pb-1 border-b-2 border-transparent text-gray-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-normal'"
     >
       Invoices
     </button>
@@ -244,14 +244,14 @@
     <!-- Stat cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
       @for (card of statCards; track card.label) {
-        <div class="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 flex items-start gap-3 sm:gap-4 dark:bg-gray-900 dark:border-gray-800">
+        <div class="bg-white border border-slate-200 rounded-md p-4 sm:p-5 flex items-center gap-3 sm:gap-4 dark:bg-gray-900 dark:border-gray-800">
           <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-lg flex items-center justify-center shrink-0" [ngClass]="card.iconBg + ' ' + card.iconColor">
             <span [innerHTML]="card.icon"></span>
           </div>
           <div class="min-w-0">
-            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{{ card.label }}</p>
-            <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white leading-tight">{{ card.value }}</p>
-            <p class="text-xs" [ngClass]="card.subClass">{{ card.sub }}</p>
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ card.label }}</p>
+            <p class="text-3xl  font-bold text-slate-900 dark:text-white leading-tight">{{ card.value }}</p>
+            <p class="text-xs " [ngClass]="card.subClass">{{ card.sub }}</p>
           </div>
         </div>
       }
@@ -264,74 +264,84 @@
           <circle cx="11" cy="11" r="8"></circle>
           <path d="M21 21l-4.35-4.35"></path>
         </svg>
-        <input type="text" placeholder="Search by invoice no. or description" class="w-full rounded-lg border border-gray-300 pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100" />
+        <input type="text" placeholder="Search by invoice no. or description" class="w-full rounded-md border border-slate-200 placeholder:text-slate-500 text-sm font-medium pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100" />
       </div>
       <div class="relative w-full lg:w-72">
-        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-          <path d="M16 2v4M8 2v4M3 10h18"></path>
-        </svg>
-        <select class="w-full appearance-none rounded-lg border border-gray-300 pl-10 pr-9 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100">
+        
+        <svg width="18" height="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 " viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1877)">
+<path d="M6 1.49939V4.49963M12 1.49939V4.49963M2.25 7.49987H15.75M3.75 2.99951H14.25C15.0784 2.99951 15.75 3.67114 15.75 4.49963V15.0005C15.75 15.829 15.0784 16.5006 14.25 16.5006H3.75C2.92157 16.5006 2.25 15.829 2.25 15.0005V4.49963C2.25 3.67114 2.92157 2.99951 3.75 2.99951Z" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1877">
+<rect width="18" height="18" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
+        <select class="w-full appearance-none rounded-md border border-slate-200 pl-10 pr-9 py-2.5 text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100">
           <option>01 Jan 2026 - 31 Dec 2026</option>
           <option>Last 3 months</option>
           <option>Last 6 months</option>
         </select>
-        <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M6 9l6 6 6-6"></path>
-        </svg>
+        
+        <svg width="14" height="14" class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 " viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+</svg>
+
       </div>
       <div class="relative w-full lg:w-44">
-        <select class="w-full appearance-none rounded-lg border border-gray-300 pl-3.5 pr-9 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100">
+        <select class="w-full appearance-none rounded-md border border-slate-200 pl-3.5 pr-9 py-2.5 text-slate-900 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100">
           <option>All Status</option>
           <option>Paid</option>
           <option>Pending</option>
           <option>Overdue</option>
         </select>
-        <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M6 9l6 6 6-6"></path>
-        </svg>
+        <svg width="14" height="14" class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 " viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+</svg>
       </div>
     </div>
 
     <!-- Invoice table -->
-    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden dark:bg-gray-900 dark:border-gray-800">
-      <div class="p-3 sm:p-5">
+    <div class="bg-white border border-slate-200 rounded-md overflow-hidden dark:bg-gray-900 dark:border-gray-800">
+      <div class="">
         <table class="w-full text-sm">
           <thead>
-            <tr class="bg-gray-50 dark:bg-gray-800 text-left text-xs font-bold text-slate-700 dark:text-slate-300">
-              <th class="px-4 py-3 rounded-l-lg">Invoice No.</th>
+            <tr class="bg-gray-50 border-b border-slate-200 dark:bg-gray-800 text-left text-xs font-bold text-slate-900 dark:text-slate-300">
+              <th class="px-4 py-3 rounded-l-md">Invoice No.</th>
               <th class="px-4 py-3">Date</th>
               <th class="px-4 py-3">Description</th>
               <th class="px-4 py-3">Amount</th>
               <th class="px-4 py-3">Status</th>
-              <th class="px-4 py-3 rounded-r-lg">Action</th>
+              <th class="px-4 py-3 rounded-r-md text-right">Action</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+          <tbody class="divide-y divide-slate-200 dark:divide-gray-800">
             @for (invoice of invoices; track invoice.id) {
               <tr>
-                <td class="px-4 py-4 font-bold text-slate-900 dark:text-white">{{ invoice.id }}</td>
-                <td class="px-4 py-4 text-slate-600 dark:text-slate-400">{{ invoice.date }}</td>
+                <td class="px-4 py-4 font-bold text-slate-900 text-sm dark:text-white">{{ invoice.id }}</td>
+                <td class="px-4 py-4 text-slate-500 text-sm font-medium dark:text-slate-400">{{ invoice.date }}</td>
                 <td class="px-4 py-4">
-                  <p class="font-semibold text-slate-900 dark:text-white">{{ invoice.description }}</p>
-                  <p class="text-xs text-slate-400 dark:text-slate-500">{{ invoice.period }}</p>
+                  <p class="font-bold text-slate-900 text-sm dark:text-white">{{ invoice.description }}</p>
+                  <p class="text-xs text-slate-400 font-medium dark:text-slate-500">{{ invoice.period }}</p>
                 </td>
-                <td class="px-4 py-4 font-semibold text-slate-900 dark:text-white">{{ invoice.amount }}</td>
+                <td class="px-4 py-4 font-bold text-slate-500 text-sm dark:text-white">{{ invoice.amount }}</td>
                 <td class="px-4 py-4">
-                  <span class="text-xs font-semibold px-2.5 py-1 rounded-full border" [ngClass]="invoice.statusClass">
+                  <span class="text-xs font-bold px-2.5 py-1 rounded-md " [ngClass]="invoice.statusClass">
                     {{ invoice.status }}
                   </span>
                 </td>
                   <td class="px-4 py-4">
-                  <div class="flex items-center gap-2 justify-end md:justify-start">
+                  <div class="flex items-center gap-2 justify-end ">
                     @if (invoice.status === 'Pending') {
-                      <button class="bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold rounded-lg px-3.5 py-2 text-xs whitespace-nowrap">
+                      <button class="bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold rounded-md px-3.5 py-2 text-xs whitespace-nowrap">
                         Pay Now
                       </button>
                     }
                     <a
                       [routerLink]="['/invoice-details', invoice.id]"
-                      class="w-8 h-8 rounded-lg border border-gray-300 text-slate-500 hover:bg-gray-50 dark:border-gray-600 dark:text-slate-400 dark:hover:bg-gray-800 flex items-center justify-center shrink-0"
+                      class="w-8 h-8 rounded-md border border-slate-200 text-slate-500 hover:bg-gray-50 dark:border-gray-600 dark:text-slate-400 dark:hover:bg-gray-800 flex items-center justify-center shrink-0"
                     >
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -347,16 +357,16 @@
       </div>
 
       <!-- Pagination -->
-      <div class="border-t border-gray-100 dark:border-gray-800 px-4 sm:px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p class="text-sm text-slate-500">Showing 1 to 6 of 6 invoices</p>
+      <div class="border-t border-slate-200 dark:border-gray-800 px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-sm text-slate-500 font-medium">Showing 1 to 6 of 6 invoices</p>
         <div class="flex items-center gap-2">
-          <button class="w-8 h-8 rounded-lg border border-gray-300 text-slate-400 hover:bg-gray-50 dark:border-gray-600 dark:text-slate-300 flex items-center justify-center">
+          <button class="w-8 h-8 rounded-md border border-slate-200 text-slate-400 hover:bg-gray-50 dark:border-gray-600 dark:text-slate-300 flex items-center justify-center">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M15 18l-6-6 6-6"></path>
             </svg>
           </button>
-          <button class="w-8 h-8 rounded-lg bg-blue-600 text-white font-semibold text-sm">1</button>
-          <button class="w-8 h-8 rounded-lg border border-gray-300 text-slate-400 hover:bg-gray-50 dark:border-gray-600 dark:text-slate-300 flex items-center justify-center">
+          <button class="w-8 h-8 rounded-md bg-blue-600 text-white font-bold text-xs">1</button>
+          <button class="w-8 h-8 rounded-md border border-slate-200 text-slate-400 hover:bg-gray-50 dark:border-gray-600 dark:text-slate-300 flex items-center justify-center">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 18l6-6-6-6"></path>
             </svg>
@@ -366,20 +376,29 @@
     </div>
 
     <!-- Help banner -->
-    <div class="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-5 dark:bg-gray-900 dark:border-gray-800">
-      <div class="w-11 h-11 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 18v-6a9 9 0 0118 0v6M3 18a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3zm18 0a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3z"></path>
-        </svg>
+    <div class="bg-white border border-slate-200 rounded-md p-4  flex flex-col sm:flex-row sm:items-center gap-5 dark:bg-gray-900 dark:border-gray-800">
+      <div class="w-11 h-11 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.5 11.6667H5C5.44203 11.6667 5.86595 11.8423 6.17851 12.1548C6.49107 12.4674 6.66667 12.8913 6.66667 13.3333V15.8333C6.66667 16.2754 6.49107 16.6993 6.17851 17.0118C5.86595 17.3244 5.44203 17.5 5 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V10C2.5 8.01088 3.29018 6.10322 4.6967 4.6967C6.10322 3.29018 8.01088 2.5 10 2.5C11.9891 2.5 13.8968 3.29018 15.3033 4.6967C16.7098 6.10322 17.5 8.01088 17.5 10V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H15C14.558 17.5 14.134 17.3244 13.8215 17.0118C13.5089 16.6993 13.3333 16.2754 13.3333 15.8333V13.3333C13.3333 12.8913 13.5089 12.4674 13.8215 12.1548C14.134 11.8423 14.558 11.6667 15 11.6667H17.5" stroke="#0F52FF" stroke-width="2" stroke-linecap="round"/>
+</svg>
+
       </div>
       <div class="flex-1 min-w-0">
-        <h3 class="font-bold text-base sm:text-lg dark:text-white">Need help with your invoices?</h3>
-        <p class="text-gray-500 text-sm mt-0.5 dark:text-gray-400">Our team is here to help. Contact us if you have any questions about billing or payments.</p>
+        <h3 class="font-bold text-base text-slate-900 dark:text-white">Need help with your invoices?</h3>
+        <p class="text-slate-500 text-xs font-medium mt-0.5 dark:text-gray-400">Our team is here to help. Contact us if you have any questions about billing or payments.</p>
       </div>
-      <button class="flex items-center justify-center gap-2 border border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors font-semibold rounded-lg px-4 py-2.5 text-sm w-full sm:w-auto shrink-0">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.902.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.908.339 1.85.573 2.81.7A2 2 0 0122 16.92z"></path>
-        </svg>
+      <button class="flex items-center justify-center gap-2 border border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors font-bold rounded-lg px-4 py-2.5 text-sm w-full sm:w-auto shrink-0">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1995)">
+<path d="M9.66049 11.0865C9.51349 11.1232 9.35836 11.1088 9.22066 11.0455C7.3688 10.1367 5.87018 8.63993 4.95899 6.7892C4.8915 6.65077 4.87402 6.49325 4.90951 6.3434C4.945 6.19354 5.03127 6.06059 5.15367 5.96713L5.4657 5.73312C5.6313 5.60891 5.76572 5.44785 5.8583 5.2627C5.95087 5.07754 5.99907 4.87337 5.99907 4.66636V2.6662C5.99907 2.31255 5.85858 1.97339 5.60852 1.72332C5.35845 1.47325 5.01928 1.33276 4.66563 1.33276H2.66547C2.31182 1.33276 1.97266 1.47325 1.72259 1.72332C1.47252 1.97339 1.33203 2.31255 1.33203 2.6662C1.33203 5.84906 2.59641 8.90155 4.84703 11.1522C7.09765 13.4028 10.1501 14.6672 13.333 14.6672C13.6866 14.6672 14.0258 14.5267 14.2759 14.2766C14.5259 14.0265 14.6664 13.6874 14.6664 13.3337V11.3336C14.6664 10.9799 14.5259 10.6407 14.2759 10.3907C14.0258 10.1406 13.6866 10.0001 13.333 10.0001H11.3328C11.1258 10.0001 10.9217 10.0483 10.7365 10.1409C10.5513 10.2335 10.3903 10.3679 10.2661 10.5335L10.0294 10.8435C9.93761 10.9641 9.8075 11.0498 9.66049 11.0865Z" stroke="#0F52FF" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1995">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
         Contact Support
       </button>
     </div>
