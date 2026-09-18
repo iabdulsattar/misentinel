@@ -61,7 +61,7 @@ export class InvoiceDetailsComponent implements OnInit {
       id: 'INV-2026-0012',
       number: 'INV-2026-0012',
       status: 'Pending',
-      statusClass: 'bg-amber-50 text-amber-600 border-amber-200',
+      statusClass: 'bg-orange-100 text-amber-600 border-amber-200',
       description: 'eDOB Monthly Subscription',
       issueDate: '01 Sep 2026',
       dueDate: '15 Sep 2026',

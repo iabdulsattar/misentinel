@@ -1,22 +1,10 @@
-<main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+<main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
 
   <div>
-    <h1 class="text-2xl sm:text-3xl font-extrabold dark:text-white">Invoice Details</h1>
-    <p class="text-gray-500 mt-1 text-sm sm:text-base dark:text-gray-400">View invoice information, billing details and make a payment.</p>
+    <h1 class="text-3xl text-slate-900 font-semibold dark:text-white">Invoice Details</h1>
+    <p class="text-gray-500 mt-1 text-sm dark:text-gray-400">View invoice information, billing details and make a payment.</p>
   </div>
-
-  <!-- Tabs -->
-  <div class="border-b border-gray-200 dark:border-gray-700 flex gap-6 text-sm">
-    @for (tab of tabs; track tab.value) {
-      <a
-        [routerLink]="tab.path"
-        [class]="activeTabClass(tab.value)"
-      >
-        {{ tab.label }}
-      </a>
-    }
-  </div>
-
+  
   @if (loading) {
     <div class="flex items-center justify-center rounded-xl border border-gray-200 bg-white py-20 text-sm text-gray-400 dark:border-gray-800 dark:bg-gray-900">
       Loading invoice details...
@@ -31,294 +19,469 @@
 
   @if (invoice && !loading && !notFound) {
     <!-- Invoice summary bar -->
-    <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 dark:bg-gray-900 dark:border-gray-800">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4 lg:divide-x divide-gray-100 dark:divide-gray-700">
-        <div class="flex items-start gap-3 lg:pr-4">
-          <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"></path>
-              <path d="M14 3v6h6"></path>
-            </svg>
+    <section class="bg-white border border-slate-200 rounded-md p-5 dark:bg-gray-900 dark:border-gray-800">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4 lg:divide-x divide-slate-200 dark:divide-gray-700">
+        <div class="flex items-center gap-3 lg:pr-4">
+          <div class="w-10 h-10 rounded-lg bg-indigo-50 text-blue-600 flex items-center justify-center shrink-0">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1609)">
+<path d="M11.6684 1.66599H5.00244C4.56045 1.66599 4.13657 1.8416 3.82404 2.15418C3.51151 2.46677 3.33594 2.89072 3.33594 3.33279V16.6672C3.33594 17.1092 3.51151 17.5332 3.82404 17.8458C4.13657 18.1584 4.56045 18.334 5.00244 18.334H15.0014C15.4434 18.334 15.8673 18.1584 16.1798 17.8458C16.4924 17.5332 16.6679 17.1092 16.6679 16.6672V6.66639M11.6684 1.66599C11.9322 1.66556 12.1935 1.71733 12.4371 1.81831C12.6808 1.91929 12.9021 2.06749 13.0883 2.25437L16.078 5.24461C16.2653 5.43088 16.4139 5.65243 16.5152 5.89646C16.6165 6.14049 16.6684 6.40217 16.6679 6.66639M11.6684 1.66599V5.83298C11.6684 6.05402 11.7562 6.26599 11.9125 6.42229C12.0688 6.57858 12.2807 6.66638 12.5017 6.66638L16.6679 6.66639M8.33544 7.49978H6.66894M13.3349 10.8334H6.66894M13.3349 14.167H6.66894" stroke="#0066FF" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1609">
+<rect width="20" height="20" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
           </div>
           <div>
-            <p class="text-xs text-slate-400 font-medium dark:text-gray-500">Invoice Number</p>
+            <p class="text-xs text-gray-400 font-medium dark:text-gray-500">Invoice Number</p>
             <div class="flex items-center gap-2 mt-0.5">
-              <span class="font-bold text-slate-900 dark:text-white">{{ invoice.number }}</span>
-              <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full border" [ngClass]="invoice.statusClass">{{ invoice.status }}</span>
+              <span class="font-bold text-slate-900 text-md dark:text-white">{{ invoice.number }}</span>
+              <span class="text-xs font-bold px-2 py-0.5 rounded-sm " [ngClass]="invoice.statusClass">{{ invoice.status }}</span>
             </div>
-            <p class="text-xs text-slate-500 mt-0.5 dark:text-gray-400">{{ invoice.description }}</p>
+            <p class="text-xs text-gray-500 mt-0.5 dark:text-gray-400">{{ invoice.description }}</p>
           </div>
         </div>
 
-        <div class="flex items-start gap-3 lg:px-4">
-          <svg class="text-slate-400 dark:text-slate-500 shrink-0 mt-0.5" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-            <path d="M16 2v4M8 2v4M3 10h18"></path>
-          </svg>
+        <div class="flex items-center gap-3 lg:px-4">
+          <svg width="20" height="20" class="shrink-0" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1621)">
+<path d="M6.66667 1.66599V4.99958M13.3333 1.66599V4.99958M2.5 8.33318H17.5M4.16667 3.33279H15.8333C16.7538 3.33279 17.5 4.07904 17.5 4.99958V16.6672C17.5 17.5877 16.7538 18.334 15.8333 18.334H4.16667C3.24619 18.334 2.5 17.5877 2.5 16.6672V4.99958C2.5 4.07904 3.24619 3.33279 4.16667 3.33279Z" stroke="#5A6578" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1621">
+<rect width="20" height="20" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
           <div>
-            <p class="text-xs text-slate-400 font-medium dark:text-gray-500">Invoice Date</p>
-            <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ invoice.issueDate }}</p>
+            <p class="text-xs text-gray-400 font-medium dark:text-gray-500">Invoice Date</p>
+            <p class="font-bold text-slate-900 text-base dark:text-white mt-0.5">{{ invoice.issueDate }}</p>
           </div>
         </div>
 
-        <div class="flex items-start gap-3 lg:px-4">
-          <svg class="text-slate-400 dark:text-slate-500 shrink-0 mt-0.5" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 6v6l4 2"></path>
-          </svg>
+        <div class="flex items-center gap-3 lg:px-4">
+          <svg width="20" height="20" class="shrink-0" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1629)">
+<g clip-path="url(#clip1_3749_1629)">
+<path d="M9.99806 4.99958V9.99998L13.3317 11.6668M18.3321 9.99998C18.3321 14.6027 14.6008 18.334 9.99806 18.334C5.39532 18.334 1.66406 14.6027 1.66406 9.99998C1.66406 5.39724 5.39532 1.66599 9.99806 1.66599C14.6008 1.66599 18.3321 5.39724 18.3321 9.99998Z" stroke="#5A6578" stroke-width="2" stroke-linecap="round"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_3749_1629">
+<rect width="20" height="20" fill="white"/>
+</clipPath>
+<clipPath id="clip1_3749_1629">
+<rect width="20" height="20" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
           <div>
-            <p class="text-xs text-slate-400 font-medium dark:text-gray-500">Due Date</p>
-            <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ invoice.dueDate }}</p>
-            <p class="text-xs font-semibold text-red-500 mt-0.5">{{ invoice.dueIn }}</p>
+            <p class="text-xs text-gray-400 font-medium dark:text-gray-500">Due Date</p>
+            <p class="font-bold text-slate-900 text-base dark:text-white mt-0.5">{{ invoice.dueDate }}</p>
+            <p class="text-xs font-bold text-red-500 mt-0.5">{{ invoice.dueIn }}</p>
           </div>
         </div>
 
-        <div class="lg:pl-4">
-          <p class="text-xs text-slate-400 font-medium dark:text-gray-500">Amount Due</p>
-          <p class="font-extrabold text-blue-600 text-2xl mt-0.5">{{ invoice.amountDue }}</p>
+        <div class="lg:pl-4 flex items-center">
+          <div>
+          <p class="text-xs text-gray-400 font-medium dark:text-gray-500">Amount Due</p>
+          <p class="font-bold text-blue-600 text-3xl mt-0.5">{{ invoice.amountDue }}</p>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Content grid -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 items-stretch">
 
       <!-- Left column -->
-      <div class="xl:col-span-2 space-y-6">
+      <div class="xl:col-span-2 space-y-4">
 
         <!-- Invoice items -->
-        <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 dark:bg-gray-900 dark:border-gray-800">
+        <section class="bg-white border border-slate-200 rounded-md p-5 dark:bg-gray-900 dark:border-gray-800">
           <h2 class="text-lg font-bold text-slate-900 dark:text-white">Invoice Items</h2>
 
-          <div class="mt-5 -mx-5 sm:mx-0 overflow-x-auto">
+          <div class="mt-2 -mx-5 sm:mx-0 overflow-x-auto">
             <table class="w-full min-w-[560px] text-sm">
               <thead>
-                <tr class="bg-blue-50 dark:bg-gray-800/50 text-slate-500 dark:text-slate-400 text-xs font-semibold">
-                  <th class="text-left font-semibold px-5 sm:px-4 py-3 rounded-l-lg">Item Description</th>
-                  <th class="text-right font-semibold px-4 py-3">Quantity</th>
-                  <th class="text-right font-semibold px-4 py-3">Unit Price</th>
-                  <th class="text-right font-semibold px-5 sm:px-4 py-3 rounded-r-lg">Amount</th>
+                <tr class="bg-indigo-50 dark:bg-gray-800/50 text-slate-900 dark:text-slate-400 text-xs font-bold">
+                  <th class="text-left font-bold px-5 sm:px-4 py-3 rounded-l-lg">Item Description</th>
+                  <th class="text-center font-bold px-4 py-3">Quantity</th>
+                  <th class="text-left font-bold px-4 py-3">Unit Price</th>
+                  <th class="text-right font-bold px-5 sm:px-4 py-3 rounded-r-lg">Amount</th>
                 </tr>
               </thead>
               <tbody>
                 @for (item of invoice.items; track item.description) {
-                  <tr class="border-b border-gray-100 dark:border-gray-800">
+                  <tr class="border-b border-slate-200 dark:border-gray-800">
                     <td class="px-5 sm:px-4 py-4 align-top">
-                      <p class="font-semibold text-slate-900 dark:text-white">{{ item.description }}</p>
-                      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ item.detail }}</p>
+                      <p class="font-bold text-slate-900 text-sm dark:text-white">{{ item.description }}</p>
+                      <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{{ item.detail }}</p>
                     </td>
-                    <td class="px-4 py-4 text-right font-semibold text-slate-900 dark:text-white align-top">{{ item.quantity }}</td>
-                    <td class="px-4 py-4 text-right font-semibold text-slate-900 dark:text-white align-top">{{ item.unitPrice }}</td>
-                    <td class="px-5 sm:px-4 py-4 text-right font-semibold text-slate-900 dark:text-white align-top">{{ item.amount }}</td>
+                    <td class="px-4 py-4 text-center font-bold text-sm text-slate-900 dark:text-white align-top">{{ item.quantity }}</td>
+                    <td class="px-4 py-4 text-left font-medium text-sm text-slate-900 dark:text-white align-top">{{ item.unitPrice }}</td>
+                    <td class="px-5 sm:px-4 py-4 text-right font-bold text-sm text-slate-900 dark:text-white align-top">{{ item.amount }}</td>
+
                   </tr>
+
+                  <tr>
+                    <td></td>
+                    <td></td>
+                    <td class="px-4 py-4 text-left text-gray-500 text-sm dark:text-slate-400">Subtotal</td>
+                    <td class="px-5 sm:px-4 py-4 text-right font-bold text-sm text-slate-900 dark:text-white">{{ invoice.subtotal }}</td>
+                    
+                  </tr>
+
+                  <tr>
+                    <td></td>
+                    <td></td>
+                    <td class="px-4 pb-4 text-left text-gray-500 text-sm dark:text-slate-400">VAT (20%)</td>
+                    <td class="px-5 sm:px-4 pb-4 text-right font-bold text-sm text-slate-900 dark:text-white">{{ invoice.vat }}</td>
+                    
+                  </tr>
+
+
                 }
               </tbody>
             </table>
           </div>
 
-          <div class="mt-2 space-y-2.5 text-sm">
-            <div class="flex justify-between">
-              <span class="text-slate-500 dark:text-slate-400">Subtotal</span>
-              <span class="font-semibold text-slate-900 dark:text-white">{{ invoice.subtotal }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-slate-500 dark:text-slate-400">VAT (20%)</span>
-              <span class="font-semibold text-slate-900 dark:text-white">{{ invoice.vat }}</span>
-            </div>
-          </div>
-
-          <div class="mt-4 bg-blue-50 dark:bg-gray-800/30 rounded-xl px-5 py-4 flex items-center justify-between">
-            <span class="font-bold text-slate-900 dark:text-white">Total Due</span>
-            <span class="font-extrabold text-blue-600 text-2xl">{{ invoice.totalDue }}</span>
+          
+          <div class=" bg-indigo-50 dark:bg-gray-800/30 rounded-lg px-5 py-4 flex items-center justify-between">
+            <span class="font-bold text-slate-900 text-base dark:text-white">Total Due</span>
+            <span class="font-bold text-blue-600 text-2xl">{{ invoice.totalDue }}</span>
           </div>
         </section>
 
         <!-- Subscription details -->
-        <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 dark:bg-gray-900 dark:border-gray-800">
+        <section class="bg-white border border-slate-200 rounded-md p-5 dark:bg-gray-900 dark:border-gray-800">
           <h2 class="text-lg font-bold text-slate-900 dark:text-white">Subscription Details</h2>
 
           <div class="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-gray-50 dark:bg-gray-800/30 rounded-xl p-5 flex items-start gap-4">
-              <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"></path>
-                </svg>
+            <div class="bg-slate-50 dark:bg-gray-800/30 rounded-xl p-5 flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-indigo-50 text-blue-600 flex items-center justify-center shrink-0">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1667)">
+<path d="M16.0011 21V19C16.0011 17.9391 15.5797 16.9217 14.8295 16.1716C14.0792 15.4214 13.0618 15 12.0008 15H6.00032C4.93937 15 3.92187 15.4214 3.17167 16.1716C2.42146 16.9217 2 17.9391 2 19V21M16.0011 3.12793C16.8589 3.3503 17.6186 3.85119 18.161 4.55199C18.7033 5.25279 18.9976 6.11382 18.9976 6.99993C18.9976 7.88604 18.7033 8.74707 18.161 9.44787C17.6186 10.1487 16.8589 10.6496 16.0011 10.8719M22.0016 20.9999V18.9999C22.0009 18.1136 21.7059 17.2527 21.1629 16.5522C20.6199 15.8517 19.8596 15.3515 19.0014 15.1299M13.0009 7C13.0009 9.20914 11.2099 11 9.00056 11C6.79124 11 5.00024 9.20914 5.00024 7C5.00024 4.79086 6.79124 3 9.00056 3C11.2099 3 13.0009 4.79086 13.0009 7Z" stroke="#0066FF" stroke-width="3" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1667">
+<rect width="24" height="24" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
               </div>
               <div>
-                <p class="font-semibold text-slate-900 dark:text-white">{{ invoice.subscription.title }}</p>
+                <p class="font-bold text-gray-500 text-xs dark:text-white">{{ invoice.subscription.title }}</p>
                 <p class="mt-1">
-                  <span class="text-2xl font-extrabold text-blue-600">{{ invoice.subscription.userCount }}</span>
-                  <span class="font-bold text-slate-900 dark:text-white"> {{ invoice.subscription.userLabel }}</span>
+                  <span class="text-xl font-bold text-blue-600">{{ invoice.subscription.userCount }}</span>
+                  <span class="font-bold text-xl text-slate-900 dark:text-white"> {{ invoice.subscription.userLabel }}</span>
                 </p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ invoice.subscription.billingPeriod }}<br />{{ invoice.subscription.unitPrice }}</p>
+                <p class="text-xs font-medium text-gray-500 dark:text-slate-400 mt-2">{{ invoice.subscription.billingPeriod }}<br />{{ invoice.subscription.unitPrice }}</p>
               </div>
             </div>
 
-            <dl class="text-sm divide-y divide-gray-100 dark:divide-gray-800">
-              <div class="flex items-center justify-between py-2.5 first:pt-0">
-                <dt class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                  <svg class="text-blue-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-                    <path d="M16 2v4M8 2v4M3 10h18"></path>
-                  </svg>
+            <dl class="text-xs dark:divide-gray-800">
+              <div class="flex items-center py-2.5 first:pt-0">
+                <dt class="flex items-center gap-2 w-40  shrink-0 text-gray-500 dark:text-slate-400">
+                  <svg width="16" height="16" class="shrink-0" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1675)">
+<path d="M5.33333 1.33282V3.9997M10.6667 1.33282V3.9997M2 6.66658H14M3.33333 2.66626H12.6667C13.403 2.66626 14 3.26327 14 3.9997V13.3338C14 14.0702 13.403 14.6672 12.6667 14.6672H3.33333C2.59695 14.6672 2 14.0702 2 13.3338V3.9997C2 3.26327 2.59695 2.66626 3.33333 2.66626Z" stroke="#0066FF" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1675">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
                   Billing Period
                 </dt>
-                <dd class="font-semibold text-slate-900 dark:text-white text-right">{{ invoice.billingPeriod }}</dd>
+                <dd class="font-bold text-slate-900 dark:text-white ">{{ invoice.billingPeriod }}</dd>
               </div>
-              <div class="flex items-center justify-between py-2.5">
-                <dt class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                  <svg class="text-blue-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 1l4 4-4 4"></path>
-                    <path d="M3 11V9a4 4 0 014-4h14"></path>
-                    <path d="M7 23l-4-4 4-4"></path>
-                    <path d="M21 13v2a4 4 0 01-4 4H3"></path>
-                  </svg>
+              <div class="flex items-center  py-2.5">
+                <dt class="flex items-center gap-2 w-40 shrink-0 text-gray-500 dark:text-slate-400">
+                  <svg width="16" height="16" class="shrink-0" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1681)">
+<path d="M2 8C2 6.4087 2.63214 4.88258 3.75736 3.75736C4.88258 2.63214 6.4087 2 8 2C9.67737 2.00631 11.2874 2.66082 12.4933 3.82667L14 5.33333M10.6667 5.33333H14V2M14 8C14 9.5913 13.3679 11.1174 12.2426 12.2426C11.1174 13.3679 9.5913 14 8 14C6.32263 13.9937 4.71265 13.3392 3.50667 12.1733L2 10.6667M2 14V10.6667H5.33333" stroke="#0066FF" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1681">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
                   Billing Cycle
                 </dt>
-                <dd class="font-semibold text-slate-900 dark:text-white">{{ invoice.cycle }}</dd>
+                <dd class="font-bold text-slate-900 dark:text-white">{{ invoice.cycle }}</dd>
               </div>
-              <div class="flex items-center justify-between py-2.5">
-                <dt class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                  <svg class="text-blue-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                  </svg>
+              <div class="flex items-center py-2.5">
+                <dt class="flex items-center gap-2 w-40 shrink-0 text-gray-500 dark:text-slate-400">
+                  <svg width="16" height="16" class="shrink-0" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1687)">
+<path d="M10.6661 14V12.6667C10.6661 11.9594 10.3851 11.2811 9.885 10.781C9.38486 10.281 8.70653 10 7.99923 10H3.99891C3.29161 10 2.61328 10.281 2.11314 10.781C1.61301 11.2811 1.33203 11.9594 1.33203 12.6667V14M10.6661 2.08529C11.238 2.23353 11.7445 2.56746 12.106 3.03466C12.4676 3.50186 12.6637 4.07588 12.6637 4.66662C12.6637 5.25736 12.4676 5.83138 12.106 6.29858C11.7445 6.76578 11.238 7.09971 10.6661 7.24795M14.6664 13.9999V12.6666C14.666 12.0757 14.4693 11.5018 14.1073 11.0348C13.7453 10.5678 13.2384 10.2343 12.6663 10.0866M8.66595 4.66667C8.66595 6.13943 7.47195 7.33333 5.99907 7.33333C4.52619 7.33333 3.33219 6.13943 3.33219 4.66667C3.33219 3.19391 4.52619 2 5.99907 2C7.47195 2 8.66595 3.19391 8.66595 4.66667Z" stroke="#0066FF" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1687">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
                   Number of Users
                 </dt>
-                <dd class="font-semibold text-slate-900 dark:text-white">{{ invoice.userCount }}</dd>
+                <dd class="font-bold text-slate-900 dark:text-white">{{ invoice.userCount }}</dd>
               </div>
-              <div class="flex items-center justify-between py-2.5">
-                <dt class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                  <svg class="text-blue-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="1" y="4" width="22" height="16" rx="2"></rect>
-                    <path d="M1 10h22"></path>
-                  </svg>
+              <div class="flex items-center py-2.5">
+                <dt class="flex items-center gap-2 w-40 shrink-0 text-gray-500 dark:text-slate-400">
+                  <svg width="16" height="16" class="shrink-0" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1693)">
+<path d="M1.33203 6.66654H14.6664M2.66547 3.33282H13.333C14.0694 3.33282 14.6664 3.92985 14.6664 4.66631V11.3337C14.6664 12.0702 14.0694 12.6672 13.333 12.6672H2.66547C1.92903 12.6672 1.33203 12.0702 1.33203 11.3337V4.66631C1.33203 3.92985 1.92903 3.33282 2.66547 3.33282Z" stroke="#0066FF" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1693">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
                   Next Billing Date
                 </dt>
-                <dd class="font-semibold text-slate-900 dark:text-white">{{ invoice.nextBilling }}</dd>
+                <dd class="font-bold text-slate-900 dark:text-white">{{ invoice.nextBilling }}</dd>
               </div>
-              <div class="flex items-center justify-between py-2.5 last:pb-0">
-                <dt class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                  <svg class="text-blue-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"></path>
-                    <path d="M14 3v6h6"></path>
-                  </svg>
+              <div class="flex items-center py-2.5 last:pb-0">
+                <dt class="flex items-center gap-2 w-40 shrink-0 text-gray-500 dark:text-slate-400">
+                  <svg width="16" height="16" class="shrink-0" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1699)">
+<path d="M9.33397 1.33283H4.00117C3.64758 1.33283 3.30848 1.47331 3.05845 1.72338C2.80843 1.97345 2.66797 2.31262 2.66797 2.66627V13.3338C2.66797 13.6874 2.80843 14.0266 3.05845 14.2767C3.30848 14.5267 3.64758 14.6672 4.00117 14.6672H12.0004C12.354 14.6672 12.6931 14.5267 12.9431 14.2767C13.1931 14.0266 13.3336 13.6874 13.3336 13.3338V5.33315M9.33397 1.33283C9.54498 1.33248 9.75398 1.3739 9.94893 1.45468C10.1439 1.53547 10.3209 1.65403 10.4699 1.80353L12.8616 4.19572C13.0115 4.34474 13.1304 4.52198 13.2114 4.7172C13.2924 4.91243 13.3339 5.12178 13.3336 5.33315M9.33397 1.33283V4.66642C9.33397 4.84325 9.4042 5.01283 9.52921 5.13787C9.65422 5.2629 9.82377 5.33314 10.0006 5.33314L13.3336 5.33315M6.66757 5.99986H5.33437M10.6672 8.66674H5.33437M10.6672 11.3336H5.33437" stroke="#0066FF" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1699">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
                   Plan Type
                 </dt>
-                <dd class="font-semibold text-slate-900 dark:text-white text-right">{{ invoice.planType }}</dd>
+                <dd class="font-bold text-slate-900 dark:text-white text-right">{{ invoice.planType }}</dd>
               </div>
             </dl>
           </div>
         </section>
 
         <!-- Invoice notes -->
-        <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 sm:p-5 flex gap-3 dark:bg-gray-800/30 dark:border-gray-700">
-          <svg class="shrink-0 mt-0.5 text-blue-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 16v-4M12 8h.01"></path>
-          </svg>
-          <div class="text-sm">
+        <div class="bg-indigo-50 rounded-lg p-4 sm:p-5 flex gap-3 dark:bg-gray-800/30 dark:border-gray-700">
+          <svg width="12" height="12" class="shrink-0 mt-0.5" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1705)">
+<g clip-path="url(#clip1_3749_1705)">
+<path d="M6.0004 8.00019V6.00003M6.0004 3.99987H6.0054M11.0008 6.00003C11.0008 8.76168 8.76204 11.0004 6.0004 11.0004C3.23876 11.0004 1 8.76168 1 6.00003C1 3.23839 3.23876 0.999634 6.0004 0.999634C8.76204 0.999634 11.0008 3.23839 11.0008 6.00003Z" stroke="#0066FF" stroke-width="1.5" stroke-linecap="round"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_3749_1705">
+<rect width="12" height="12" fill="white"/>
+</clipPath>
+<clipPath id="clip1_3749_1705">
+<rect width="12" height="12" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
+          <div class="text-xs">
             <p class="font-bold text-slate-900 dark:text-white">Invoice Notes</p>
-            <p class="text-slate-600 dark:text-slate-400 mt-0.5">{{ invoice.notes }}</p>
+            <p class="text-gray-500 dark:text-slate-400 mt-0.5">{{ invoice.notes }}</p>
           </div>
         </div>
       </div>
 
       <!-- Right column -->
-      <div>
-        <section class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 dark:bg-gray-900 dark:border-gray-800">
+      <div class="border border-slate-200 rounded-md">
+        <section class="bg-white p-5 dark:bg-gray-900 dark:border-gray-800">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-bold text-slate-900 dark:text-white">Billing Information</h2>
-            <button class="flex items-center gap-1.5 text-xs font-semibold border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
+            <button class="flex items-center gap-1.5 text-xs font-bold border border-slate-200 dark:border-gray-600 rounded-md px-3 py-1.5 text-gray-500 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1714)">
+<g clip-path="url(#clip1_3749_1714)">
+<path d="M11.0008 2.4092C11.0008 2.783 10.8522 3.14147 10.5878 3.40575L3.91373 10.0801C3.7978 10.1957 3.65529 10.281 3.49869 10.3286L1.322 10.9886C1.27877 11.0016 1.23284 11.0027 1.18906 10.9917C1.14529 10.9807 1.10531 10.958 1.07337 10.9261C1.04143 10.8942 1.01872 10.8543 1.00764 10.8105C0.996569 10.7668 0.997545 10.7209 1.01047 10.6776L1.67103 8.50166C1.71909 8.34493 1.80495 8.20242 1.92105 8.08667L8.59464 1.41229C8.85902 1.148 9.21757 0.999556 9.59141 0.999603C9.96525 0.99965 10.3238 1.14819 10.5881 1.41254C10.8524 1.67689 11.0008 2.0354 11.0008 2.4092Z" stroke="#5A6578" stroke-width="2" stroke-linecap="round"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_3749_1714">
+<rect width="12" height="12" fill="white"/>
+</clipPath>
+<clipPath id="clip1_3749_1714">
+<rect width="12" height="12" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
               Edit
             </button>
           </div>
 
           <div class="mt-5 space-y-5 text-sm">
-            <div class="flex items-start gap-3">
-              <svg class="text-blue-500 shrink-0 mt-0.5" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 7h-3V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a1 1 0 00-1 1v11a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1zM9 5h6v2H9z"></path>
-              </svg>
+            <div class="flex items-center">
+            <div class="flex items-start w-38 shrink-0 gap-3">
+              <svg width="16" height="16" class="shrink-0" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1720)">
+<path d="M10.6661 13.3328V2.66613C10.6661 2.31251 10.5256 1.97337 10.2756 1.72332C10.0255 1.47327 9.68632 1.33279 9.33267 1.33279H6.66579C6.31214 1.33279 5.97298 1.47327 5.72291 1.72332C5.47284 1.97337 5.33235 2.31251 5.33235 2.66613V13.3328M2.66547 3.99946H13.333C14.0694 3.99946 14.6664 4.59641 14.6664 5.33279V11.9995C14.6664 12.7358 14.0694 13.3328 13.333 13.3328H2.66547C1.92903 13.3328 1.33203 12.7358 1.33203 11.9995V5.33279C1.33203 4.59641 1.92903 3.99946 2.66547 3.99946Z" stroke="#0066FF" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1720">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
               <div>
-                <p class="text-slate-400 dark:text-gray-500 text-xs">Company Name</p>
-                <p class="font-semibold text-slate-900 dark:text-white mt-0.5">{{ invoice.companyName }}</p>
+                <p class="text-gray-500 dark:text-gray-500 text-xs">Company Name</p>
               </div>
             </div>
 
-            <div class="flex items-start gap-3">
-              <svg class="text-blue-500 shrink-0 mt-0.5" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                <path d="M22 6l-10 7L2 6"></path>
-              </svg>
-              <div>
-                <p class="text-slate-400 dark:text-gray-500 text-xs">Billing Email</p>
-                <p class="font-semibold text-slate-900 dark:text-white mt-0.5 break-all">{{ invoice.billingEmail }}</p>
-              </div>
+            <div>
+                <p class="font-medium text-slate-900 text-xs dark:text-white mt-0.5">{{ invoice.companyName }}</p>
+              
+            </div>
             </div>
 
-            <div class="flex items-start gap-3">
-              <svg class="text-blue-500 shrink-0 mt-0.5" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="flex items-start">
+            
+            <div class="flex items-start gap-3 w-38 shrink-0">
+              <svg width="16" height="16" class="shrink-0" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1726)">
+<path d="M14.6664 4.66698L8.67195 8.48459C8.46853 8.60272 8.23748 8.66495 8.00223 8.66495C7.76699 8.66495 7.53593 8.60272 7.33251 8.48459L1.33203 4.66698M2.66547 2.66718H13.333C14.0694 2.66718 14.6664 3.26407 14.6664 4.00038V11.9996C14.6664 12.7359 14.0694 13.3328 13.333 13.3328H2.66547C1.92903 13.3328 1.33203 12.7359 1.33203 11.9996V4.00038C1.33203 3.26407 1.92903 2.66718 2.66547 2.66718Z" stroke="#0066FF" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1726">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
+              <div>
+                <p class="text-gray-500 dark:text-gray-500 text-xs">Billing Email</p>
+              </div>
+            </div>
+            <div>
+                <p class="font-medium text-slate-900 text-xs dark:text-white mt-0.5 break-all">{{ invoice.billingEmail }}</p>
+
+            </div>
+            </div>
+
+            <div class="flex items-start ">
+            
+            <div class="flex items-start gap-3 w-38 shrink-0">
+              <svg class="text-blue-600 shrink-0 " width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
               </svg>
+              
               <div>
-                <p class="text-slate-400 dark:text-gray-500 text-xs">Billing Address</p>
-                <p class="font-semibold text-slate-900 dark:text-white mt-0.5 leading-relaxed">
+                <p class="text-gray-500 dark:text-gray-500 text-xs">Billing Address</p>
+                
+              </div>
+            </div>
+            <div>
+              <p class="font-medium text-slate-900 text-xs dark:text-white leading-relaxed">
                   @for (line of formatAddress(invoice.billingAddress); track $index) {
                     {{ line }}<br />
                   }
                 </p>
-              </div>
+                
+            </div>
             </div>
           </div>
 
-          <div class="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800 space-y-4 text-sm">
-            <div class="flex items-start gap-3">
-              <svg class="text-blue-500 shrink-0 mt-0.5" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 1l4 4-4 4"></path>
-                <path d="M3 11V9a4 4 0 014-4h14"></path>
-                <path d="M7 23l-4-4 4-4"></path>
-                <path d="M21 13v2a4 4 0 01-4 4H3"></path>
-              </svg>
+          <div class="mt-5 pt-5 border-t border-slate-200 dark:border-gray-800 space-y-4 text-sm">
+            <div class="flex items-start ">
+             
+            <div class="flex items-start gap-3 w-38 shrink-0">
+              <svg width="16" height="16" class="shrink-0" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1739)">
+<path d="M2 8C2 6.4087 2.63214 4.88258 3.75736 3.75736C4.88258 2.63214 6.4087 2 8 2C9.67737 2.00631 11.2874 2.66082 12.4933 3.82667L14 5.33333M10.6667 5.33333H14V2M14 8C14 9.5913 13.3679 11.1174 12.2426 12.2426C11.1174 13.3679 9.5913 14 8 14C6.32263 13.9937 4.71265 13.3392 3.50667 12.1733L2 10.6667M2 14V10.6667H5.33333" stroke="#0066FF" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1739">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
               <div>
-                <p class="text-slate-400 dark:text-gray-500 text-xs">Billing Cycle</p>
-                <p class="font-semibold text-slate-900 dark:text-white mt-0.5">{{ invoice.cycle }}</p>
+                <p class="text-gray-500 dark:text-gray-500 text-xs">Billing Cycle</p>
+                
               </div>
             </div>
-            <div class="flex items-start gap-3">
-              <svg class="text-blue-500 shrink-0 mt-0.5" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="1" y="4" width="22" height="16" rx="2"></rect>
-                <path d="M1 10h22"></path>
-              </svg>
+            <div>
+              <p class="font-medium text-slate-900 text-xs dark:text-white ">{{ invoice.cycle }}</p>
+                
+            </div>
+            </div>
+            <div class="flex items-start ">
+             
+            <div class="flex items-start gap-3 w-38 shrink-0">
+              <svg width="16" height="16" class="shrink-0" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1745)">
+<path d="M1.33203 6.66654H14.6664M2.66547 3.33282H13.333C14.0694 3.33282 14.6664 3.92985 14.6664 4.66631V11.3337C14.6664 12.0702 14.0694 12.6672 13.333 12.6672H2.66547C1.92903 12.6672 1.33203 12.0702 1.33203 11.3337V4.66631C1.33203 3.92985 1.92903 3.33282 2.66547 3.33282Z" stroke="#2563EB" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1745">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
               <div>
-                <p class="text-slate-400 dark:text-gray-500 text-xs">Next Billing Date</p>
-                <p class="font-semibold text-slate-900 dark:text-white mt-0.5">{{ invoice.nextBilling }}</p>
+                <p class="text-gray-500 dark:text-gray-500 text-xs">Next Billing Date</p>
               </div>
+            </div>
+            <div>
+                <p class="font-medium text-slate-900 text-xs dark:text-white ">{{ invoice.nextBilling }}</p>
+              
+            </div>
             </div>
           </div>
 
-          <div class="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800">
-            <h3 class="font-bold text-slate-900 dark:text-white">Payment</h3>
-            <p class="text-sm text-slate-500 mt-1 dark:text-slate-400">Settle this invoice using your saved payment method.</p>
+          <div class="mt-5 pt-5 border-t border-slate-200 dark:border-gray-800">
+            <h3 class="font-bold text-slate-900 text-lg dark:text-white">Payment</h3>
+            <p class="text-xs text-gray-500 mt-1 dark:text-slate-400">Settle this invoice using your saved payment method.</p>
 
-            <button class="mt-4 w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold rounded-xl py-3 flex items-center justify-center gap-2 text-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="11" width="18" height="11" rx="2"></rect>
-                <path d="M7 11V7a5 5 0 0110 0v4"></path>
-              </svg>
+            <button class="mt-4 w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold rounded-lg py-3 flex items-center justify-center gap-2 text-base">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1756)">
+<path d="M4.66667 7.33331V4.66642C4.66667 3.7823 5.01786 2.93438 5.64298 2.30921C6.2681 1.68404 7.11595 1.33282 8 1.33282C8.88406 1.33282 9.7319 1.68404 10.357 2.30921C10.9821 2.93438 11.3333 3.7823 11.3333 4.66642V7.33331M3.33333 7.33331H12.6667C13.403 7.33331 14 7.93031 14 8.66675V13.3338C14 14.0702 13.403 14.6672 12.6667 14.6672H3.33333C2.59695 14.6672 2 14.0702 2 13.3338V8.66675C2 7.93031 2.59695 7.33331 3.33333 7.33331Z" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1756">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
               Pay {{ invoice.totalDue }} Now
             </button>
 
-            <p class="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 text-center">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"></path>
-              </svg>
+            <p class="mt-3 flex items-start justify-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 ">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3749_1761)">
+<path d="M4.91637 6.83352L6.08292 8.00023L8.41602 5.66682M11.3324 7.41714C11.3324 10.3339 9.29094 11.7923 6.86451 12.6381C6.73745 12.6812 6.59944 12.6791 6.47372 12.6323C4.04146 11.7923 2 10.3339 2 7.41714V3.33367C2 3.17896 2.06145 3.03058 2.17084 2.92118C2.28022 2.81178 2.42858 2.75032 2.58327 2.75032C3.74982 2.75032 5.20801 2.0503 6.22291 1.1636C6.34648 1.05801 6.50367 1 6.6662 1C6.82873 1 6.98592 1.05801 7.10949 1.1636C8.13022 2.05613 9.58257 2.75032 10.7491 2.75032C10.9038 2.75032 11.0522 2.81178 11.1616 2.92118C11.2709 3.03058 11.3324 3.17896 11.3324 3.33367V7.41714Z" stroke="#9AA4B2" stroke-width="2" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3749_1761">
+<rect width="14" height="14" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
               Your payment information is secure and encrypted.
             </p>
           </div>
