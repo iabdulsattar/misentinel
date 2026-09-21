@@ -153,56 +153,11 @@
         </div>
       </div>
 
-      <!-- <div class="px-1 sm:px-2">
-        <div class="relative pt-8">
-          <div
-            class="absolute -translate-x-1/2 -translate-y-full bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-lg"
-            [style.left.%]="bubbleLeft"
-            style="top: 1.75rem;"
-          >
-            {{ sliderValue }}
-            <span class="absolute left-1/2 -translate-x-1/2 top-full w-2 h-2 bg-blue-600 rotate-45 -mt-1"></span>
-          </div>
-          <input
-            #userSlider
-            type="range"
-            [min]="min"
-            [max]="max"
-            [(ngModel)]="sliderValue"
-            (input)="onSliderInput()"
-            class="w-full relative z-10"
-          >
-          <div class="relative h-3 mt-1 pointer-events-none">
-            <span class="absolute top-1/2 left-0 right-0 h-1.5 -translate-y-1/2 bg-gray-300 rounded-full"></span>
-            <span class="absolute top-1/2 left-0 h-1.5 -translate-y-1/2 bg-blue-600 rounded-full" [style.width.%]="fillPercent"></span>
-
-            @for (milestone of tickMilestones; track milestone.value) {
-              <span
-                class="absolute top-1/2 w-2 h-2 -translate-y-1/2 rounded-full transition-colors"
-                [class]="isTickActive(milestone) ? 'bg-blue-600' : 'bg-gray-300'"
-                [style.left.%]="milestone.percent"
-              ></span>
-            }
-
-            <span
-              class="absolute top-1/2 w-3 h-3 rounded-full bg-blue-600 border-2 border-white shadow -translate-x-1/2 -translate-y-1/2"
-              [style.left.%]="bubbleLeft"
-            ></span>
-          </div>
-        </div>
-
-        <div class="relative text-xs sm:text-sm text-gray-400 mt-1 font-medium h-4">
-          <span class="absolute" style="left:0%">10</span>
-          <span class="absolute -translate-x-1/2" style="left:18.37%">100</span>
-          <span class="absolute -translate-x-1/2" style="left:38.78%">200</span>
-          <span class="absolute -translate-x-1/2" style="left:59.18%">300</span>
-          <span class="absolute -translate-x-1/2" style="left:79.59%">400</span>
-          <span class="absolute -translate-x-full" style="left:100%">500</span>
-        </div>
-        <p class="text-gray-500 text-sm mt-4 dark:text-gray-400">Minimum 10 users</p>
-      </div> -->
-
-      <div class="bg-blue-50 rounded-md p-4 sm:p-6 mt-6 mx-15 dark:bg-gray-800/50">
+      <div class="mx-15">
+        <app-range-slider/>
+      </div>
+      
+      <div class="bg-blue-50 rounded-md p-4 sm:p-6 mt-12 mx-15 dark:bg-gray-800/50">
         <div class="flex flex-col lg:flex-row lg:items-center gap-6">
           <div class="flex-1">
             <p class="text-xs font-medium text-slate-900 mb-4 dark:text-gray-300">Pricing Structure (per user / month)</p>

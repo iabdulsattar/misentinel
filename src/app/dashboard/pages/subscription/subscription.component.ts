@@ -2,6 +2,7 @@ import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { RangeSliderComponent } from '../../../shared/components/range-slider/range-slider.component';
 
 interface TickMilestone {
   value: number;
@@ -22,7 +23,7 @@ interface Invoice {
 @Component({
   selector: 'app-subscription',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, RangeSliderComponent],
   templateUrl: './subscription.component.html',
   styles: [`
     input[type="range"] {

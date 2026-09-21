@@ -1,0 +1,150 @@
+.rangeslider-wrap {
+  padding-top: 60px;
+  width: 100%;
+}
+
+.rangeslider {
+  position: relative;
+  height: 4px;
+  border-radius: 0px;
+  width: 100%;
+  background-color: #E2E8F0;
+}
+
+/* Actual input */
+.rangeslider__input {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 5;
+}
+
+/* Red filled area */
+.rangeslider__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  height: 100%;
+  background-color: #155dfc;
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+/* Handle */
+.rangeslider__handle {
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  border-radius: 100%;
+  background-color: #155dfc;
+  cursor: pointer;
+  display: block;
+  position: absolute;
+  z-index: 3;
+  top: -8px;
+  transform: translateX(-50%);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 2px white;
+  pointer-events: none;
+}
+
+/* Value above handle */
+.rangeslider__handle__value {
+  box-sizing: border-box;
+  width: 60px;
+  text-align: center;
+  padding: 8px 5px;
+  background-color: #155dfc;
+  border-radius: 5px;
+  color: white;
+  font-size: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -48px;
+  position: absolute;
+  white-space: nowrap;
+  border-top: 1px solid #155dfc;
+  box-shadow:
+    0 -4px 1px rgba(0, 0, 0, 0.07),
+    0 -5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.rangeslider__handle__value::before {
+  position: absolute;
+  bottom: -8px;
+  left: calc(50% - 8px);
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #155dfc;
+}
+
+/* Labels container */
+.rangeslider__labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Individual labels */
+.rangeslider__labels__label {
+  font-size: 0.75em;
+  position: absolute;
+  padding-top: 15px;
+  color: gray;
+  width: 1px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* Tick mark */
+.rangeslider__labels__label::before {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  content: "";
+  width: 1px;
+  height: 9px;
+  border-radius: 1px;
+  background-color: #E2E8F0;
+}
+
+/* First and last tick */
+.rangeslider__labels__label.first-label::before,
+.rangeslider__labels__label.last-label::before {
+  height: 12px;
+  width: 2px;
+}
+
+.rangeslider__labels__label.first-label::before {
+  background-color: #155dfc;
+}
+
+.rangeslider__labels__label.last-label::before {
+  background-color: #E2E8F0;
+}
+
+/* First label alignment */
+.rangeslider__labels__label.first-label {
+  transform: translateX(-48%);
+}
+
+/* Last label alignment */
+.rangeslider__labels__label.last-label {
+  transform: translateX(-52%);
+}

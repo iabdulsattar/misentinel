@@ -1,0 +1,55 @@
+<div class="rangeslider-wrap">
+
+  <div class="rangeslider">
+
+    <!-- Filled track -->
+    <div
+      class="rangeslider__fill"
+      [style.width.%]="fillPercentage">
+    </div>
+
+    <!-- Value handle -->
+    <div
+      class="rangeslider__handle"
+      [style.left.%]="fillPercentage">
+
+      <div class="rangeslider__handle__value">
+        {{ value }}
+      </div>
+
+    </div>
+
+    <!-- Labels -->
+    <div class="rangeslider__labels">
+
+      @for (label of labels; track label) {
+
+        <span
+          class="rangeslider__labels__label"
+          [class.first-label]="label === min"
+          [class.last-label]="label === max"
+          [style.left.%]="getLabelPosition(label)">
+
+          {{ label }}
+
+        </span>
+
+      }
+
+    </div>
+
+    <!-- Actual range input -->
+    <input
+      type="range"
+      [min]="min"
+      [max]="max"
+      [step]="step"
+      [value]="value"
+      (input)="onSliderChange($event)"
+      class="rangeslider__input"
+      aria-label="Range slider"
+    />
+
+  </div>
+
+</div>
