@@ -14,6 +14,12 @@ export interface Plan {
   sortOrder: number;
   stripePriceIdMonthly?: string;
   stripePriceIdAnnual?: string;
+  monthlyGrossCents?: number;
+  monthlyVatCents?: number;
+  annualGrossCents?: number;
+  annualVatCents?: number;
+  vatRateBps?: number;
+  serviceCode?: string;
   createdAt?: string;
   updatedAt?: string;
   [key: string]: any;
@@ -63,6 +69,8 @@ export interface StartSubscriptionRequest {
   billingPeriod: BillingPeriod;
   useTrial?: boolean;
   paymentMethodId?: string;
+  config?: Record<string, any>;
+  [key: string]: any;
 }
 
 export interface StartSubscriptionResponse {
@@ -73,6 +81,9 @@ export interface StartSubscriptionResponse {
 export interface ChangePlanRequest {
   newPlanId: string;
   billingPeriod: BillingPeriod;
+  config?: Record<string, any>;
+  paymentMethodId?: string;
+  [key: string]: any;
 }
 
 export interface ChangePlanResponse {
@@ -107,6 +118,7 @@ export interface SubscriptionCheckResponse {
   status?: string;
   planCode?: string;
   planName?: string;
+  serviceCode?: string;
   features: Record<string, any>;
   [key: string]: any;
 }
@@ -285,5 +297,93 @@ export interface EdobInvoiceDetail {
 export interface EdobInvoicePayResponse {
   success: boolean;
   invoice?: EdobInvoiceDetail;
+  [key: string]: any;
+}
+
+export interface ServiceInfo {
+  serviceCode: string;
+  name: string;
+  description?: string;
+  active: boolean;
+  [key: string]: any;
+}
+
+export interface BillingInfo {
+  companyName: string;
+  billingEmail: string;
+  billingAddress: string;
+  city: string;
+  postcode: string;
+  country: string;
+  vatNumber?: string;
+  [key: string]: any;
+}
+
+export interface BillingProfile {
+  companyName?: string;
+  billingEmail?: string;
+  billingAddress?: string;
+  city?: string;
+  postcode?: string;
+  country?: string;
+  vatNumber?: string;
+  vatRateBps?: number | null;
+  [key: string]: any;
+}
+
+export interface GenericInvoice {
+  id: string;
+  number: string;
+  status: string;
+  paymentStatus?: string;
+  description: string;
+  issueDate: string;
+  dueDate: string;
+  amountCents: number;
+  amountDisplay: string;
+  currency: string;
+  [key: string]: any;
+}
+
+export interface GenericInvoiceDetail {
+  id: string;
+  number: string;
+  status: string;
+  paymentStatus?: string;
+  description: string;
+  issueDate: string;
+  dueDate: string;
+  dueInDays?: number | null;
+  subtotalCents: number;
+  subtotalDisplay: string;
+  vatCents: number;
+  vatDisplay: string;
+  totalCents: number;
+  totalDisplay: string;
+  currency: string;
+  vatRateBps?: number;
+  lineItems: EdobInvoiceLineItem[];
+  billing?: {
+    companyName?: string;
+    billingEmail?: string;
+    address?: string;
+    vatNumber?: string;
+  };
+  subscription?: {
+    title?: string;
+    planName?: string;
+    planCode?: string;
+    billingPeriod?: string;
+  };
+  [key: string]: any;
+}
+
+export interface GenericInvoiceStats {
+  totalInvoices: number;
+  paid: number;
+  pending: number;
+  overdue: number;
+  totalAmountCents?: number;
+  totalAmountDisplay?: string;
   [key: string]: any;
 }

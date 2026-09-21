@@ -22,6 +22,9 @@ export class ToastInterceptor implements HttpInterceptor {
     '/api/v1/auth/invitations',
     '/api/v1/auth/refresh',
     '/api/v1/auth/logout',
+    '/api/v1/subscriptions/check',
+    '/services/edob/start',
+    '/services/edob/enable',
   ];
 
   private readonly MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);

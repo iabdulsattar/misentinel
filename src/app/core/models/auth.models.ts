@@ -25,18 +25,18 @@ export interface SignupRequest {
   employeeCount: string;
   receiveProductUpdates: boolean;
   acceptedTerms: boolean;
-  
+  serviceCode: string;
 }
 
 export interface SignupResponse {
-  membership: {
+  membership?: {
     id: string;
     slug: string;
     name: string;
     role?: string;
     [key: string]: any;
   };
-  organization: {
+  organization?: {
     id: string;
     slug: string;
     name: string;
@@ -45,7 +45,7 @@ export interface SignupResponse {
     ownerUserId?: string;
     [key: string]: any;
   };
-  user: {
+  user?: {
     id: string;
     keycloakId?: string;
     email: string;
@@ -55,11 +55,33 @@ export interface SignupResponse {
     createdAt?: string;
     [key: string]: any;
   };
+  tokens?: {
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+    refresh_expires_in: number;
+    token_type: string;
+    scope: string;
+    organizations?: Organization[];
+    [key: string]: any;
+  };
+  serviceAccess?: ServiceAccessGrant | ServiceAccessGrant[];
+  requiresOtp?: boolean;
+  challengeToken?: string;
+}
+
+export interface ServiceAccessGrant {
+  serviceCode: string;
+  wildcard?: boolean;
+  permissions?: string[];
+  roles?: { id?: string; code?: string; name?: string }[];
+  [key: string]: any;
 }
 
 export interface LoginRequest {
   email: string;
   password: string;
+  serviceCode?: string;
 }
 
 export interface LoginResponse {
@@ -75,6 +97,15 @@ export interface LoginResponse {
     organizations?: Organization[];
     [key: string]: any;
   };
+  serviceAccess?: ServiceAccessGrant | ServiceAccessGrant[];
+  [key: string]: any;
+}
+
+export interface Verify2faResponse {
+  access_token: string;
+  refresh_token: string;
+  serviceAccess?: ServiceAccessGrant | ServiceAccessGrant[];
+  organizations?: Organization[];
   [key: string]: any;
 }
 

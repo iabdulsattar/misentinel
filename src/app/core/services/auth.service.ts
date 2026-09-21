@@ -42,7 +42,7 @@ export class AuthService {
   // Returns the organization + user at the top level (per API contract).
   signup(payload: SignupRequest): Observable<SignupResponse> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.api.post<any>('/api/v1/auth/signup', payload, headers).pipe(
+    return this.api.post('/api/v1/auth/signup', payload, headers).pipe(
       map((res: any) => (res && typeof res === 'object' && 'data' in res ? res.data : res))
     );
   }
@@ -70,7 +70,9 @@ export class AuthService {
   // POST /api/v1/auth/login/verify-2fa
   verify2fa(payload: Verify2faRequest): Observable<Verify2faResponse> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.api.post('/api/v1/auth/login/verify-2fa', payload, headers);
+    return this.api.post<ApiWrapper<Verify2faResponse>>('/api/v1/auth/login/verify-2fa', payload, headers).pipe(
+      map((res) => (res && typeof res === 'object' && 'data' in res ? res.data : res))
+    );
   }
 
   me(token?: string): Observable<ProfileResponse> {

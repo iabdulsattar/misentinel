@@ -32,7 +32,7 @@ export class SubscriptionPlanComponent implements OnInit {
 
   private loadPlans(): void {
     this.isFetchingPlans = true;
-    this.subscriptionService.listPlans().subscribe({
+    this.subscriptionService.listPlans('edob').subscribe({
       next: (plans) => {
         this.plans = plans.filter(p => p.active);
         this.isFetchingPlans = false;

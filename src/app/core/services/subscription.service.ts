@@ -1,7 +1,9 @@
 import { HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ApiService } from './api.service';
+import { ApiWrapper } from '../models/auth.models';
 import {
   Plan,
   CreatePlanRequest,
@@ -22,8 +24,16 @@ import {
   EdobInvoiceListResponse,
   EdobInvoiceStats,
   EdobInvoiceDetail,
-  EdobInvoicePayResponse
+  EdobInvoicePayResponse,
+  ServiceInfo,
+  BillingInfo,
+  BillingProfile,
+  GenericInvoice,
+  GenericInvoiceDetail,
+  GenericInvoiceStats
 } from '../models/subscription.models';
+
+export const SERVICE_CODE = 'edob';
 
 @Injectable({ providedIn: 'root' })
 export class SubscriptionService {
@@ -31,9 +41,15 @@ export class SubscriptionService {
 
   // -------- Plans --------
 
-  // GET /api/v1/subscriptions/plans
-  listPlans(): Observable<Plan[]> {
-    return this.api.get<Plan[]>('/api/v1/subscriptions/plans');
+  // GET /api/v1/subscriptions/plans?serviceCode={serviceCode}&country={country}
+  listPlans(serviceCode?: string, country?: string): Observable<Plan[]> {
+    const params = new URLSearchParams();
+    if (serviceCode) params.set('serviceCode', serviceCode);
+    if (country) params.set('country', country);
+    const query = params.toString();
+    return this.api.get<ApiWrapper<Plan[]>>(
+      `/api/v1/subscriptions/plans${query ? `?${query}` : ''}`
+    ).pipe(map((res) => res.data));
   }
 
   // GET /api/v1/subscriptions/plans/{planId}
@@ -57,68 +73,179 @@ export class SubscriptionService {
     return this.api.post(`/api/v1/subscriptions/plans/${planId}/disable`, {});
   }
 
-  // -------- Subscription Lifecycle --------
+  // GET /api/v1/subscriptions/services (list subscribable services)
+  listSubscribableServices(): Observable<ServiceInfo[]> {
+    return this.api.get<ServiceInfo[]>('/api/v1/subscriptions/services');
+  }
 
-  // POST /api/v1/subscriptions/organizations/{orgId}/start?orgEmail=&orgName=
+  // -------- Subscription Lifecycle (service-scoped) --------
+
+  // POST /api/v1/subscriptions/organizations/{orgId}/services/{serviceCode}/start
   startSubscription(
     orgId: string,
     payload: StartSubscriptionRequest,
-    orgEmail?: string,
-    orgName?: string,
+    serviceCode = SERVICE_CODE,
     token?: string
   ): Observable<StartSubscriptionResponse> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` })
     });
-    let query = '';
-    if (orgEmail || orgName) {
-      const params = new URLSearchParams();
-      if (orgEmail) params.set('orgEmail', orgEmail);
-      if (orgName) params.set('orgName', orgName);
-      query = `?${params.toString()}`;
-    }
-    return this.api.post<StartSubscriptionResponse>(
-      `/api/v1/subscriptions/organizations/${orgId}/start${query}`,
+    const finalPayload = { ...payload };
+    return this.api.post<ApiWrapper<StartSubscriptionResponse>>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/services/${encodeURIComponent(serviceCode)}/start`,
+      finalPayload,
+      headers
+    ).pipe(map((res) => res.data));
+  }
+
+  // GET /api/v1/subscriptions/organizations/{orgId}/services/{serviceCode}
+  getCurrentSubscription(orgId: string, serviceCode = SERVICE_CODE): Observable<ListSubscriptionsResponse> {
+    return this.api.get<ListSubscriptionsResponse>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/services/${encodeURIComponent(serviceCode)}`
+    );
+  }
+
+  // PATCH /api/v1/subscriptions/organizations/{orgId}/services/{serviceCode}/plan
+  changePlan(orgId: string, payload: ChangePlanRequest, serviceCode = SERVICE_CODE, token?: string): Observable<ChangePlanResponse> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` })
+    });
+    return this.api.patch<ChangePlanResponse>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/services/${encodeURIComponent(serviceCode)}/plan`,
       payload,
       headers
     );
   }
 
-  // GET /api/v1/subscriptions/organizations/{orgId}
-  getCurrentSubscription(orgId: string): Observable<ListSubscriptionsResponse> {
-    return this.api.get<ListSubscriptionsResponse>(`/api/v1/subscriptions/organizations/${orgId}`);
-  }
-
-  // PATCH /api/v1/subscriptions/organizations/{orgId}/plan
-  changePlan(orgId: string, payload: ChangePlanRequest, token?: string): Observable<ChangePlanResponse> {
+  // POST /api/v1/subscriptions/organizations/{orgId}/services/{serviceCode}/cancel
+  cancelSubscription(orgId: string, payload: CancelSubscriptionRequest, serviceCode = SERVICE_CODE, token?: string): Observable<CancelSubscriptionResponse> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` })
     });
-    return this.api.patch<ChangePlanResponse>(`/api/v1/subscriptions/organizations/${orgId}/plan`, payload, headers);
+    return this.api.post<CancelSubscriptionResponse>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/services/${encodeURIComponent(serviceCode)}/cancel`,
+      payload,
+      headers
+    );
   }
 
-  // POST /api/v1/subscriptions/organizations/{orgId}/cancel
-  cancelSubscription(orgId: string, payload: CancelSubscriptionRequest, token?: string): Observable<CancelSubscriptionResponse> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` })
-    });
-    return this.api.post<CancelSubscriptionResponse>(`/api/v1/subscriptions/organizations/${orgId}/cancel`, payload, headers);
-  }
-
-  // GET /api/v1/subscriptions/organizations/{orgId}/history
-  getSubscriptionHistory(orgId: string): Observable<SubscriptionHistoryResponse> {
-    return this.api.get<SubscriptionHistoryResponse>(`/api/v1/subscriptions/organizations/${orgId}/history`);
+  // GET /api/v1/subscriptions/organizations/{orgId}/history?serviceCode={serviceCode}
+  getSubscriptionHistory(orgId: string, serviceCode = SERVICE_CODE): Observable<SubscriptionHistoryResponse> {
+    return this.api.get<SubscriptionHistoryResponse>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/history?serviceCode=${encodeURIComponent(serviceCode)}`
+    );
   }
 
   // -------- Subscription Check (gating) --------
 
-  // GET /api/v1/subscriptions/check?organizationId={orgId}
-  checkSubscription(orgId: string): Observable<SubscriptionCheckResponse> {
-    return this.api.get<SubscriptionCheckResponse>(`/api/v1/subscriptions/check?organizationId=${encodeURIComponent(orgId)}`);
+  // GET /api/v1/subscriptions/check?organizationId={orgId}&serviceCode={serviceCode}
+  checkSubscription(orgId: string, serviceCode = SERVICE_CODE): Observable<SubscriptionCheckResponse> {
+    return this.api.get<ApiWrapper<SubscriptionCheckResponse>>(
+      `/api/v1/subscriptions/check?organizationId=${encodeURIComponent(orgId)}&serviceCode=${encodeURIComponent(serviceCode)}`
+    ).pipe(map((res) => res.data));
   }
+
+  // -------- Billing Information --------
+
+  // GET /api/v1/subscriptions/organizations/{orgId}/billing-info
+  getBillingInfo(orgId: string): Observable<BillingInfo> {
+    return this.api.get<BillingInfo>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/billing-info`
+    );
+  }
+
+  // PUT /api/v1/subscriptions/organizations/{orgId}/billing-info
+  saveBillingInfo(orgId: string, payload: BillingInfo): Observable<BillingInfo> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.put<BillingInfo>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/billing-info`,
+      payload,
+      headers
+    );
+  }
+
+  // -------- Billing Profile --------
+
+  // GET /api/v1/subscriptions/organizations/{orgId}/billing
+  getBillingProfile(orgId: string): Observable<BillingProfile> {
+    return this.api.get<BillingProfile>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/billing`
+    );
+  }
+
+  // PUT /api/v1/subscriptions/organizations/{orgId}/billing
+  saveBillingProfile(orgId: string, payload: BillingProfile): Observable<BillingProfile> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.put<BillingProfile>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/billing`,
+      payload,
+      headers
+    );
+  }
+
+  // -------- Generic Invoices (service-scoped) --------
+
+  // GET /api/v1/subscriptions/organizations/{orgId}/services/{serviceCode}/invoices
+  listGenericInvoices(
+    orgId: string,
+    serviceCode = SERVICE_CODE,
+    options?: {
+      from?: string;
+      to?: string;
+      status?: string;
+      paymentStatus?: string;
+      q?: string;
+      page?: number;
+      size?: number;
+      sort?: string;
+    }
+  ): Observable<{ invoices: GenericInvoice[]; total: number }> {
+    const params = new URLSearchParams();
+    if (options?.from) params.set('from', options.from);
+    if (options?.to) params.set('to', options.to);
+    if (options?.status) params.set('status', options.status);
+    if (options?.paymentStatus) params.set('paymentStatus', options.paymentStatus);
+    if (options?.q) params.set('q', options.q);
+    if (options?.page !== undefined) params.set('page', String(options.page));
+    if (options?.size !== undefined) params.set('size', String(options.size));
+    if (options?.sort) params.set('sort', options.sort);
+    const query = params.toString();
+    return this.api.get<{ invoices: GenericInvoice[]; total: number }>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/services/${encodeURIComponent(serviceCode)}/invoices${query ? `?${query}` : ''}`
+    );
+  }
+
+  // GET /api/v1/subscriptions/organizations/{orgId}/services/{serviceCode}/invoices/stats
+  getGenericInvoiceStats(orgId: string, serviceCode = SERVICE_CODE): Observable<GenericInvoiceStats> {
+    return this.api.get<GenericInvoiceStats>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/services/${encodeURIComponent(serviceCode)}/invoices/stats`
+    );
+  }
+
+  // GET /api/v1/subscriptions/organizations/{orgId}/invoices/{invoiceId}
+  getGenericInvoice(orgId: string, invoiceId: string): Observable<GenericInvoiceDetail> {
+    return this.api.get<GenericInvoiceDetail>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/invoices/${encodeURIComponent(invoiceId)}`
+    );
+  }
+
+  // POST /api/v1/users/organizations/{orgId}/services/{serviceCode}/enable
+  enableService(orgId: string, serviceCode = SERVICE_CODE, token?: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` })
+    });
+    return this.api.post(
+      `/api/v1/users/organizations/${encodeURIComponent(orgId)}/services/${encodeURIComponent(serviceCode)}/enable`,
+      {},
+      headers
+    );
+  }
+
+  // -------- eDOB Subscription (per-seat) --------
 
   // -------- eDOB Subscription (per-seat) --------
 

@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PermissionService, ServiceAccessGrant } from '../../../../core/services/permission.service';
+import { SERVICE_CODE } from '../../../../core/services/subscription.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { InputFieldComponent } from '../../form/input/input-field.component';
 import { LabelComponent } from '../../form/label/label.component';
@@ -95,7 +96,7 @@ export class SigninFormComponent {
     }
     this.isLoading = true;
     this.errorMessage = '';
-    this.authService.login({ email: this.email, password: this.password }).subscribe({
+    this.authService.login({ email: this.email, password: this.password, serviceCode: SERVICE_CODE }).subscribe({
       next: (res: any) => {
         this.isLoading = false;
         if (res?.challengeToken) {
@@ -134,7 +135,7 @@ export class SigninFormComponent {
           this.errorMessage = 'Verification succeeded but no access token was returned. Please contact support.';
           return;
         }
-        this.finalizeLogin({ tokens: { access_token: accessToken, refresh_token: refreshToken } });
+        this.finalizeLogin(res);
       },
       error: (err: any) => {
         this.isLoading = false;
@@ -187,7 +188,7 @@ export class SigninFormComponent {
       return;
     }
 
-    this.authService.login({ email: this.email, password: this.password }).subscribe({
+    this.authService.login({ email: this.email, password: this.password, serviceCode: SERVICE_CODE }).subscribe({
       next: (res) => {
         const data = res as any;
 
