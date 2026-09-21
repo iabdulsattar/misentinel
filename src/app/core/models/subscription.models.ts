@@ -110,3 +110,180 @@ export interface SubscriptionCheckResponse {
   features: Record<string, any>;
   [key: string]: any;
 }
+
+// -------- eDOB Subscription (per-seat) --------
+export type BillingPeriodExtended = BillingPeriod | 'ANNUAL';
+
+export interface EdobPricingTier {
+  minUsers: number;
+  maxUsers: number | null;
+  perUserCents: number;
+  label: string;
+  pricePerUserPence?: number;
+  pricePerUserDisplay?: string;
+}
+
+export interface EdobSubscriptionStatus {
+  active: boolean;
+  status?: string;
+  planCode?: string;
+  planName?: string;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  cancelAtPeriodEnd?: boolean;
+  trialEnd?: string;
+}
+
+export interface EdobUsage {
+  userCount: number;
+  siteCount?: number;
+  keyCount?: number;
+  storageUsedGb?: number;
+}
+
+export interface EdobOverview {
+  trialActive: boolean;
+  subscribed?: boolean;
+  status?: string;
+  trial?: any;
+  trialStartDate?: string;
+  trialEndDate?: string;
+  trialDaysRemaining?: number | null;
+  subscription?: EdobSubscriptionStatus;
+  usage?: EdobUsage;
+  tiers?: EdobPricingTier[];
+  quote?: EdobQuote;
+  features?: Record<string, any>;
+  [key: string]: any;
+}
+
+export interface EdobQuote {
+  userCount: number;
+  perUserCents: number;
+  subtotalCents: number;
+  vatRateBps?: number;
+  vatCents?: number;
+  totalCents: number;
+  currency: string;
+  tierLabel?: string;
+  tiers?: EdobPricingTier[];
+  subtotalPence?: number;
+  vatPence?: number;
+  totalPence?: number;
+  subtotalDisplay?: string;
+  vatDisplay?: string;
+  totalDisplay?: string;
+  [key: string]: any;
+}
+
+export interface EdobBillingDetails {
+  companyName: string;
+  contactName: string;
+  billingEmail: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  postcode: string;
+  country: string;
+}
+
+export interface EdobSubscribeRequest {
+  userCount: number;
+  billing: EdobBillingDetails;
+  paymentMethodId: string;
+  [key: string]: any;
+}
+
+export interface EdobSubscribeResponse {
+  subscription?: EdobSubscriptionStatus;
+  invoice?: any;
+  clientSecret?: string;
+  [key: string]: any;
+}
+
+export type EdobInvoiceStatus = 'PAID' | 'PENDING' | 'OVERDUE' | 'VOID' | string;
+
+export interface EdobInvoice {
+  id: string;
+  number: string;
+  status: EdobInvoiceStatus;
+  paymentStatus?: 'PAID' | 'PENDING' | 'OVERDUE';
+  description: string;
+  issueDate: string;
+  dueDate: string;
+  amountPence: number;
+  amountDisplay: string;
+  currency: string;
+  [key: string]: any;
+}
+
+export interface EdobInvoiceListResponse {
+  invoices: EdobInvoice[];
+  total: number;
+  [key: string]: any;
+}
+
+export interface EdobInvoiceStats {
+  totalInvoices: number;
+  paid: number;
+  pending: number;
+  overdue: number;
+  totalAmountPence?: number;
+  totalAmountDisplay?: string;
+  [key: string]: any;
+}
+
+export interface EdobInvoiceLineItem {
+  description: string;
+  detail?: string;
+  quantity: number;
+  unitPricePence: number;
+  unitPriceDisplay: string;
+  amountPence: number;
+  amountDisplay: string;
+  [key: string]: any;
+}
+
+export interface EdobInvoiceDetail {
+  id: string;
+  number: string;
+  status: EdobInvoiceStatus;
+  paymentStatus?: 'PAID' | 'PENDING' | 'OVERDUE';
+  description: string;
+  issueDate: string;
+  dueDate: string;
+  dueInDays?: number | null;
+  amountDuePence: number;
+  amountDueDisplay: string;
+  currency: string;
+  vatRateBps?: number;
+  subtotalPence: number;
+  subtotalDisplay: string;
+  vatPence: number;
+  vatDisplay: string;
+  totalPence: number;
+  totalDisplay: string;
+  lineItems: EdobInvoiceLineItem[];
+  subscription?: {
+    title?: string;
+    userCount?: number;
+    billingPeriod?: string;
+    unitPrice?: string;
+    planName?: string;
+    planCode?: string;
+  };
+  billing?: {
+    companyName?: string;
+    billingEmail?: string;
+    address?: string;
+    vatNumber?: string;
+  };
+  [key: string]: any;
+}
+
+export interface EdobInvoicePayResponse {
+  success: boolean;
+  invoice?: EdobInvoiceDetail;
+  [key: string]: any;
+}

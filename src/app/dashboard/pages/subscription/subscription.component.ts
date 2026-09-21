@@ -1,8 +1,16 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 import { RangeSliderComponent } from '../../../shared/components/range-slider/range-slider.component';
+import { SubscriptionService } from '../../../core/services/subscription.service';
+import {
+  EdobOverview,
+  EdobInvoice as ApiInvoice,
+  EdobInvoiceStats,
+  EdobQuote
+} from '../../../core/models/subscription.models';
 
 interface TickMilestone {
   value: number;
@@ -20,51 +28,25 @@ interface Invoice {
   statusClass: string;
 }
 
+interface StatCard {
+  iconBg: string;
+  iconColor: string;
+  icon: string;
+  label: string;
+  value: string;
+  sub: string;
+  subClass: string;
+}
+
 @Component({
   selector: 'app-subscription',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, RangeSliderComponent],
   templateUrl: './subscription.component.html',
-  styles: [`
-    input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      height: 6px;
-      border-radius: 9999px;
-      background: linear-gradient(to right, #2563eb var(--fill, 50%), #e5e7eb var(--fill, 50%));
-      outline: none;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #2563eb;
-      border: 4px solid #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
-      cursor: pointer;
-      margin-top: 0;
-    }
-    input[type="range"]::-moz-range-thumb {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #2563eb;
-      border: 4px solid #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
-      cursor: pointer;
-    }
-    input[type="range"]::-moz-range-track {
-      height: 6px;
-      border-radius: 9999px;
-      background: #e5e7eb;
-    }
-  `]
+  styles: []
 })
 export class SubscriptionComponent implements OnInit {
-  @ViewChild('userSlider', { static: true }) userSlider!: ElementRef<HTMLInputElement>;
+  @ViewChild(RangeSliderComponent) userSlider!: RangeSliderComponent;
 
   readonly min = 10;
   readonly max = 500;
@@ -76,11 +58,17 @@ export class SubscriptionComponent implements OnInit {
 
   activeTab: 'overview' | 'invoices' = 'overview';
 
-  readonly plans = [
-    { range: '10 – 250 users', price: '£5.00' },
-    { range: '251 – 500 users', price: '£2.50' },
-    { range: '501+ users', price: '£1.00' },
-  ];
+  // API data
+  overview: EdobOverview | null = null;
+  quote: EdobQuote | null = null;
+  invoiceStats: EdobInvoiceStats | null = null;
+  invoices: Invoice[] = [];
+
+  // Loading / error states
+  overviewLoading = false;
+  overviewError: string | null = null;
+  invoicesLoading = false;
+  invoicesError: string | null = null;
 
   readonly tickMilestones: TickMilestone[] = [
     { value: 10, percent: 0, label: '10' },
@@ -91,64 +79,13 @@ export class SubscriptionComponent implements OnInit {
     { value: 500, percent: 100, label: '500' },
   ];
 
-  readonly invoices: Invoice[] = [
-    {
-      id: 'INV-2026-0012',
-      date: '01 Sep 2026',
-      description: 'eDOB Monthly Subscription',
-      period: '01 Sep 2026 - 30 Sep 2026',
-      amount: '£60.00',
-      status: 'Pending',
-      statusClass: 'bg-amber-100 text-orange-400 border-amber-200',
-    },
-    {
-      id: 'INV-2026-0011',
-      date: '01 Aug 2026',
-      description: 'eDOB Monthly Subscription',
-      period: '01 Aug 2026 - 31 Aug 2026',
-      amount: '£60.00',
-      status: 'Paid',
-      statusClass: 'bg-emerald-50 text-emerald-500 border-emerald-200',
-    },
-    {
-      id: 'INV-2026-0010',
-      date: '01 Jul 2026',
-      description: 'eDOB Monthly Subscription',
-      period: '01 Jul 2026 - 31 Jul 2026',
-      amount: '£60.00',
-      status: 'Paid',
-      statusClass: 'bg-emerald-50 text-emerald-500 border-emerald-200',
-    },
-    {
-      id: 'INV-2026-0009',
-      date: '01 Jun 2026',
-      description: 'eDOB Monthly Subscription',
-      period: '01 Jun 2026 - 30 Jun 2026',
-      amount: '£60.00',
-      status: 'Paid',
-      statusClass: 'bg-emerald-50 text-emerald-500 border-emerald-200',
-    },
-    {
-      id: 'INV-2026-0008',
-      date: '01 May 2026',
-      description: 'eDOB Monthly Subscription',
-      period: '01 May 2026 - 31 May 2026',
-      amount: '£60.00',
-      status: 'Paid',
-      statusClass: 'bg-emerald-50 text-emerald-500 border-emerald-200',
-    },
-    {
-      id: 'INV-2026-0007',
-      date: '01 Apr 2026',
-      description: 'eDOB Monthly Subscription',
-      period: '01 Apr 2026 - 30 Apr 2026',
-      amount: '£60.00',
-      status: 'Overdue',
-      statusClass: 'bg-red-100 text-red-500 border-red-200',
-    },
+  plans = [
+    { range: '10 – 250 users', price: '£5.00' },
+    { range: '251 – 500 users', price: '£2.50' },
+    { range: '501+ users', price: '£1.00' },
   ];
 
-  readonly statCards = [
+  statCards: StatCard[] = [
     {
       iconBg: 'bg-blue-50',
       iconColor: 'text-blue-600',
@@ -198,12 +135,203 @@ export class SubscriptionComponent implements OnInit {
     currency: 'GBP',
   });
 
+  private readonly dateFormatter = new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  constructor(private subscriptionService: SubscriptionService) {}
+
   ngOnInit(): void {
+    console.log('[SubscriptionComponent] ngOnInit called');
     this.update();
+    this.loadOverview();
+  }
+
+  private getOrgId(): string | null {
+    const remember = localStorage.getItem('remember_device');
+    if (remember === 'true') {
+      return localStorage.getItem('org_id') || localStorage.getItem('organizationId') || null;
+    }
+    return sessionStorage.getItem('org_id') || sessionStorage.getItem('organizationId') || localStorage.getItem('org_id') || localStorage.getItem('organizationId') || null;
+  }
+
+  loadOverview(): void {
+    const orgId = this.getOrgId();
+    console.log('[SubscriptionComponent] getOrgId() =>', orgId);
+    if (!orgId) {
+      this.overviewError = 'No organization selected. Please log in again.';
+      return;
+    }
+    this.overviewLoading = true;
+    this.overviewError = null;
+    console.log('[SubscriptionComponent] Calling getEdobOverview for org:', orgId);
+    this.subscriptionService.getEdobOverview(orgId, this.sliderValue)
+      .pipe(finalize(() => (this.overviewLoading = false)))
+      .subscribe({
+        next: (data) => {
+          this.overview = data;
+
+          const userCount = data.quote?.userCount || data.usage?.userCount || this.sliderValue;
+          this.sliderValue = Math.max(this.min, Math.min(this.max, userCount));
+          this.update();
+
+          if (data.tiers && data.tiers.length > 0) {
+            this.plans = data.tiers.map((tier) => ({
+              range: tier.label || (tier.maxUsers
+                ? `${tier.minUsers} – ${tier.maxUsers} users`
+                : `${tier.minUsers}+ users`),
+              price: `£${((tier.perUserCents || tier.pricePerUserPence || 0) / 100).toFixed(2)}`,
+            }));
+          }
+
+          if (data.quote) {
+            this.quote = data.quote;
+            this.estCost = data.quote.totalDisplay
+              || this.centsToDisplay(data.quote.totalCents);
+          } else {
+            this.estCost = this.priceFormatter.format(this.priceForUsers(this.sliderValue));
+          }
+        },
+        error: (err) => {
+          this.overviewError = 'Failed to load subscription overview. See browser console for details.';
+          console.error('[SubscriptionComponent] Overview API error:', err);
+        },
+      });
+  }
+
+  loadInvoices(): void {
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+
+    this.invoicesLoading = true;
+    this.invoicesError = null;
+
+    this.subscriptionService.getEdobInvoiceStats(orgId)
+      .pipe(finalize(() => (this.invoicesLoading = false)))
+      .subscribe({
+        next: (stats) => {
+          this.invoiceStats = stats;
+          this.updateStatCards(stats);
+        },
+        error: (err) => {
+          this.invoicesError = 'Failed to load invoice data.';
+          console.error('[SubscriptionComponent] Invoice stats error:', err);
+        },
+      });
+
+    this.subscriptionService.listEdobInvoices(orgId, { page: 0, size: 20 })
+      .subscribe({
+        next: (res) => {
+          this.invoices = (res.invoices || []).map((inv) => this.mapInvoice(inv));
+        },
+        error: (err) => {
+          console.error('[SubscriptionComponent] Invoice list error:', err);
+          this.invoicesError = this.invoicesError || 'Failed to load invoices.';
+        },
+      });
+  }
+
+  private updateStatCards(stats: EdobInvoiceStats | null): void {
+    if (!stats) return;
+    this.statCards = [
+      {
+        iconBg: 'bg-blue-50',
+        iconColor: 'text-blue-600',
+        icon: this.statCards[0]?.icon || '',
+        label: 'Total Invoices',
+        value: String(stats.totalInvoices ?? 0),
+        sub: 'All time',
+        subClass: 'text-slate-400 font-medium',
+      },
+      {
+        iconBg: 'bg-emerald-50',
+        iconColor: 'text-emerald-600',
+        icon: this.statCards[1]?.icon || '',
+        label: 'Paid Invoices',
+        value: String(stats.paid ?? 0),
+        sub: stats.totalAmountDisplay || '—',
+        subClass: 'text-emerald-500 font-bold',
+      },
+      {
+        iconBg: 'bg-yellow-50',
+        iconColor: 'text-amber-500',
+        icon: this.statCards[2]?.icon || '',
+        label: 'Pending Invoices',
+        value: '0',
+        sub: '—',
+        subClass: 'text-amber-500 font-bold',
+      },
+      {
+        iconBg: 'bg-rose-50',
+        iconColor: 'text-red-500',
+        icon: this.statCards[3]?.icon || '',
+        label: 'Overdue Invoices',
+        value: String(stats.overdue ?? 0),
+        sub: '—',
+        subClass: 'text-red-500 font-bold',
+      },
+    ];
+  }
+
+  private mapInvoice(inv: ApiInvoice): Invoice {
+    const status = this.normalizeStatus(inv.status || '');
+    const issueDate = inv.issueDate ? this.dateFormatter.format(new Date(inv.issueDate)) : '';
+    const dueDate = inv.dueDate ? this.dateFormatter.format(new Date(inv.dueDate)) : '';
+    return {
+      id: inv.id,
+      date: issueDate,
+      description: inv.description || 'eDOB Monthly Subscription',
+      period: dueDate ? `Due ${dueDate}` : '',
+      amount: inv.amountDisplay || '',
+      status,
+      statusClass: this.statusBadgeClass(status),
+    };
+  }
+
+  private normalizeStatus(status: string): 'Paid' | 'Pending' | 'Overdue' {
+    const s = status.toLowerCase();
+    if (s.includes('paid')) return 'Paid';
+    if (s.includes('overdue')) return 'Overdue';
+    if (s.includes('void')) return 'Paid';
+    return 'Pending';
+  }
+
+  private statusBadgeClass(status: 'Paid' | 'Pending' | 'Overdue'): string {
+    switch (status) {
+      case 'Paid':
+        return 'bg-emerald-50 text-emerald-500 border-emerald-200';
+      case 'Overdue':
+        return 'bg-red-100 text-red-500 border-red-200';
+      case 'Pending':
+      default:
+        return 'bg-amber-100 text-orange-400 border-amber-200';
+    }
+  }
+
+  refreshQuote(): void {
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+    console.log('[SubscriptionComponent] Calling getEdobQuote for org:', orgId, 'userCount:', this.sliderValue);
+    this.subscriptionService.getEdobQuote(orgId, this.sliderValue)
+      .subscribe({
+        next: (q) => {
+          this.quote = q;
+          this.estCost = q.totalDisplay || this.priceFormatter.format(this.priceForUsers(this.sliderValue));
+        },
+        error: (err) => {
+          console.error('[SubscriptionComponent] Quote API error:', err);
+          this.estCost = this.priceFormatter.format(this.priceForUsers(this.sliderValue));
+        },
+      });
   }
 
   setActiveTab(tab: 'overview' | 'invoices'): void {
     this.activeTab = tab;
+    if (tab === 'invoices' && !this.invoiceStats) {
+      this.loadInvoices();
+    }
   }
 
   private update(): void {
@@ -211,9 +339,7 @@ export class SubscriptionComponent implements OnInit {
     const pct = ((val - this.min) / (this.max - this.min)) * 100;
     this.fillPercent = pct;
     this.bubbleLeft = pct;
-
-    this.userSlider.nativeElement.style.setProperty('--fill', pct + '%');
-    this.estCost = this.priceFormatter.format(this.priceForUsers(val));
+    this.estCost = this.quote?.totalDisplay || this.priceFormatter.format(this.priceForUsers(val));
   }
 
   private priceForUsers(n: number): number {
@@ -222,11 +348,16 @@ export class SubscriptionComponent implements OnInit {
     return n * 1;
   }
 
+  private centsToDisplay(cents: number): string {
+    return this.priceFormatter.format(cents / 100);
+  }
+
   isTickActive(milestone: TickMilestone): boolean {
     return milestone.percent <= this.fillPercent;
   }
 
   onSliderInput(): void {
     this.update();
+    this.refreshQuote();
   }
 }

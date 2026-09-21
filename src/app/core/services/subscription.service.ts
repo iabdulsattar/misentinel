@@ -13,7 +13,16 @@ import {
   CancelSubscriptionResponse,
   ListSubscriptionsResponse,
   SubscriptionHistoryResponse,
-  SubscriptionCheckResponse
+  SubscriptionCheckResponse,
+  EdobOverview,
+  EdobQuote,
+  EdobSubscribeRequest,
+  EdobSubscribeResponse,
+  EdobInvoice,
+  EdobInvoiceListResponse,
+  EdobInvoiceStats,
+  EdobInvoiceDetail,
+  EdobInvoicePayResponse
 } from '../models/subscription.models';
 
 @Injectable({ providedIn: 'root' })
@@ -109,5 +118,82 @@ export class SubscriptionService {
   // GET /api/v1/subscriptions/check?organizationId={orgId}
   checkSubscription(orgId: string): Observable<SubscriptionCheckResponse> {
     return this.api.get<SubscriptionCheckResponse>(`/api/v1/subscriptions/check?organizationId=${encodeURIComponent(orgId)}`);
+  }
+
+  // -------- eDOB Subscription (per-seat) --------
+
+  // GET /api/v1/subscriptions/organizations/{orgId}/edob/overview?userCount=10
+  getEdobOverview(orgId: string, userCount?: number): Observable<EdobOverview> {
+    const params = new URLSearchParams();
+    if (userCount !== undefined && userCount !== null) {
+      params.set('userCount', String(userCount));
+    }
+    const query = params.toString();
+    return this.api.get<EdobOverview>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/overview${query ? `?${query}` : ''}`
+    );
+  }
+
+  // GET /api/v1/subscriptions/organizations/{orgId}/edob/quote?userCount=256
+  getEdobQuote(orgId: string, userCount: number): Observable<EdobQuote> {
+    const params = new URLSearchParams();
+    params.set('userCount', String(userCount));
+    return this.api.get<EdobQuote>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/quote?${params.toString()}`
+    );
+  }
+
+  // POST /api/v1/subscriptions/organizations/{orgId}/edob/subscribe
+  subscribeToEdob(orgId: string, payload: EdobSubscribeRequest): Observable<EdobSubscribeResponse> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.post<EdobSubscribeResponse>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/subscribe`,
+      payload,
+      headers
+    );
+  }
+
+  // GET /api/v1/subscriptions/organizations/{orgId}/edob/invoices
+  listEdobInvoices(orgId: string, options?: {
+    from?: string;
+    to?: string;
+    status?: string;
+    q?: string;
+    page?: number;
+    size?: number;
+  }): Observable<EdobInvoiceListResponse> {
+    const params = new URLSearchParams();
+    if (options?.from) params.set('from', options.from);
+    if (options?.to) params.set('to', options.to);
+    if (options?.status) params.set('status', options.status);
+    if (options?.q) params.set('q', options.q);
+    if (options?.page !== undefined) params.set('page', String(options.page));
+    if (options?.size !== undefined) params.set('size', String(options.size));
+    const query = params.toString();
+    return this.api.get<EdobInvoiceListResponse>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/invoices${query ? `?${query}` : ''}`
+    );
+  }
+
+  // GET /api/v1/subscriptions/organizations/{orgId}/edob/invoices/stats
+  getEdobInvoiceStats(orgId: string): Observable<EdobInvoiceStats> {
+    return this.api.get<EdobInvoiceStats>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/invoices/stats`
+    );
+  }
+
+  // GET /api/v1/subscriptions/organizations/{orgId}/edob/invoices/{invoiceId}
+  getEdobInvoice(orgId: string, invoiceId: string): Observable<EdobInvoiceDetail> {
+    return this.api.get<EdobInvoiceDetail>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/invoices/${encodeURIComponent(invoiceId)}`
+    );
+  }
+
+  // POST /api/v1/subscriptions/organizations/{orgId}/edob/invoices/{invoiceId}/pay
+  payEdobInvoice(orgId: string, invoiceId: string): Observable<EdobInvoicePayResponse> {
+    return this.api.post<EdobInvoicePayResponse>(
+      `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/invoices/${encodeURIComponent(invoiceId)}/pay`,
+      {}
+    );
   }
 }
