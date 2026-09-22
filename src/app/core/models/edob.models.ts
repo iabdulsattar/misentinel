@@ -229,13 +229,19 @@ export interface Role {
   name: string;
   description?: string;
   color?: string;
-  permissions: string[];
+  isDefault?: boolean;
   active: boolean;
   source?: string;
+  permissions: string[];
   permissionCount?: number;
   userCount?: number;
+  assignedUsers?: any[];
   createdAt?: string;
   updatedAt?: string;
+  createdByUserId?: string;
+  createdByUserName?: string;
+  updatedByUserId?: string;
+  updatedByUserName?: string;
   [key: string]: any;
 }
 

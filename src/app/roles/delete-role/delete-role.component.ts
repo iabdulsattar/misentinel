@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { EdobService } from '../../core/services/edob.service';
-import { Role, OrgUser } from '../../core/models/edob.models';
-import { DeleteRoleModalComponent } from '../delete-role-modal/delete-role-modal.component';
+import { UserService } from '../../core/services/user.service';
 import { ToastService } from '../../core/services/toast.service';
+import { DeleteRoleModalComponent } from '../delete-role-modal/delete-role-modal.component';
+import { Role } from '../../core/models/edob.models';
+import { ServiceUser } from '../../core/models/user.models';
 
 interface AssignedUser {
-  id: string;
+  id?: string;
   name: string;
   initials: string;
   avatarClass: string;
@@ -32,14 +34,30 @@ export class DeleteRoleComponent implements OnInit {
 
   roleId: string | null = null;
   orgId: string | null = null;
-  currentUserName = 'John Smith';
 
   users: AssignedUser[] = [];
   totalUsers = 0;
   usersLoading = true;
 
-  page = 1;
-  pageSize = 3;
+  page = 0;
+  pageSize = 10;
+
+  readonly pageSizes = [10, 20, 50];
+
+  get currentUserName(): string {
+    if (this.role) {
+      return this.role.createdByUserName || this.role.updatedByUserName || 'Unknown';
+    }
+    return 'Unknown';
+  }
+
+  get createdByName(): string {
+    return this.role?.createdByUserName || '-';
+  }
+
+  get updatedByName(): string {
+    return this.role?.updatedByUserName || '-';
+  }
 
   private readonly avatarPalette = [
     'from-rose-300 to-pink-400',
@@ -51,6 +69,7 @@ export class DeleteRoleComponent implements OnInit {
 
   constructor(
     private edobService: EdobService,
+    private userService: UserService,
     private router: Router,
     private route: ActivatedRoute,
     private toastService: ToastService,
@@ -92,18 +111,19 @@ export class DeleteRoleComponent implements OnInit {
 
   private loadUsers(): void {
     if (!this.orgId || !this.roleId) return;
-    this.edobService.listOrgUsers(this.orgId).subscribe({
-      next: (data: any) => {
-        const orgUsers: OrgUser[] = data?.data ?? data ?? [];
-        const assigned = orgUsers.filter((u) =>
-          (u.roles || []).some((r) => r.id === this.roleId),
-        );
-        this.totalUsers = assigned.length;
-        this.users = assigned.map((u, i) => this.mapUser(u, i));
+    this.usersLoading = true;
+    this.userService.listUsers(this.orgId, { page: this.page, size: this.pageSize, roleId: this.roleId }).subscribe({
+      next: (res) => {
+        const payload = res?.['data'] ?? res;
+        const items = Array.isArray(payload) ? payload : payload?.content ?? payload?.items ?? [];
+        this.totalUsers = payload?.totalElements ?? items.length;
+        this.users = items.map((item: any, i: number) => this.mapUser(item, i));
+        this.usersLoading = false;
       },
       error: () => {
         this.users = [];
         this.totalUsers = 0;
+        this.usersLoading = false;
       },
       complete: () => {
         this.usersLoading = false;
@@ -111,7 +131,7 @@ export class DeleteRoleComponent implements OnInit {
     });
   }
 
-  private mapUser(u: OrgUser, index: number): AssignedUser {
+  private mapUser(u: ServiceUser, index: number): AssignedUser {
     const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email || 'User';
     const initials = name
       .split(/\s+/)
@@ -127,7 +147,7 @@ export class DeleteRoleComponent implements OnInit {
       email: u.email,
       department: extra.department || '—',
       lastLogin: this.formatDateTime(extra.lastLoginAt || extra.lastLogin),
-      status: u.active ? 'Active' : 'Inactive',
+      status: (u.status || '').toLowerCase() === 'inactive' ? 'Inactive' : 'Active',
     };
   }
 
@@ -136,20 +156,27 @@ export class DeleteRoleComponent implements OnInit {
   }
 
   get pagedUsers(): AssignedUser[] {
-    const start = (this.page - 1) * this.pageSize;
+    const start = this.page * this.pageSize;
     return this.users.slice(start, start + this.pageSize);
   }
 
   get totalPages(): number {
-    return Math.max(1, Math.ceil(this.totalUsers / this.pageSize));
+    const safeTotal = Number(this.totalUsers) || 0;
+    const safeSize = Number(this.pageSize) || 10;
+    return Math.max(1, Math.ceil(safeTotal / safeSize));
+  }
+
+  get showingText(): string {
+    if (this.totalUsers === 0) return 'Showing 0 users';
+    return `Showing ${this.rangeStart} to ${this.rangeEnd} of ${this.totalUsers} users`;
   }
 
   get rangeStart(): number {
-    return this.totalUsers === 0 ? 0 : (this.page - 1) * this.pageSize + 1;
+    return this.totalUsers === 0 ? 0 : this.page * this.pageSize + 1;
   }
 
   get rangeEnd(): number {
-    return Math.min(this.page * this.pageSize, this.totalUsers);
+    return Math.min((this.page + 1) * this.pageSize, this.totalUsers);
   }
 
   get visiblePages(): (number | '...')[] {
@@ -157,23 +184,33 @@ export class DeleteRoleComponent implements OnInit {
     const total = this.totalPages;
     const current = this.page;
     if (total <= 7) {
-      for (let i = 1; i <= total; i++) pages.push(i);
+      for (let i = 0; i < total; i++) pages.push(i);
       return pages;
     }
-    pages.push(1);
+    pages.push(0);
     if (current > 3) pages.push('...');
-    const start = Math.max(2, current - 1);
-    const end = Math.min(total - 1, current + 1);
+    const start = Math.max(1, current - 1);
+    const end = Math.min(total - 2, current + 1);
     for (let i = start; i <= end; i++) pages.push(i);
     if (current < total - 2) pages.push('...');
-    pages.push(total);
+    pages.push(total - 1);
     return pages;
   }
 
-  changePage(p: number): void {
-    if (p >= 1 && p <= this.totalPages) {
-      this.page = p;
+  onPageSizeChange(): void {
+    this.page = 0;
+    this.loadUsers();
+  }
+
+  goToPage(page: number): void {
+    if (Number.isInteger(page) && page >= 0 && page < this.totalPages) {
+      this.page = page;
+      this.loadUsers();
     }
+  }
+
+  changePage(p: number): void {
+    this.goToPage(p);
   }
 
   goBack(): void {

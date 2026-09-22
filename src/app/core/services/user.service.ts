@@ -84,6 +84,7 @@ export class UserService {
     if (options.status) params = params.set('status', options.status);
     if (options.page != null) params = params.set('page', String(options.page));
     if (options.size != null) params = params.set('size', String(options.size));
+    if (options.roleId) params = params.set('roleId', options.roleId);
     params = params.set('serviceCode', 'edob');
 
     const query = params.toString();
