@@ -167,6 +167,10 @@ export class SubscriptionComponent implements OnInit {
   get hasActiveSubscription(): boolean {
     // Use subscription check API if available, fallback to localStorage
     if (this.subscriptionCheck !== null) {
+      // Show trial banner if status is TRIAL (trial subscription)
+      if (this.subscriptionCheck.status === 'TRIAL') {
+        return false;
+      }
       return this.subscriptionCheck.active;
     }
     return this.getSubscribedServices().some(
@@ -176,8 +180,13 @@ export class SubscriptionComponent implements OnInit {
 
   // Dynamic trial info from subscription check
   get trialInfo() {
-    if (!this.subscriptionCheck?.features) return null;
-    return this.subscriptionCheck.features;
+    if (!this.subscriptionCheck) return null;
+    const features = this.subscriptionCheck.features || {};
+    return {
+      trialStartDate: features['trialStartDate'],
+      trialEndDate: this.subscriptionCheck['effectiveExpiry'] || features['trialEndDate'],
+      trialDaysRemaining: features['trialDaysRemaining'],
+    };
   }
 
   ngOnInit(): void {
