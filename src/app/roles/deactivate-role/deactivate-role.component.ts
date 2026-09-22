@@ -123,7 +123,7 @@ export class DeactivateRoleComponent implements OnInit {
       email: u.email,
       department: extra.department || '—',
       lastLogin: this.formatDateTime(extra.lastLoginAt || extra.lastLogin),
-      status: u.enabled ? 'Active' : 'Inactive',
+      status: u.active ? 'Active' : 'Inactive',
     };
   }
 

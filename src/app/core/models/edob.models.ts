@@ -267,7 +267,7 @@ export interface OrgUser {
   email: string;
   firstName: string;
   lastName: string;
-  enabled: boolean;
+  active: boolean;
   roles?: Role[];
   [key: string]: any;
 }
