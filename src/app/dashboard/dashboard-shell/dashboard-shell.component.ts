@@ -116,16 +116,31 @@ export class DashboardShellComponent implements OnInit {
     }
   }
 
-  // Dynamic trial info from subscription check
+  // Dynamic trial info from overview (primary) or subscription check (fallback)
   get trialInfo() {
-    if (!this.subscriptionCheck) return null;
-    const features = this.subscriptionCheck.features || {};
-    return {
-      trialStartDate: features['trialStartDate'],
-      trialEndDate: this.subscriptionCheck['effectiveExpiry'] || features['trialEndDate'],
-      trialDaysRemaining: features['trialDaysRemaining'],
-    };
+    // Prefer overview API data which has detailed trial info
+    if (this.dashboardData?.trial) {
+      const trial = this.dashboardData.trial;
+      return {
+        trialStartDate: trial.startedAt,
+        trialEndDate: trial.endsAt,
+        trialDaysRemaining: trial.daysRemaining,
+      };
+    }
+    // Fallback to subscription check
+    if (this.subscriptionCheck) {
+      const features = this.subscriptionCheck.features || {};
+      return {
+        trialStartDate: features['trialStartDate'],
+        trialEndDate: this.subscriptionCheck['effectiveExpiry'] || features['trialEndDate'],
+        trialDaysRemaining: features['trialDaysRemaining'],
+      };
+    }
+    return null;
   }
+
+  // Store dashboard data for trial info access
+  dashboardData: any = null;
 
   metrics: {
     value: string;
@@ -245,6 +260,7 @@ export class DashboardShellComponent implements OnInit {
 
     this.edobService.getDashboard(orgId).subscribe({
       next: (data: DashboardData) => {
+        this.dashboardData = data;
         this.applyDashboard(data);
         this.loading = false;
       },

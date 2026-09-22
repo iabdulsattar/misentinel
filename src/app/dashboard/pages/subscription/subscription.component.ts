@@ -178,15 +178,27 @@ export class SubscriptionComponent implements OnInit {
     );
   }
 
-  // Dynamic trial info from subscription check
+  // Dynamic trial info from overview (primary) or subscription check (fallback)
   get trialInfo() {
-    if (!this.subscriptionCheck) return null;
-    const features = this.subscriptionCheck.features || {};
-    return {
-      trialStartDate: features['trialStartDate'],
-      trialEndDate: this.subscriptionCheck['effectiveExpiry'] || features['trialEndDate'],
-      trialDaysRemaining: features['trialDaysRemaining'],
-    };
+    // Prefer overview API data which has detailed trial info
+    if (this.overview?.trial) {
+      const trial = this.overview.trial;
+      return {
+        trialStartDate: trial.startedAt,
+        trialEndDate: trial.endsAt,
+        trialDaysRemaining: trial.daysRemaining,
+      };
+    }
+    // Fallback to subscription check
+    if (this.subscriptionCheck) {
+      const features = this.subscriptionCheck.features || {};
+      return {
+        trialStartDate: features['trialStartDate'],
+        trialEndDate: this.subscriptionCheck['effectiveExpiry'] || features['trialEndDate'],
+        trialDaysRemaining: features['trialDaysRemaining'],
+      };
+    }
+    return null;
   }
 
   ngOnInit(): void {
