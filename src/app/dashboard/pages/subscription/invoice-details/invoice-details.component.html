@@ -11,6 +11,12 @@
     </div>
   }
 
+  @if (error) {
+    <div class="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600">
+      {{ error }}
+    </div>
+  }
+
   @if (notFound) {
     <div class="flex flex-col items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-20 text-sm text-gray-500 dark:border-gray-800 dark:bg-gray-900">
       <p class="font-medium text-gray-700 dark:text-gray-300">Invoice not found</p>
@@ -452,38 +458,58 @@
           </div>
 
           <div class="mt-8 pt-7 border-t border-slate-200 dark:border-gray-800">
-            <h3 class="font-bold text-slate-900 text-lg dark:text-white">Payment</h3>
-            <p class="text-xs text-gray-500 mt-1 dark:text-slate-400">Settle this invoice using your saved payment method.</p>
+            @if (invoice.status !== 'Paid') {
+              <h3 class="font-bold text-slate-900 text-lg dark:text-white">Payment</h3>
+              <p class="text-xs text-gray-500 mt-1 dark:text-slate-400">Settle this invoice to complete your subscription payment.</p>
 
-            <button class="mt-4 w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold rounded-lg py-3 flex items-center justify-center gap-2 text-base">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_3749_1756)">
-<path d="M4.66667 7.33331V4.66642C4.66667 3.7823 5.01786 2.93438 5.64298 2.30921C6.2681 1.68404 7.11595 1.33282 8 1.33282C8.88406 1.33282 9.7319 1.68404 10.357 2.30921C10.9821 2.93438 11.3333 3.7823 11.3333 4.66642V7.33331M3.33333 7.33331H12.6667C13.403 7.33331 14 7.93031 14 8.66675V13.3338C14 14.0702 13.403 14.6672 12.6667 14.6672H3.33333C2.59695 14.6672 2 14.0702 2 13.3338V8.66675C2 7.93031 2.59695 7.33331 3.33333 7.33331Z" stroke="white" stroke-width="2" stroke-linecap="round"/>
-</g>
-<defs>
-<clipPath id="clip0_3749_1756">
-<rect width="16" height="16" fill="white"/>
-</clipPath>
-</defs>
-</svg>
+              <a
+                [routerLink]="['/subscription/checkout']"
+                [queryParams]="{ userCount: invoice.userCount }"
+                class="mt-4 w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold rounded-lg py-3 flex items-center justify-center gap-2 text-base"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g clip-path="url(#clip0_3749_1756)">
+                <path d="M4.66667 7.33331V4.66642C4.66667 3.7823 5.01786 2.93438 5.64298 2.30921C6.2681 1.68404 7.11595 1.33282 8 1.33282C8.88406 1.33282 9.7319 1.68404 10.357 2.30921C10.9821 2.93438 11.3333 3.7823 11.3333 4.66642V7.33331M3.33333 7.33331H12.6667C13.403 7.33331 14 7.93031 14 8.66675V13.3338C14 14.0702 13.403 14.6672 12.6667 14.6672H3.33333C2.59695 14.6672 2 14.0702 2 13.3338V8.66675C2 7.93031 2.59695 7.33331 3.33333 7.33331Z" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </g>
+                <defs>
+                <clipPath id="clip0_3749_1756">
+                <rect width="16" height="16" fill="white"/>
+                </clipPath>
+                </defs>
+                </svg>
 
-              Pay {{ invoice.totalDue }} Now
-            </button>
+                Pay {{ invoice.totalDue }} Now
+              </a>
 
-            <p class="mt-3 flex items-start justify-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 ">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_3749_1761)">
-<path d="M4.91637 6.83352L6.08292 8.00023L8.41602 5.66682M11.3324 7.41714C11.3324 10.3339 9.29094 11.7923 6.86451 12.6381C6.73745 12.6812 6.59944 12.6791 6.47372 12.6323C4.04146 11.7923 2 10.3339 2 7.41714V3.33367C2 3.17896 2.06145 3.03058 2.17084 2.92118C2.28022 2.81178 2.42858 2.75032 2.58327 2.75032C3.74982 2.75032 5.20801 2.0503 6.22291 1.1636C6.34648 1.05801 6.50367 1 6.6662 1C6.82873 1 6.98592 1.05801 7.10949 1.1636C8.13022 2.05613 9.58257 2.75032 10.7491 2.75032C10.9038 2.75032 11.0522 2.81178 11.1616 2.92118C11.2709 3.03058 11.3324 3.17896 11.3324 3.33367V7.41714Z" stroke="#9AA4B2" stroke-width="2" stroke-linecap="round"/>
-</g>
-<defs>
-<clipPath id="clip0_3749_1761">
-<rect width="14" height="14" fill="white"/>
-</clipPath>
-</defs>
-</svg>
+              <p class="mt-3 flex items-start justify-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 ">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g clip-path="url(#clip0_3749_1761)">
+                <path d="M4.91637 6.83352L6.08292 8.00023L8.41602 5.66682M11.3324 7.41714C11.3324 10.3339 9.29094 11.7923 6.86451 12.6381C6.73745 12.6812 6.59944 12.6791 6.47372 12.6323C4.04146 11.7923 2 10.3339 2 7.41714V3.33367C2 3.17896 2.06145 3.03058 2.17084 2.92118C2.28022 2.81178 2.42858 2.75032 2.58327 2.75032C3.74982 2.75032 5.20801 2.0503 6.22291 1.1636C6.34648 1.05801 6.50367 1 6.6662 1C6.82873 1 6.98592 1.05801 7.10949 1.1636C8.13022 2.05613 9.58257 2.75032 10.7491 2.75032C10.9038 2.75032 11.0522 2.81178 11.1616 2.92118C11.2709 3.03058 11.3324 3.17896 11.3324 3.33367V7.41714Z" stroke="#9AA4B2" stroke-width="2" stroke-linecap="round"/>
+                </g>
+                <defs>
+                <clipPath id="clip0_3749_1761">
+                <rect width="14" height="14" fill="white"/>
+                </clipPath>
+                </defs>
+                </svg>
 
-              Your payment information is secure and encrypted.
-            </p>
+                Your payment information is secure and encrypted.
+              </p>
+            } @else {
+              <div class="flex items-center justify-center gap-2 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-600">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g clip-path="url(#clip0_3749_1773)">
+                <path d="M5.26316 9.82031L7.11842 11.6756L12.7368 6.05713M1 7.00012C1 4.23857 3.23857 1.99998 6.00012 1.99998C8.76167 1.99998 11 4.23857 11 7.00012C11 9.76167 8.76167 12 6.00012 12C3.23857 12 1 9.76167 1 7.00012C1 6.16857 2.37461 5.0384 3.24272 4.22893" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+                <defs>
+                <clipPath id="clip0_3749_1773">
+                <rect width="14" height="14" fill="white"/>
+                </clipPath>
+                </defs>
+                </svg>
+                This invoice has been paid in full.
+              </div>
+            }
           </div>
         </section>
       </div>

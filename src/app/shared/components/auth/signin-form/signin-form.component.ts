@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PermissionService, ServiceAccessGrant } from '../../../../core/services/permission.service';
-import { SERVICE_CODE } from '../../../../core/services/subscription.service';
+import { SubscriptionService, SERVICE_CODE } from '../../../../core/services/subscription.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { InputFieldComponent } from '../../form/input/input-field.component';
 import { LabelComponent } from '../../form/label/label.component';
@@ -28,6 +28,7 @@ export class SigninFormComponent {
   constructor(
     private authService: AuthService,
     private permissionService: PermissionService,
+    private subscriptionService: SubscriptionService,
     private router: Router,
     private route: ActivatedRoute,
   ) {}
@@ -218,6 +219,8 @@ export class SigninFormComponent {
     });
   }
 
+  private static readonly LOGIN_PLAN_ID = '90c7dcff-f7d6-42c4-9b72-292d8f6e7793';
+
   private finalizeLogin(data: any) {
     const accessToken = data?.tokens?.access_token ?? data?.access_token;
     const refreshToken = data?.tokens?.refresh_token ?? data?.refresh_token;
@@ -246,34 +249,87 @@ export class SigninFormComponent {
     }
 
     const orgs = data?.tokens?.organizations ?? data?.organizations ?? [];
-    const storeOrg = (id: string, name?: string) => {
+    const subscribedServices = data?.subscribedServices ?? [];
+    try { localStorage.setItem('subscribed_services', JSON.stringify(subscribedServices)); } catch {}
+    const storeOrgAndProceed = (id: string, name?: string) => {
       localStorage.setItem('org_id', id);
       localStorage.setItem('organizationId', id);
       if (name) {
         localStorage.setItem('organizationName', name);
         localStorage.setItem('org_name', name);
       }
+      this.permissionService.setServiceAccess((data?.serviceAccess as ServiceAccessGrant[]) ?? data?.tokens?.serviceAccess);
+      this.isLoading = false;
+      const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
+      this.startTrialIfNeeded(data, returnUrl);
     };
     if (orgs?.length > 0) {
-      storeOrg(orgs[0].id, orgs[0].name);
+      storeOrgAndProceed(orgs[0].id, orgs[0].name);
     } else {
       this.authService.me(accessToken).subscribe({
         next: (profile: any) => {
           const profileOrgs = profile?.organizations ?? [];
           if (profileOrgs?.length > 0) {
-            storeOrg(profileOrgs[0].id, profileOrgs[0].name);
+            storeOrgAndProceed(profileOrgs[0].id, profileOrgs[0].name);
+          } else {
+            this.permissionService.setServiceAccess((data?.serviceAccess as ServiceAccessGrant[]) ?? data?.tokens?.serviceAccess);
+            this.isLoading = false;
+            const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
+            this.startTrialIfNeeded(data, returnUrl);
           }
         },
         error: () => {
+          this.permissionService.setServiceAccess((data?.serviceAccess as ServiceAccessGrant[]) ?? data?.tokens?.serviceAccess);
+          this.isLoading = false;
+          const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
+          this.startTrialIfNeeded(data, returnUrl);
         }
       });
     }
+  }
 
-    this.permissionService.setServiceAccess((data?.serviceAccess as ServiceAccessGrant[]) ?? data?.tokens?.serviceAccess);
+  private startTrialIfNeeded(data: any, returnUrl: string): void {
+    const orgId = localStorage.getItem('org_id') || localStorage.getItem('organizationId');
+    if (!orgId) {
+      this.router.navigateByUrl(returnUrl);
+      return;
+    }
 
-    this.isLoading = false;
-    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
-    this.router.navigateByUrl(returnUrl);
+    const subscribedServices: any[] = data?.subscribedServices ?? [];
+    const hasService = subscribedServices.some(
+      (s: any) => s?.serviceCode === SERVICE_CODE
+    );
+
+    if (hasService) {
+      this.router.navigateByUrl(returnUrl);
+      return;
+    }
+
+    const trialKey = `trial_started_${orgId}_${SERVICE_CODE}`;
+    if (localStorage.getItem(trialKey) === 'true') {
+      this.router.navigateByUrl(returnUrl);
+      return;
+    }
+
+    const accessToken = data?.tokens?.access_token ?? data?.access_token;
+    this.subscriptionService.startSubscription(orgId, {
+      planId: SigninFormComponent.LOGIN_PLAN_ID,
+      billingPeriod: 'MONTHLY',
+      useTrial: true,
+      config: {}
+    }, SERVICE_CODE, accessToken).subscribe({
+      next: () => {
+        localStorage.setItem(trialKey, 'true');
+        this.subscriptionService.enableService(orgId, SERVICE_CODE, accessToken).subscribe({
+          next: () => this.router.navigateByUrl(returnUrl),
+          error: () => this.router.navigateByUrl(returnUrl)
+        });
+      },
+      error: () => {
+        localStorage.setItem(trialKey, 'true');
+        this.router.navigateByUrl(returnUrl);
+      }
+    });
   }
 }
 

@@ -52,6 +52,12 @@
         <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Billing Details</h2>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">These details will be used for your invoice and billing communications.</p>
 
+        @if (errorMessage) {
+          <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {{ errorMessage }}
+          </div>
+        }
+
         <form [formGroup]="billingForm" (ngSubmit)="onSubmit()" class="mt-6 ">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 mb-5">
           <div>
@@ -200,56 +206,51 @@
           </div>
         </div>
 
-        <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+        <form [formGroup]="billingForm" (ngSubmit)="onSubmit()" class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
           <div>
             <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Cardholder Name <span class="text-red-500">*</span></label>
-            <input
-              type="text"
-              formControlName="cardholderName"
-              class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
-            />
-            @if (isPaymentFieldInvalid('cardholderName')) {
-              <p class="text-xs text-red-500 mt-1">Cardholder name is required</p>
-            }
+             <input
+               type="text"
+               formControlName="cardHolderName"
+               class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+             />
+             @if (isPaymentFieldInvalid('cardHolderName')) {
+               <p class="text-xs text-red-500 mt-1">Cardholder name is required</p>
+             }
           </div>
 
           <div>
             <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Card Number <span class="text-red-500">*</span></label>
             <div class="relative">
-              <input
-                type="text"
-                formControlName="cardNumber"
-                class="w-full rounded-lg border border-slate-200 pl-3.5 pr-14 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
-              />
+              <div
+                id="stripe-card-number"
+                class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              ></div>
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-violet-950">VISA</span>
             </div>
-            @if (isPaymentFieldInvalid('cardNumber')) {
-              <p class="text-xs text-red-500 mt-1">Card number is required</p>
+            @if (cardErrors) {
+              <p class="text-xs text-red-500 mt-1">{{ cardErrors }}</p>
             }
           </div>
 
           <div>
             <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">Expiry Date <span class="text-red-500">*</span></label>
-            <input
-              type="text"
-              formControlName="expiryDate"
-              placeholder="MM / YY"
-              class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
-            />
-            @if (isPaymentFieldInvalid('expiryDate')) {
-              <p class="text-xs text-red-500 mt-1">Expiry date is required</p>
+            <div
+              id="stripe-card-expiry"
+              class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+            ></div>
+            @if (cardExpiryErrors) {
+              <p class="text-xs text-red-500 mt-1">{{ cardExpiryErrors }}</p>
             }
           </div>
 
           <div>
             <label class="req block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-300">CVV <span class="text-red-500">*</span></label>
             <div class="relative">
-              <input
-                type="text"
-                formControlName="cvv"
-                class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
-              />
-              
+              <div
+                id="stripe-card-cvc"
+                class="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 pr-9 text-sm text-slate-900 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-100"
+              ></div>
               <svg width="16" height="16" class="absolute right-3 top-1/2 -translate-y-1/2 " viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_3745_1489)">
 <path d="M7.99923 10.6669V8.00003M7.99923 5.33314H8.0059M14.6664 8.00003C14.6664 11.6822 11.6814 14.6672 7.99923 14.6672C4.31704 14.6672 1.33203 11.6822 1.33203 8.00003C1.33203 4.31783 4.31704 1.33282 7.99923 1.33282C11.6814 1.33282 14.6664 4.31783 14.6664 8.00003Z" stroke="#9AA4B2" stroke-width="2" stroke-linecap="round"/>
@@ -262,8 +263,8 @@
 </svg>
 
             </div>
-            @if (isPaymentFieldInvalid('cvv')) {
-              <p class="text-xs text-red-500 mt-1">CVV must be at least 3 digits</p>
+            @if (cardCvcErrors) {
+              <p class="text-xs text-red-500 mt-1">{{ cardCvcErrors }}</p>
             }
           </div>
         </form>
@@ -362,13 +363,22 @@
         <button
           type="button"
           (click)="onSubmit()"
-          class="mt-7 w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold rounded-lg py-3 flex items-center justify-center gap-2 text-sm"
+          [disabled]="isLoading"
+          class="mt-7 w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors text-white font-bold rounded-lg py-3 flex items-center justify-center gap-2 text-sm"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2"></rect>
-            <path d="M7 11V7a5 5 0 0110 0v4"></path>
-          </svg>
-          Pay {{ orderSummary.total }} &amp; Subscribe
+          @if (isLoading) {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.3"></circle>
+              <path d="M12 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            </svg>
+            Processing...
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+              <path d="M7 11V7a5 5 0 0110 0v4"></path>
+            </svg>
+            Pay {{ orderSummary.total }} &amp; Subscribe
+          }
         </button>
 
         <button

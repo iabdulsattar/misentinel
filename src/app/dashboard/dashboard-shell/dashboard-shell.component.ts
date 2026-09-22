@@ -4,8 +4,10 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { EdobService } from '../../core/services/edob.service';
 import { PermissionService } from '../../core/services/permission.service';
+import { SubscriptionService } from '../../core/services/subscription.service';
 import { ProfileResponse } from '../../core/models/auth.models';
 import { DashboardData, OrgUser } from '../../core/models/edob.models';
+import { SubscriptionCheckResponse } from '../../core/models/subscription.models';
 import { SafeHtmlPipe } from '../../pipe/safe-html.pipe';
 
 @Component({
@@ -33,6 +35,10 @@ export class DashboardShellComponent implements OnInit {
   loading = true;
   dashboardError = false;
   orgUsers: OrgUser[] = [];
+
+  // Subscription check data
+  subscriptionCheck: SubscriptionCheckResponse | null = null;
+  subscriptionLoading = false;
 
   // Each quick-entry card is gated by the permission needed to create that
   // entry type. Cards the user lacks permission for are hidden.
@@ -92,6 +98,26 @@ export class DashboardShellComponent implements OnInit {
     return this.visibleQuickEntries.length > 0 || this.canViewEntries;
   }
 
+  get hasActiveSubscription(): boolean {
+    // Use subscription check API if available, fallback to localStorage
+    if (this.subscriptionCheck !== null) {
+      return this.subscriptionCheck.active;
+    }
+    try {
+      const raw = localStorage.getItem('subscribed_services');
+      const services: any[] = raw ? JSON.parse(raw) : [];
+      return services.some((s) => s?.serviceCode === 'edob');
+    } catch {
+      return false;
+    }
+  }
+
+  // Dynamic trial info from subscription check
+  get trialInfo() {
+    if (!this.subscriptionCheck?.features) return null;
+    return this.subscriptionCheck.features;
+  }
+
   metrics: {
     value: string;
     label: string;
@@ -138,11 +164,29 @@ export class DashboardShellComponent implements OnInit {
     private authService: AuthService,
     private edobService: EdobService,
     private permissionService: PermissionService,
+    private subscriptionService: SubscriptionService,
   ) {}
 
   ngOnInit(): void {
     this.loadGreeting();
     this.loadDashboard();
+    this.loadSubscriptionCheck();
+  }
+
+  private loadSubscriptionCheck(): void {
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+
+    this.subscriptionLoading = true;
+    this.subscriptionService.checkSubscription(orgId, 'edob').subscribe({
+      next: (data) => {
+        this.subscriptionCheck = data;
+        this.subscriptionLoading = false;
+      },
+      error: () => {
+        this.subscriptionLoading = false;
+      }
+    });
   }
 
   private loadGreeting(): void {

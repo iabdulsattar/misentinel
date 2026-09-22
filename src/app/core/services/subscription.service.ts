@@ -256,28 +256,28 @@ export class SubscriptionService {
       params.set('userCount', String(userCount));
     }
     const query = params.toString();
-    return this.api.get<EdobOverview>(
+    return this.api.get<ApiWrapper<EdobOverview>>(
       `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/overview${query ? `?${query}` : ''}`
-    );
+    ).pipe(map((res) => res.data));
   }
 
   // GET /api/v1/subscriptions/organizations/{orgId}/edob/quote?userCount=256
   getEdobQuote(orgId: string, userCount: number): Observable<EdobQuote> {
     const params = new URLSearchParams();
     params.set('userCount', String(userCount));
-    return this.api.get<EdobQuote>(
+    return this.api.get<ApiWrapper<EdobQuote>>(
       `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/quote?${params.toString()}`
-    );
+    ).pipe(map((res) => res.data));
   }
 
   // POST /api/v1/subscriptions/organizations/{orgId}/edob/subscribe
   subscribeToEdob(orgId: string, payload: EdobSubscribeRequest): Observable<EdobSubscribeResponse> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.api.post<EdobSubscribeResponse>(
+    return this.api.post<ApiWrapper<EdobSubscribeResponse>>(
       `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/subscribe`,
       payload,
       headers
-    );
+    ).pipe(map((res) => res.data));
   }
 
   // GET /api/v1/subscriptions/organizations/{orgId}/edob/invoices
@@ -297,30 +297,38 @@ export class SubscriptionService {
     if (options?.page !== undefined) params.set('page', String(options.page));
     if (options?.size !== undefined) params.set('size', String(options.size));
     const query = params.toString();
-    return this.api.get<EdobInvoiceListResponse>(
+    return this.api.get<ApiWrapper<any>>(
       `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/invoices${query ? `?${query}` : ''}`
+    ).pipe(
+      map((res: any) => ({
+        invoices: res?.data || [],
+        total: res?.meta?.totalElements || (res?.data?.length ?? 0),
+        page: res?.meta?.page,
+        size: res?.meta?.size,
+        totalPages: res?.meta?.totalPages,
+      }))
     );
   }
 
   // GET /api/v1/subscriptions/organizations/{orgId}/edob/invoices/stats
   getEdobInvoiceStats(orgId: string): Observable<EdobInvoiceStats> {
-    return this.api.get<EdobInvoiceStats>(
+    return this.api.get<ApiWrapper<EdobInvoiceStats>>(
       `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/invoices/stats`
-    );
+    ).pipe(map((res) => res.data));
   }
 
   // GET /api/v1/subscriptions/organizations/{orgId}/edob/invoices/{invoiceId}
   getEdobInvoice(orgId: string, invoiceId: string): Observable<EdobInvoiceDetail> {
-    return this.api.get<EdobInvoiceDetail>(
+    return this.api.get<ApiWrapper<EdobInvoiceDetail>>(
       `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/invoices/${encodeURIComponent(invoiceId)}`
-    );
+    ).pipe(map((res) => res.data));
   }
 
   // POST /api/v1/subscriptions/organizations/{orgId}/edob/invoices/{invoiceId}/pay
   payEdobInvoice(orgId: string, invoiceId: string): Observable<EdobInvoicePayResponse> {
-    return this.api.post<EdobInvoicePayResponse>(
+    return this.api.post<ApiWrapper<EdobInvoicePayResponse>>(
       `/api/v1/subscriptions/organizations/${encodeURIComponent(orgId)}/edob/invoices/${encodeURIComponent(invoiceId)}/pay`,
       {}
-    );
+    ).pipe(map((res) => res.data));
   }
 }

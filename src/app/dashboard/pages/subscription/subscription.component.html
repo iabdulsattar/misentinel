@@ -31,7 +31,8 @@
     @if (overviewError) {
       <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{{ overviewError }}</div>
     }
-    <!-- Trial banner -->
+<!-- Trial banner -->
+    @if (!hasActiveSubscription && (subscriptionCheck || trialInfo || overview)) {
     <div class="bg-white border border-slate-200 rounded-md p-4 sm:p-6 flex flex-col xl:flex-row xl:items-center gap-4 mb-4">
         <div class="flex items-center gap-4 flex-1 min-w-0">
           <div class="w-12 h-12 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
@@ -69,16 +70,16 @@
         <div class="flex flex-wrap gap-8 xl:pl-8">
           <div>
             <p class="text-xs font-bold text-slate-500 tracking-wide">TRIAL STARTED</p>
-            <p class="font-semibold text-slate-900 text-base mt-0.5">{{ overview?.trialStartDate ? (overview?.trialStartDate | date:'d MMM yyyy') : '—' }}</p>
+            <p class="font-semibold text-slate-900 text-base mt-0.5">{{ trialInfo?.['trialStartDate'] ? (trialInfo?.['trialStartDate'] | date:'d MMM yyyy') : (overview?.trialStartDate ? (overview?.trialStartDate | date:'d MMM yyyy') : '—') }}</p>
           </div>
           <div class="border-l border-slate-200 pl-8">
             <p class="text-xs font-bold text-slate-500 tracking-wide">TRIAL ENDS</p>
-            <p class="font-semibold text-slate-900 text-base mt-0.5">{{ overview?.trialEndDate ? (overview?.trialEndDate | date:'d MMM yyyy') : '—' }}</p>
-            <p class="text-xs text-slate-500 mt-0.5">{{ overview?.trialDaysRemaining != null ? (overview?.trialDaysRemaining + ' days') : '—' }}</p>
+            <p class="font-semibold text-slate-900 text-base mt-0.5">{{ trialInfo?.['trialEndDate'] ? (trialInfo?.['trialEndDate'] | date:'d MMM yyyy') : (overview?.trialEndDate ? (overview?.trialEndDate | date:'d MMM yyyy') : '—') }}</p>
+            <p class="text-xs text-slate-500 mt-0.5">{{ trialInfo?.['trialDaysRemaining'] != null ? (trialInfo?.['trialDaysRemaining'] + ' days') : (overview?.trialDaysRemaining != null ? (overview?.trialDaysRemaining + ' days') : '—') }}</p>
           </div>
           <div class="border-l border-slate-200 pl-8">
             <p class="text-xs font-bold text-slate-500 tracking-wide">DAYS REMAINING</p>
-            <p class="font-bold mt-0.5 text-blue-600 text-base">{{ overview?.trialDaysRemaining ?? '—' }}</p>
+            <p class="font-bold mt-0.5 text-blue-600 text-base">{{ trialInfo?.['trialDaysRemaining'] ?? (overview?.trialDaysRemaining ?? '—') }}</p>
             <p class="text-xs text-slate-500">days</p>
           </div>
         </div>
@@ -88,10 +89,11 @@
           [queryParams]="{ userCount: sliderValue }"
           class="bg-blue-600 hover:bg-blue-700 transition-colors text-white text-sm font-bold px-5 py-3 rounded-md whitespace-nowrap w-full xl:w-auto xl:ml-10"
         >
-          Choose Plan
-        </button>
+           Choose Plan
+         </button>
       </div>
-        
+    }
+    
     <!-- Current Usage -->
       <section class=" bg-white border border-slate-200 rounded-md p-4 sm:p-6">
         <div class="flex items-start gap-4">
@@ -397,7 +399,7 @@
             }
             @for (invoice of invoices; track invoice.id) {
               <tr>
-                <td class="px-4 py-4 font-bold text-slate-900 text-sm dark:text-white">{{ invoice.id }}</td>
+                <td class="px-4 py-4 font-bold text-slate-900 text-sm dark:text-white">{{ invoice.number }}</td>
                 <td class="px-4 py-4 text-slate-500 text-sm font-medium dark:text-slate-400">{{ invoice.date }}</td>
                 <td class="px-4 py-4">
                   <p class="font-bold text-slate-900 text-sm dark:text-white">{{ invoice.description }}</p>
@@ -435,15 +437,38 @@
 
       <!-- Pagination -->
       <div class="border-t border-slate-200 dark:border-gray-800 px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p class="text-sm text-slate-500 font-medium">Showing 1 to {{ invoices.length }} of {{ invoices.length }} invoices</p>
+        <p class="text-sm text-slate-500 font-medium">
+          @if (totalInvoicesCount > 0) {
+            Showing {{ startIndex }} to {{ endIndex }} of {{ totalInvoicesCount }} invoices
+          } @else {
+            No invoices to display
+          }
+        </p>
         <div class="flex items-center gap-2">
-          <button class="w-8 h-8 rounded-md border border-slate-200 text-slate-400 hover:bg-gray-50 dark:border-gray-600 dark:text-slate-300 flex items-center justify-center">
+          <button
+            (click)="onPageChange(currentPage - 1)"
+            [disabled]="currentPage <= 1 || invoicesLoading"
+            class="w-8 h-8 rounded-md border border-slate-200 text-slate-400 hover:bg-gray-50 dark:border-gray-600 dark:text-slate-300 dark:hover:bg-gray-800 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M15 18l-6-6 6-6"></path>
             </svg>
           </button>
-          <button class="w-8 h-8 rounded-md bg-blue-600 text-white font-bold text-xs">1</button>
-          <button class="w-8 h-8 rounded-md border border-slate-200 text-slate-400 hover:bg-gray-50 dark:border-gray-600 dark:text-slate-300 flex items-center justify-center">
+          @for (page of pageNumbers; track page) {
+            <button
+              (click)="onPageChange(page)"
+              [disabled]="invoicesLoading"
+              [ngClass]="{'bg-blue-600 text-white font-bold': currentPage === page, 'border border-slate-200 text-slate-400 hover:bg-gray-50 dark:border-gray-600 dark:text-slate-300 dark:hover:bg-gray-800': currentPage !== page}"
+              class="w-8 h-8 rounded-md flex items-center justify-center text-xs"
+            >
+              {{ page }}
+            </button>
+          }
+          <button
+            (click)="onPageChange(currentPage + 1)"
+            [disabled]="currentPage >= totalPages || invoicesLoading"
+            class="w-8 h-8 rounded-md border border-slate-200 text-slate-400 hover:bg-gray-50 dark:border-gray-600 dark:text-slate-300 dark:hover:bg-gray-800 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 18l6-6-6-6"></path>
             </svg>

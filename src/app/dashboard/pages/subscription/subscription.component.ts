@@ -9,7 +9,8 @@ import {
   EdobOverview,
   EdobInvoice as ApiInvoice,
   EdobInvoiceStats,
-  EdobQuote
+  EdobQuote,
+  SubscriptionCheckResponse
 } from '../../../core/models/subscription.models';
 
 interface TickMilestone {
@@ -20,6 +21,7 @@ interface TickMilestone {
 
 interface Invoice {
   id: string;
+  number: string;
   date: string;
   description: string;
   period: string;
@@ -51,7 +53,7 @@ export class SubscriptionComponent implements OnInit {
   readonly min = 10;
   readonly max = 500;
 
-  sliderValue = 256;
+   sliderValue = 256;
   fillPercent = 50;
   bubbleLeft = 50;
   estCost = '£640.00';
@@ -63,6 +65,16 @@ export class SubscriptionComponent implements OnInit {
   quote: EdobQuote | null = null;
   invoiceStats: EdobInvoiceStats | null = null;
   invoices: Invoice[] = [];
+
+  // Subscription check data
+  subscriptionCheck: SubscriptionCheckResponse | null = null;
+  subscriptionCheckLoading = false;
+
+  // Pagination state
+  currentPage = 1;
+  totalInvoicesCount = 0;
+  totalPages = 1;
+  pageSize = 20;
 
   // Loading / error states
   overviewLoading = false;
@@ -143,10 +155,52 @@ export class SubscriptionComponent implements OnInit {
 
   constructor(private subscriptionService: SubscriptionService) {}
 
+  private getSubscribedServices(): any[] {
+    try {
+      const raw = localStorage.getItem('subscribed_services');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  get hasActiveSubscription(): boolean {
+    // Use subscription check API if available, fallback to localStorage
+    if (this.subscriptionCheck !== null) {
+      return this.subscriptionCheck.active;
+    }
+    return this.getSubscribedServices().some(
+      (s: any) => s?.serviceCode === 'edob'
+    );
+  }
+
+  // Dynamic trial info from subscription check
+  get trialInfo() {
+    if (!this.subscriptionCheck?.features) return null;
+    return this.subscriptionCheck.features;
+  }
+
   ngOnInit(): void {
     console.log('[SubscriptionComponent] ngOnInit called');
     this.update();
     this.loadOverview();
+    this.loadSubscriptionCheck();
+  }
+
+  private loadSubscriptionCheck(): void {
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+
+    this.subscriptionCheckLoading = true;
+    this.subscriptionService.checkSubscription(orgId, 'edob').subscribe({
+      next: (data) => {
+        this.subscriptionCheck = data;
+        this.subscriptionCheckLoading = false;
+      },
+      error: () => {
+        this.subscriptionCheckLoading = false;
+      }
+    });
   }
 
   private getOrgId(): string | null {
@@ -201,7 +255,7 @@ export class SubscriptionComponent implements OnInit {
       });
   }
 
-  loadInvoices(): void {
+   loadInvoices(): void {
     const orgId = this.getOrgId();
     if (!orgId) return;
 
@@ -221,16 +275,45 @@ export class SubscriptionComponent implements OnInit {
         },
       });
 
-    this.subscriptionService.listEdobInvoices(orgId, { page: 0, size: 20 })
+    this.subscriptionService.listEdobInvoices(orgId, { page: this.currentPage - 1, size: this.pageSize })
       .subscribe({
         next: (res) => {
           this.invoices = (res.invoices || []).map((inv) => this.mapInvoice(inv));
+          this.totalInvoicesCount = res.total || 0;
+          this.totalPages = res.totalPages || 1;
+          this.currentPage = (res.page ?? 0) + 1;
         },
         error: (err) => {
           console.error('[SubscriptionComponent] Invoice list error:', err);
           this.invoicesError = this.invoicesError || 'Failed to load invoices.';
         },
       });
+  }
+
+  onPageChange(page: number): void {
+    if (page < 1 || page > this.totalPages || this.invoicesLoading) return;
+    this.currentPage = page;
+    this.loadInvoices();
+  }
+
+  get startIndex(): number {
+    return (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get endIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.totalInvoicesCount);
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const total = this.totalPages;
+    const current = this.currentPage;
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, start + 4);
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 
   private updateStatCards(stats: EdobInvoiceStats | null): void {
@@ -254,13 +337,13 @@ export class SubscriptionComponent implements OnInit {
         sub: stats.totalAmountDisplay || '—',
         subClass: 'text-emerald-500 font-bold',
       },
-      {
+       {
         iconBg: 'bg-yellow-50',
         iconColor: 'text-amber-500',
         icon: this.statCards[2]?.icon || '',
         label: 'Pending Invoices',
-        value: '0',
-        sub: '—',
+        value: String(stats.pending ?? 0),
+        sub: stats.totalAmountDisplay || '—',
         subClass: 'text-amber-500 font-bold',
       },
       {
@@ -277,14 +360,16 @@ export class SubscriptionComponent implements OnInit {
 
   private mapInvoice(inv: ApiInvoice): Invoice {
     const status = this.normalizeStatus(inv.status || '');
-    const issueDate = inv.issueDate ? this.dateFormatter.format(new Date(inv.issueDate)) : '';
-    const dueDate = inv.dueDate ? this.dateFormatter.format(new Date(inv.dueDate)) : '';
+    const issueDate = inv.invoiceDate ? this.dateFormatter.format(new Date(inv.invoiceDate)) : '';
+    const dueDate = inv.dueAt ? this.dateFormatter.format(new Date(inv.dueAt)) : '';
+    const amount = inv.amountDisplay || this.centsToDisplay(inv.totalCents || 0);
     return {
       id: inv.id,
+      number: inv.number || inv.id,
       date: issueDate,
       description: inv.description || 'eDOB Monthly Subscription',
       period: dueDate ? `Due ${dueDate}` : '',
-      amount: inv.amountDisplay || '',
+      amount: amount,
       status,
       statusClass: this.statusBadgeClass(status),
     };

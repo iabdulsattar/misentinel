@@ -403,7 +403,7 @@ export class UserManagementComponent implements OnInit {
       return;
     }
 
-    this.userService.listUsers(orgId, { page: this.currentPage, size: this.pageSize, q: this.searchQuery.trim() || undefined }).subscribe({
+    this.userService.listUsers(orgId, { page: this.currentPage + 1, size: this.pageSize, q: this.searchQuery.trim() || undefined }).subscribe({
       next: (res) => {
         const payload = res?.['data'] ?? res;
         const items = Array.isArray(payload) ? payload : payload?.content ?? payload?.items ?? [];
@@ -432,12 +432,12 @@ export class UserManagementComponent implements OnInit {
           this.totalPages = 1;
         } else {
           this.meta = {
-            page: payload.page ?? this.currentPage,
+            page: payload.page ?? this.currentPage + 1,
             size: payload.size ?? this.pageSize,
             totalElements: payload.totalElements ?? this.users.length,
             totalPages: payload.totalPages ?? 1,
           };
-          this.currentPage = Number(this.meta.page);
+          this.currentPage = Number(this.meta.page) - 1;
           this.pageSize = Number(this.meta.size);
           this.totalElements = Number(this.meta.totalElements);
           this.totalPages = Number(this.meta.totalPages);

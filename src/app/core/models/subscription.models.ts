@@ -220,19 +220,25 @@ export interface EdobInvoice {
   id: string;
   number: string;
   status: EdobInvoiceStatus;
-  paymentStatus?: 'PAID' | 'PENDING' | 'OVERDUE';
+  paymentStatus?: string;
   description: string;
-  issueDate: string;
-  dueDate: string;
-  amountPence: number;
-  amountDisplay: string;
+  invoiceDate: string;
+  periodStart?: string;
+  periodEnd?: string;
+  dueAt: string;
+  paidAt?: string;
+  totalCents: number;
   currency: string;
+  amountDisplay?: string;
   [key: string]: any;
 }
 
 export interface EdobInvoiceListResponse {
   invoices: EdobInvoice[];
   total: number;
+  page?: number;
+  size?: number;
+  totalPages?: number;
   [key: string]: any;
 }
 
@@ -241,19 +247,22 @@ export interface EdobInvoiceStats {
   paid: number;
   pending: number;
   overdue: number;
-  totalAmountPence?: number;
+  totalAmountCents?: number;
   totalAmountDisplay?: string;
   [key: string]: any;
 }
 
 export interface EdobInvoiceLineItem {
-  description: string;
+  description?: string;
+  subDescription?: string;
   detail?: string;
-  quantity: number;
-  unitPricePence: number;
-  unitPriceDisplay: string;
-  amountPence: number;
-  amountDisplay: string;
+  quantity?: number;
+  unitPriceCents?: number;
+  unitPricePence?: number;
+  unitPriceDisplay?: string;
+  amountCents?: number;
+  amountPence?: number;
+  amountDisplay?: string;
   [key: string]: any;
 }
 
@@ -263,34 +272,54 @@ export interface EdobInvoiceDetail {
   status: EdobInvoiceStatus;
   paymentStatus?: 'PAID' | 'PENDING' | 'OVERDUE';
   description: string;
-  issueDate: string;
-  dueDate: string;
-  dueInDays?: number | null;
-  amountDuePence: number;
-  amountDueDisplay: string;
-  currency: string;
+  invoiceDate: string;
+  periodStart?: string;
+  periodEnd?: string;
+  dueAt: string;
+  paidAt?: string;
+  subtotalCents?: number;
   vatRateBps?: number;
-  subtotalPence: number;
-  subtotalDisplay: string;
-  vatPence: number;
-  vatDisplay: string;
-  totalPence: number;
-  totalDisplay: string;
-  lineItems: EdobInvoiceLineItem[];
-  subscription?: {
-    title?: string;
-    userCount?: number;
-    billingPeriod?: string;
-    unitPrice?: string;
-    planName?: string;
-    planCode?: string;
-  };
+  vatCents?: number;
+  totalCents: number;
+  currency: string;
+  hostedInvoiceUrl?: string | null;
+  pdfUrl?: string | null;
+  items?: EdobInvoiceLineItem[];
   billing?: {
     companyName?: string;
     billingEmail?: string;
+    billingAddress?: string;
     address?: string;
-    vatNumber?: string;
+    city?: string;
+    postcode?: string;
+    country?: string;
   };
+  subscription?: {
+    userLicences?: number;
+    userCount?: number;
+    perUserCents?: number;
+    billingCycle?: string;
+    billingPeriod?: string;
+    nextBillingDate?: string;
+    planType?: string;
+    title?: string;
+    planName?: string;
+    planCode?: string;
+    currentPeriodStart?: string;
+    currentPeriodEnd?: string;
+  };
+  notes?: string;
+  issueDate?: string;
+  dueDate?: string;
+  dueInDays?: number | null;
+  amountDuePence?: number;
+  amountDueDisplay?: string;
+  subtotalPence?: number;
+  subtotalDisplay?: string;
+  vatPence?: number;
+  vatDisplay?: string;
+  totalPence?: number;
+  totalDisplay?: string;
   [key: string]: any;
 }
 

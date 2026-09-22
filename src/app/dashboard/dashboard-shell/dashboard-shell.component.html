@@ -30,13 +30,14 @@
 
     <div class="grid grid-cols-12 gap-4">
       <div class="col-span-12 xl:col-span-12">
-        <!-- Trial banner -->
-      <div class="bg-white border border-slate-200 rounded-md p-4 sm:p-6 flex flex-col xl:flex-row xl:items-center gap-4 mb-4">
-        <div class="flex items-center gap-4 flex-1 min-w-0">
-          <div class="w-12 h-12 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Trial banner -->
+        @if (!hasActiveSubscription && (subscriptionCheck || trialInfo)) {
+        <div class="bg-white border border-slate-200 rounded-md p-4 sm:p-6 flex flex-col xl:flex-row xl:items-center gap-4 mb-4">
+         <div class="flex items-center gap-4 flex-1 min-w-0">
+           <div class="w-12 h-12 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
+             <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_3731_600)">
-<path d="M10.9994 8.41667V21.25M10.9994 8.41667C10.9994 7.44421 10.6131 6.51158 9.9254 5.82394C9.23772 5.13631 8.30501 4.75 7.33247 4.75H2.74877C2.50564 4.75 2.27246 4.84658 2.10054 5.01849C1.92862 5.19039 1.83203 5.42355 1.83203 5.66667V17.5833C1.83203 17.8264 1.92862 18.0596 2.10054 18.2315C2.27246 18.4034 2.50564 18.5 2.74877 18.5H8.24921C8.97862 18.5 9.67815 18.7897 10.1939 19.3055C10.7097 19.8212 10.9994 20.5207 10.9994 21.25M10.9994 8.41667C10.9994 7.44421 11.3858 6.51158 12.0735 5.82394C12.7611 5.13631 13.6939 4.75 14.6664 4.75H19.2501C19.4932 4.75 19.7264 4.84658 19.8983 5.01849C20.0702 5.19039 20.1668 5.42355 20.1668 5.66667V17.5833C20.1668 17.8264 20.0702 18.0596 19.8983 18.2315C19.7264 18.4034 19.4932 18.5 19.2501 18.5H13.7497C13.0202 18.5 12.3207 18.7897 11.805 19.3055C11.2892 19.8212 10.9994 20.5207 10.9994 21.25" stroke="white" stroke-width="2" stroke-linecap="round"/>
+<path d="M10.9994 8.41667V21.25M10.9994 7.44421 10.6131 6.51158 9.9254 5.82394C9.23772 5.13631 8.30501 4.75 7.33247 4.75H2.74877C2.50564 4.75 2.27246 4.84658 2.10054 5.01849C1.92862 5.19039 1.83203 5.42355 1.83203 5.66667V17.5833C1.83203 17.8264 1.92862 18.0596 2.10054 18.2315C2.27246 18.4034 2.50564 18.5 2.74877 18.5H8.24921C8.97862 18.5 9.67815 18.7897 10.1939 19.3055C10.7097 19.8212 10.9994 20.5207 10.9994 21.25M10.9994 8.41667C10.9994 7.44421 11.3858 6.51158 12.0735 5.82394C12.7611 5.13631 13.6939 4.75 14.6664 4.75H19.2501C19.4932 4.75 19.7264 4.84658 19.8983 5.01849C20.0702 5.19039 20.1668 5.42355 20.1668 5.66667V17.5833C20.1668 17.8264 20.0702 18.0596 19.8983 18.2315C19.7264 18.4034 19.4932 18.5 19.2501 18.5H13.7497C13.0202 18.5 12.3207 18.7897 11.805 19.3055C11.2892 19.8212 10.9994 20.5207 10.9994 21.25" stroke="white" stroke-width="2" stroke-linecap="round"/>
 </g>
 <defs>
 <clipPath id="clip0_3731_600">
@@ -45,38 +46,42 @@
 </defs>
 </svg>
 
-          </div>
-          <div class="min-w-0">
-            <div class="flex items-center flex-wrap gap-2">
-              <h2 class="font-semibold text-base text-slate-900">eDOB Free Trial</h2>
-              <span class="text-[10px] font-bold text-emerald-500 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
-            </div>
-            <p class="text-slate-500 text-xs mt-1">You are currently exploring all features of eDOB with full access.</p>
-          </div>
-        </div>
+           </div>
+           <div class="min-w-0">
+             <div class="flex items-center flex-wrap gap-2">
+               <h2 class="font-semibold text-base text-slate-900">eDOB Free Trial</h2>
+               <span class="text-[10px] font-bold text-emerald-500 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
+             </div>
+             <p class="text-slate-500 text-xs mt-1">You are currently exploring all features of eDOB with full access.</p>
+           </div>
+         </div>
 
-        <div class="flex flex-wrap gap-8 xl:pl-8">
-          <div>
-            <p class="text-xs font-bold text-slate-500 tracking-wide">TRIAL STARTED</p>
-            <p class="font-semibold text-slate-900 text-base mt-0.5">9 Sept 2026</p>
-          </div>
-          <div class="border-l border-slate-200 pl-8">
-            <p class="text-xs font-bold text-slate-500 tracking-wide">TRIAL ENDS</p>
-            <p class="font-semibold text-slate-900 text-base mt-0.5">23 Sept 2026</p>
-            <p class="text-xs text-slate-500 mt-0.5">14 days</p>
-          </div>
-          <div class="border-l border-slate-200 pl-8">
-            <p class="text-xs font-bold text-slate-500 tracking-wide">DAYS REMAINING</p>
-            <p class="font-bold mt-0.5 text-blue-600 text-base">14</p>
-            <p class="text-xs text-slate-500">days</p>
-          </div>
-        </div>
+         <div class="flex flex-wrap gap-8 xl:pl-8">
+           <div>
+             <p class="text-xs font-bold text-slate-500 tracking-wide">TRIAL STARTED</p>
+             <p class="font-semibold text-slate-900 text-base mt-0.5">{{ trialInfo?.['trialStartDate'] ? (trialInfo?.['trialStartDate'] | date:'d MMM yyyy') : '9 Sept 2026' }}</p>
+           </div>
+           <div class="border-l border-slate-200 pl-8">
+             <p class="text-xs font-bold text-slate-500 tracking-wide">TRIAL ENDS</p>
+<p class="font-semibold text-slate-900 text-base mt-0.5">{{ trialInfo?.['trialEndDate'] ? (trialInfo?.['trialEndDate'] | date:'d MMM yyyy') : '23 Sept 2026' }}</p>
+            <p class="text-xs text-slate-500 mt-0.5">{{ trialInfo?.['trialDaysRemaining'] != null ? (trialInfo?.['trialDaysRemaining'] + ' days') : '14 days' }}</p>
+           </div>
+           <div class="border-l border-slate-200 pl-8">
+             <p class="text-xs font-bold text-slate-500 tracking-wide">DAYS REMAINING</p>
+             <p class="font-bold mt-0.5 text-blue-600 text-base">{{ trialInfo?.['trialDaysRemaining'] ?? 14 }}</p>
+             <p class="text-xs text-slate-500">days</p>
+           </div>
+         </div>
 
-        <button class="bg-blue-600 hover:bg-blue-700 transition-colors text-white text-sm font-bold px-5 py-3 rounded-md whitespace-nowrap w-full xl:w-auto xl:ml-10">
-          Manage Subscription
-        </button>
-      </div>
-      
+         <button
+           [routerLink]="['/subscription']"
+           class="bg-blue-600 hover:bg-blue-700 transition-colors text-white text-sm font-bold px-5 py-3 rounded-md whitespace-nowrap w-full xl:w-auto xl:ml-10"
+         >
+            Manage Subscription
+         </button>
+        </div>
+      }
+
       </div>
     </div>
 

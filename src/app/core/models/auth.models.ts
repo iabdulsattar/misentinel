@@ -98,6 +98,16 @@ export interface LoginResponse {
     [key: string]: any;
   };
   serviceAccess?: ServiceAccessGrant | ServiceAccessGrant[];
+  subscribedServices?: SubscribedService[];
+  [key: string]: any;
+}
+
+export interface SubscribedService {
+  serviceCode: string;
+  subscriptionId?: string;
+  planId?: string;
+  status?: string;
+  trialActive?: boolean;
   [key: string]: any;
 }
 
