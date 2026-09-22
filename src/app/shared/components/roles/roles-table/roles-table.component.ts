@@ -29,7 +29,7 @@ export class RolesTableComponent {
 
   // Check if role is system-defined (cannot be modified/deleted)
   isSystemRole(role: Role): boolean {
-    return role.source === 'system';
+    return role.source?.toLowerCase() === 'system';
   }
 
   get totalPages(): number {
