@@ -122,7 +122,7 @@ export class DashboardShellComponent implements OnInit {
     if (this.dashboardData?.trial) {
       const trial = this.dashboardData.trial;
       // Use subscription check for trial start date if available
-      const trialStartDate = this.subscriptionCheck?.features?.['trialStartDate'] || trial.startedAt;
+      const trialStartDate = this.subscriptionCheck?.['startDate'] || trial.startedAt;
       const trialEndDate = trial.endsAt;
       // Calculate days remaining dynamically from end date
       const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : trial.daysRemaining;
@@ -139,7 +139,7 @@ export class DashboardShellComponent implements OnInit {
       // Calculate days remaining dynamically from end date
       const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : features['trialDaysRemaining'];
       return {
-        trialStartDate: features['trialStartDate'],
+        trialStartDate: this.subscriptionCheck['startDate'] || features['trialStartDate'],
         trialEndDate,
         trialDaysRemaining,
       };

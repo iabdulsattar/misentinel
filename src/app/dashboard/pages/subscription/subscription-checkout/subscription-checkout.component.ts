@@ -32,6 +32,7 @@ export class SubscriptionCheckoutComponent implements OnInit, OnDestroy, AfterVi
   billingForm: FormGroup;
   isLoading = false;
   errorMessage = '';
+  successMessage = '';
   stripe: any = null;
   cardElement: any = null;
   cardErrors = '';
@@ -412,7 +413,11 @@ export class SubscriptionCheckoutComponent implements OnInit, OnDestroy, AfterVi
       localStorage.setItem('subscribed_services', JSON.stringify(services));
     }
     this.isLoading = false;
-    this.router.navigate(['/subscription']);
+    this.successMessage = 'Subscription activated successfully! Redirecting to invoices...';
+    // Redirect to invoices tab after short delay
+    setTimeout(() => {
+      this.router.navigate(['/subscription'], { queryParams: { tab: 'invoices' } });
+    }, 2000);
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {

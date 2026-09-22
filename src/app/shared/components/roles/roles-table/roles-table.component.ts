@@ -27,6 +27,11 @@ export class RolesTableComponent {
   searchTerm = '';
   openMenuId: string | null = null;
 
+  // Check if role is system-defined (cannot be modified/deleted)
+  isSystemRole(role: Role): boolean {
+    return role.source === 'system';
+  }
+
   get totalPages(): number {
     const safeTotal = Number(this.total) || 0;
     const safeSize = Number(this.size) || 10;
