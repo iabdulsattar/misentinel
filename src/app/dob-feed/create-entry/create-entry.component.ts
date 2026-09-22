@@ -250,24 +250,28 @@ export class CreateEntryComponent implements OnInit {
   }
 
   get handoverUserOptions(): RichSelectOption[] {
-    return this.orgUsers.map((user) => {
-      const name = `${user.firstName} ${user.lastName}`.trim();
-      const color = this.userColor(name);
-      return {
-        value: user.id,
-        label: name,
-        description: user.email,
-        iconSvg: this.userInitialsSvg(name, color.text),
-        iconBg: color.bg,
-      } as RichSelectOption;
-    });
+    return this.orgUsers
+      .filter((user) => user.active)
+      .map((user) => {
+        const name = `${user.firstName} ${user.lastName}`.trim();
+        const color = this.userColor(name);
+        return {
+          value: user.id,
+          label: name,
+          description: user.email,
+          iconSvg: this.userInitialsSvg(name, color.text),
+          iconBg: color.bg,
+        } as RichSelectOption;
+      });
   }
 
   get peopleInvolvedUserOptions(): MultiOption[] {
-    return this.orgUsers.map((user) => ({
-      value: user.id,
-      text: `${user.firstName} ${user.lastName}`.trim(),
-    }));
+    return this.orgUsers
+      .filter((user) => user.active)
+      .map((user) => ({
+        value: user.id,
+        text: `${user.firstName} ${user.lastName}`.trim(),
+      }));
   }
 
   // AI drawer state
@@ -534,6 +538,9 @@ export class CreateEntryComponent implements OnInit {
     if (!this.priority) { this.priorityError = 'Priority is required'; valid = false; }
     if (!this.operationalSummary.trim()) { this.operationalSummaryError = 'Operational summary is required'; valid = false; }
     if (this.operationalSummary.length > 5000) { this.operationalSummaryError = 'Operational summary must be under 5000 characters'; valid = false; }
+    if (!this.outstandingIssues.trim()) { this.outstandingIssuesError = 'Outstanding issues is required'; valid = false; }
+    if (!this.outstandingActions.trim()) { this.outstandingActionsError = 'Outstanding actions is required'; valid = false; }
+    if (!this.importantInfo.trim()) { this.importantInfoError = 'Important information is required'; valid = false; }
 
     return valid;
   }

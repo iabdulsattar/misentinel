@@ -2,6 +2,7 @@ import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ModalComponent } from '../../shared/components/ui/modal/modal.component';
 import { UserService } from '../../core/services/user.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-send-invite-modal',
@@ -20,7 +21,11 @@ export class SendInviteModalComponent {
   statusMessage = '';
   statusType: '' | 'success' | 'error' = '';
 
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService, private authService: AuthService) {}
+
+  getCompanyName(): string {
+    return this.authService.getOrgName() || 'ABC Security';
+  }
 
   cancel(): void {
     this.close.emit();

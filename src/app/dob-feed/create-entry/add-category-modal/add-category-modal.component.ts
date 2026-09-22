@@ -17,22 +17,9 @@ export class AddCategoryModalComponent {
   readonly created = output<any>();
 
   name = '';
-  color = '';
   description = '';
   isSubmitting = false;
   errorMessage = '';
-
-  colorOptions = [
-    { value: '', label: 'None' },
-    { value: 'red', label: 'Red' },
-    { value: 'orange', label: 'Orange' },
-    { value: 'yellow', label: 'Yellow' },
-    { value: 'green', label: 'Green' },
-    { value: 'blue', label: 'Blue' },
-    { value: 'purple', label: 'Purple' },
-    { value: 'pink', label: 'Pink' },
-    { value: 'gray', label: 'Gray' },
-  ];
 
   constructor(private edobService: EdobService) {}
 
@@ -61,14 +48,12 @@ export class AddCategoryModalComponent {
       name: trimmedName,
       active: true,
     };
-    if (this.color) payload.color = this.color;
     if (this.description.trim()) payload.description = this.description.trim();
 
     this.edobService.createCategory(orgId, payload).subscribe({
       next: (cat) => {
         this.isSubmitting = false;
         this.name = '';
-        this.color = '';
         this.description = '';
         this.created.emit(cat);
         this.close.emit();
