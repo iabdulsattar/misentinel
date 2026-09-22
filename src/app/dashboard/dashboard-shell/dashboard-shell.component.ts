@@ -121,22 +121,39 @@ export class DashboardShellComponent implements OnInit {
     // Prefer overview API data which has detailed trial info
     if (this.dashboardData?.trial) {
       const trial = this.dashboardData.trial;
+      // Use subscription check for trial start date if available
+      const trialStartDate = this.subscriptionCheck?.features?.['trialStartDate'] || trial.startedAt;
+      const trialEndDate = trial.endsAt;
+      // Calculate days remaining dynamically from end date
+      const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : trial.daysRemaining;
       return {
-        trialStartDate: trial.startedAt,
-        trialEndDate: trial.endsAt,
-        trialDaysRemaining: trial.daysRemaining,
+        trialStartDate,
+        trialEndDate,
+        trialDaysRemaining,
       };
     }
     // Fallback to subscription check
     if (this.subscriptionCheck) {
       const features = this.subscriptionCheck.features || {};
+      const trialEndDate = this.subscriptionCheck['effectiveExpiry'] || features['trialEndDate'];
+      // Calculate days remaining dynamically from end date
+      const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : features['trialDaysRemaining'];
       return {
         trialStartDate: features['trialStartDate'],
-        trialEndDate: this.subscriptionCheck['effectiveExpiry'] || features['trialEndDate'],
-        trialDaysRemaining: features['trialDaysRemaining'],
+        trialEndDate,
+        trialDaysRemaining,
       };
     }
     return null;
+  }
+
+  // Calculate days remaining from end date (updates dynamically)
+  private calculateDaysRemaining(endDate: string): number {
+    const end = new Date(endDate).getTime();
+    const now = Date.now();
+    const diffMs = end - now;
+    if (diffMs <= 0) return 0;
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   }
 
   // Store dashboard data for trial info access
