@@ -244,9 +244,16 @@ export interface EdobInvoiceListResponse {
 
 export interface EdobInvoiceStats {
   totalInvoices: number;
-  paid: number;
-  pending: number;
-  overdue: number;
+  paidCount?: number;
+  paidAmountCents?: number;
+  pendingCount?: number;
+  pendingAmountCents?: number;
+  overdueCount?: number;
+  overdueAmountCents?: number;
+  currency?: string;
+  paid?: number;
+  pending?: number;
+  overdue?: number;
   totalAmountCents?: number;
   totalAmountDisplay?: string;
   [key: string]: any;

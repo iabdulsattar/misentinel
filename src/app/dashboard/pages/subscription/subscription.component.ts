@@ -31,9 +31,9 @@ interface Invoice {
 }
 
 interface StatCard {
+  type: 'total' | 'paid' | 'pending' | 'overdue';
   iconBg: string;
   iconColor: string;
-  icon: string;
   label: string;
   value: string;
   sub: string;
@@ -99,36 +99,36 @@ export class SubscriptionComponent implements OnInit {
 
   statCards: StatCard[] = [
     {
+      type: 'total',
       iconBg: 'bg-blue-50',
       iconColor: 'text-blue-600',
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/></svg>`,
       label: 'Total Invoices',
       value: '12',
       sub: 'All time',
       subClass: 'text-slate-400 font-medium',
     },
     {
+      type: 'paid',
       iconBg: 'bg-emerald-50',
       iconColor: 'text-emerald-600',
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>`,
       label: 'Paid Invoices',
       value: '9',
       sub: '£540.00',
       subClass: 'text-emerald-500 font-bold',
     },
     {
+      type: 'pending',
       iconBg: 'bg-yellow-50',
       iconColor: 'text-amber-500',
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`,
       label: 'Pending Invoices',
       value: '2',
       sub: '£120.00',
       subClass: 'text-amber-500 font-bold',
     },
     {
+      type: 'overdue',
       iconBg: 'bg-rose-50',
       iconColor: 'text-red-500',
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>`,
       label: 'Overdue Invoices',
       value: '1',
       sub: '£60.00',
@@ -302,7 +302,7 @@ export class SubscriptionComponent implements OnInit {
           this.invoices = (res.invoices || []).map((inv) => this.mapInvoice(inv));
           this.totalInvoicesCount = res.total || 0;
           this.totalPages = res.totalPages || 1;
-          this.currentPage = (res.page ?? 0) + 1;
+          this.currentPage = res.page ?? this.currentPage;
         },
         error: (err) => {
           console.error('[SubscriptionComponent] Invoice list error:', err);
@@ -341,39 +341,39 @@ export class SubscriptionComponent implements OnInit {
     if (!stats) return;
     this.statCards = [
       {
+        type: 'total',
         iconBg: 'bg-blue-50',
         iconColor: 'text-blue-600',
-        icon: this.statCards[0]?.icon || '',
         label: 'Total Invoices',
         value: String(stats.totalInvoices ?? 0),
         sub: 'All time',
         subClass: 'text-slate-400 font-medium',
       },
       {
+        type: 'paid',
         iconBg: 'bg-emerald-50',
         iconColor: 'text-emerald-600',
-        icon: this.statCards[1]?.icon || '',
         label: 'Paid Invoices',
-        value: String(stats.paid ?? 0),
-        sub: stats.totalAmountDisplay || '—',
+        value: String(stats.paidCount ?? stats.paid ?? 0),
+        sub: stats.paidAmountCents ? this.centsToDisplay(stats.paidAmountCents) : (stats.totalAmountDisplay || '—'),
         subClass: 'text-emerald-500 font-bold',
       },
-       {
+      {
+        type: 'pending',
         iconBg: 'bg-yellow-50',
         iconColor: 'text-amber-500',
-        icon: this.statCards[2]?.icon || '',
         label: 'Pending Invoices',
-        value: String(stats.pending ?? 0),
-        sub: stats.totalAmountDisplay || '—',
+        value: String(stats.pendingCount ?? stats.pending ?? 0),
+        sub: stats.pendingAmountCents ? this.centsToDisplay(stats.pendingAmountCents) : (stats.totalAmountDisplay || '—'),
         subClass: 'text-amber-500 font-bold',
       },
       {
+        type: 'overdue',
         iconBg: 'bg-rose-50',
         iconColor: 'text-red-500',
-        icon: this.statCards[3]?.icon || '',
         label: 'Overdue Invoices',
-        value: String(stats.overdue ?? 0),
-        sub: '—',
+        value: String(stats.overdueCount ?? stats.overdue ?? 0),
+        sub: stats.overdueAmountCents ? this.centsToDisplay(stats.overdueAmountCents) : '—',
         subClass: 'text-red-500 font-bold',
       },
     ];
