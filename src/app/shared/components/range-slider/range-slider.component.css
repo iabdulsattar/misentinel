@@ -129,6 +129,7 @@
 .rangeslider__labels__label.last-label::before {
   height: 12px;
   width: 4px;
+  border-radius: 4px;
 }
 
 .rangeslider__labels__label.first-label::before {
