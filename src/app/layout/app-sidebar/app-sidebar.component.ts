@@ -4,6 +4,7 @@ import { SidebarService } from '../../shared/services/sidebar.service';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { SafeHtmlPipe } from '../../pipe/safe-html.pipe';
 import { PermissionService } from '../../core/services/permission.service';
+import { SubscriptionStatusService } from '../../core/services/subscription-status.service';
 // import { SidebarWidgetComponent } from './app-sidebar-widget.component';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -143,6 +144,7 @@ export class AppSidebarComponent {
     private router: Router,
     private cdr: ChangeDetectorRef,
     public permissions: PermissionService,
+    private readonly subscriptionStatus: SubscriptionStatusService,
   ) {
     this.isExpanded$ = this.sidebarService.isExpanded$;
     this.isMobileOpen$ = this.sidebarService.isMobileOpen$;
@@ -193,7 +195,12 @@ export class AppSidebarComponent {
   // A nav item is visible when it has no permission requirement, or the user
   // holds at least one of the required permissions.
   isNavVisible(item: NavItem): boolean {
-    if (!item.permissions || item.permissions.length === 0) return true;
+    if (!item.permissions || item.permissions.length === 0) {
+      if (item.path === '/subscription') {
+        return true;
+      }
+      return this.subscriptionStatus.isActive() || item.name === 'Authentication';
+    }
     return this.permissions.hasAnyPermission(item.permissions);
   }
 

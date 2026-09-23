@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SubscriptionService } from '../../../../core/services/subscription.service';
+import { SubscriptionStatusService } from '../../../../core/services/subscription-status.service';
 import { Plan, EdobQuote } from '../../../../core/models/subscription.models';
 import { environment } from '../../../../../environments/environment';
 
@@ -66,7 +67,8 @@ export class SubscriptionCheckoutComponent implements OnInit, OnDestroy, AfterVi
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private subscriptionService: SubscriptionService
+    private subscriptionService: SubscriptionService,
+    private readonly subscriptionStatus: SubscriptionStatusService,
   ) {
     this.billingForm = this.fb.group({
       companyName: ['', [Validators.required, Validators.minLength(2)]],
@@ -412,9 +414,9 @@ export class SubscriptionCheckoutComponent implements OnInit, OnDestroy, AfterVi
       services.push({ serviceCode: 'edob', planId: this.plan!.id, status: 'ACTIVE' });
       localStorage.setItem('subscribed_services', JSON.stringify(services));
     }
+    this.subscriptionStatus.markCheckoutSuccess();
     this.isLoading = false;
     this.successMessage = 'Subscription activated successfully! Redirecting to invoices...';
-    // Redirect to invoices tab after short delay
     setTimeout(() => {
       this.router.navigate(['/subscription'], { queryParams: { tab: 'invoices' } });
     }, 2000);

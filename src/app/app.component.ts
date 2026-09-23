@@ -5,6 +5,7 @@ import { AsyncPipe } from '@angular/common';
 import { WithRouteLoaderComponent } from './layout/route-loader/with-route-loader.component';
 import { RouterEventsLoaderService } from './layout/route-loader/router-events-loader.service';
 import { IdleService } from './core/services/idle.service';
+import { SubscriptionStatusService } from './core/services/subscription-status.service';
 
 @Component({
   selector: 'app-root',
@@ -16,9 +17,11 @@ import { IdleService } from './core/services/idle.service';
 export class AppComponent {
   readonly active$ = inject(RouterEventsLoaderService).active$;
   private readonly idleService = inject(IdleService);
+  private readonly subscriptionStatus = inject(SubscriptionStatusService);
 
   constructor() {
     this.idleService.start();
+    this.subscriptionStatus.refresh();
   }
 }
 
