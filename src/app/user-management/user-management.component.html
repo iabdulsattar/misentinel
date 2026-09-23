@@ -386,6 +386,6 @@
     <app-reactivate-user-modal [user]="selectedUser" [orgId]="getOrgId() || ''" (close)="closeReactivateModal()" (reactivated)="onUserReactivated()" />
   }
   @if (showResendModal && resendTargetUser) {
-    <app-resend-credentials-modal [user]="resendTargetUser" [orgId]="getOrgId() || ''" (close)="closeResendModal()" (sent)="onCredentialsResent()" />
+    <app-resend-credentials-modal [user]="resendTargetUser" [orgId]="getOrgId() || ''" [organizationName]="getOrgName()" (close)="closeResendModal()" (sent)="onCredentialsResent()" />
   }
 </main>

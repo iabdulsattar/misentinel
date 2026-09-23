@@ -393,6 +393,14 @@ export class UserManagementComponent implements OnInit {
     return sessionStorage.getItem('org_id') || sessionStorage.getItem('organizationId') || localStorage.getItem('org_id') || localStorage.getItem('organizationId') || null;
   }
 
+  getOrgName(): string {
+    const remember = localStorage.getItem('remember_device');
+    if (remember === 'true') {
+      return localStorage.getItem('org_name') || localStorage.getItem('organizationName') || '';
+    }
+    return sessionStorage.getItem('org_name') || sessionStorage.getItem('organizationName') || localStorage.getItem('org_name') || localStorage.getItem('organizationName') || '';
+  }
+
   loadUsers(): void {
     this.loading = true;
     this.errorMessage = '';

@@ -13,6 +13,7 @@ import { UserService } from '../../core/services/user.service';
 export class ResendCredentialsModalComponent {
   readonly user = input.required<any>();
   readonly orgId = input<string>('');
+  readonly organizationName = input<string>('');
   readonly close = output<void>();
   readonly sent = output<void>();
 
