@@ -249,8 +249,6 @@ export class SigninFormComponent {
     }
 
     const orgs = data?.tokens?.organizations ?? data?.organizations ?? [];
-    const subscribedServices = data?.subscribedServices ?? [];
-    try { localStorage.setItem('subscribed_services', JSON.stringify(subscribedServices)); } catch {}
     const storeOrgAndProceed = (id: string, name?: string) => {
       localStorage.setItem('org_id', id);
       localStorage.setItem('organizationId', id);
@@ -295,38 +293,34 @@ export class SigninFormComponent {
       return;
     }
 
-    const subscribedServices: any[] = data?.subscribedServices ?? [];
-    const hasService = subscribedServices.some(
-      (s: any) => s?.serviceCode === SERVICE_CODE
-    );
-
-    if (hasService) {
-      this.router.navigateByUrl(returnUrl);
-      return;
-    }
-
-    const trialKey = `trial_started_${orgId}_${SERVICE_CODE}`;
-    if (localStorage.getItem(trialKey) === 'true') {
-      this.router.navigateByUrl(returnUrl);
-      return;
-    }
-
     const accessToken = data?.tokens?.access_token ?? data?.access_token;
-    this.subscriptionService.startSubscription(orgId, {
-      planId: SigninFormComponent.LOGIN_PLAN_ID,
-      billingPeriod: 'MONTHLY',
-      useTrial: true,
-      config: {}
-    }, SERVICE_CODE, accessToken).subscribe({
-      next: () => {
-        localStorage.setItem(trialKey, 'true');
-        this.subscriptionService.enableService(orgId, SERVICE_CODE, accessToken).subscribe({
-          next: () => this.router.navigateByUrl(returnUrl),
-          error: () => this.router.navigateByUrl(returnUrl)
+    this.subscriptionService.checkSubscription(orgId, SERVICE_CODE).subscribe({
+      next: (check) => {
+        if (check?.active) {
+          this.subscriptionService.enableService(orgId, SERVICE_CODE, accessToken).subscribe({
+            next: () => this.router.navigateByUrl(returnUrl),
+            error: () => this.router.navigateByUrl(returnUrl)
+          });
+          return;
+        }
+        this.subscriptionService.startSubscription(orgId, {
+          planId: SigninFormComponent.LOGIN_PLAN_ID,
+          billingPeriod: 'MONTHLY',
+          useTrial: true,
+          config: {}
+        }, SERVICE_CODE, accessToken).subscribe({
+          next: () => {
+            this.subscriptionService.enableService(orgId, SERVICE_CODE, accessToken).subscribe({
+              next: () => this.router.navigateByUrl(returnUrl),
+              error: () => this.router.navigateByUrl(returnUrl)
+            });
+          },
+          error: () => {
+            this.router.navigateByUrl(returnUrl);
+          }
         });
       },
       error: () => {
-        localStorage.setItem(trialKey, 'true');
         this.router.navigateByUrl(returnUrl);
       }
     });

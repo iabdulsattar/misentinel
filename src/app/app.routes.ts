@@ -1,6 +1,7 @@
 import { Routes, PreloadAllModules } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
+import { subscriptionGuard } from './core/guards/subscription.guard';
 
 export const routes: Routes = [
       {
@@ -28,19 +29,19 @@ export const routes: Routes = [
           {
             path: 'entries',
             loadComponent: () => import('./dob-feed/entries.component').then(m => m.EntriesComponent),
-            canActivate: [authGuard, permissionGuard('entry.view')],
+            canActivate: [authGuard, subscriptionGuard, permissionGuard('entry.view')],
             title: 'Entries | eDOB'
           },
           {
             path: 'entries/:id',
             loadComponent: () => import('./dob-feed/entry-detail/entry-detail.component').then(m => m.EntryDetailComponent),
-            canActivate: [authGuard, permissionGuard('entry.view')],
+            canActivate: [authGuard, subscriptionGuard, permissionGuard('entry.view')],
             title: 'Entry Detail | eDOB'
           },
           {
             path: 'create-entry',
             loadComponent: () => import('./dob-feed/create-entry/create-entry.component').then(m => m.CreateEntryComponent),
-            canActivate: [authGuard, permissionGuard('entry.create')],
+            canActivate: [authGuard, subscriptionGuard, permissionGuard('entry.create')],
             title: 'Create Entry | eDOB'
           },
           {
@@ -76,7 +77,7 @@ export const routes: Routes = [
           {
             path: 'user-management',
             loadComponent: () => import('./user-management/user-management.component').then(m => m.UserManagementComponent),
-            canActivate: [authGuard, permissionGuard('admin.users.manage')],
+            canActivate: [authGuard, subscriptionGuard, permissionGuard('admin.users.manage')],
             title: 'User Management | eDOB'
           },
           {

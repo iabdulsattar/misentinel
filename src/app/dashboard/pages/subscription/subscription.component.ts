@@ -155,27 +155,19 @@ export class SubscriptionComponent implements OnInit {
 
   constructor(private subscriptionService: SubscriptionService) {}
 
-  private getSubscribedServices(): any[] {
-    try {
-      const raw = localStorage.getItem('subscribed_services');
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
+  get hasActiveSubscription(): boolean {
+    if (this.subscriptionCheck !== null) {
+      const isTrial = this.subscriptionCheck.status === 'TRIAL' || this.subscriptionCheck.status === 'TRIALING';
+      return this.subscriptionCheck.active || isTrial;
     }
+    return false;
   }
 
-  get hasActiveSubscription(): boolean {
-    // Use subscription check API if available, fallback to localStorage
+  get isTrial(): boolean {
     if (this.subscriptionCheck !== null) {
-      // Show trial banner if status is TRIAL (trial subscription)
-      if (this.subscriptionCheck.status === 'TRIAL') {
-        return false;
-      }
-      return this.subscriptionCheck.active;
+      return this.subscriptionCheck.status === 'TRIAL' || this.subscriptionCheck.status === 'TRIALING';
     }
-    return this.getSubscribedServices().some(
-      (s: any) => s?.serviceCode === 'edob'
-    );
+    return false;
   }
 
   // Dynamic trial info from overview (primary) or subscription check (fallback)

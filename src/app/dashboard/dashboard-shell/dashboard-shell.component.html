@@ -31,7 +31,7 @@
     <div class="grid grid-cols-12 gap-4">
       <div class="col-span-12 xl:col-span-12">
 <!-- Trial banner -->
-        @if (!hasActiveSubscription && (subscriptionCheck || trialInfo)) {
+        @if ((!hasActiveSubscription || isTrial) && (subscriptionCheck || trialInfo)) {
         <div class="bg-white border border-slate-200 rounded-md p-4 sm:p-6 flex flex-col xl:flex-row xl:items-center gap-4 mb-4">
          <div class="flex items-center gap-4 flex-1 min-w-0">
            <div class="w-12 h-12 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
