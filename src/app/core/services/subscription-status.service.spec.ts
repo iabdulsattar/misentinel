@@ -7,8 +7,13 @@ import { SubscriptionStatusService } from './subscription-status.service';
 
 describe('SubscriptionStatusService', () => {
   let service: SubscriptionStatusService;
+  let mockCheckSubscription: jasmine.Spy;
 
   beforeEach(() => {
+    mockCheckSubscription = jasmine.createSpy('checkSubscription').and.returnValue(
+      of({ active: true, status: 'ACTIVE', features: {} })
+    );
+
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -21,23 +26,30 @@ describe('SubscriptionStatusService', () => {
         {
           provide: SubscriptionService,
           useValue: {
-            checkSubscription: () => of({ active: true, status: 'ACTIVE', features: {} }),
+            checkSubscription: mockCheckSubscription,
           },
         },
       ],
     });
 
+    localStorage.clear();
+    localStorage.setItem('remember_device', 'true');
+    localStorage.setItem('org_id', 'org-1');
     service = TestBed.inject(SubscriptionStatusService);
   });
 
   it('marks a successful checkout as active', () => {
-    localStorage.clear();
-
     service.markCheckoutSuccess();
 
     expect(service.isActive()).toBeTrue();
-    expect(JSON.parse(localStorage.getItem('subscribed_services') || '[]')).toContain(
-      jasmine.objectContaining({ serviceCode: 'edob', status: 'ACTIVE' })
-    );
+  });
+
+  it('treats a trial as still active for access gates', async () => {
+    mockCheckSubscription.and.returnValue(of({ active: false, status: 'TRIAL', features: {} }));
+
+    await service.refresh();
+
+    expect(service.status()).toBe('trial');
+    expect(service.isActive()).toBeTrue();
   });
 });

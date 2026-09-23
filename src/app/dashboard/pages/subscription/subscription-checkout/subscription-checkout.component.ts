@@ -408,12 +408,6 @@ export class SubscriptionCheckoutComponent implements OnInit, OnDestroy, AfterVi
   }
 
   private completeCheckout(orgId: string): void {
-    localStorage.setItem(`trial_started_${orgId}_edob`, 'true');
-    const services: any[] = JSON.parse(localStorage.getItem('subscribed_services') || '[]') || [];
-    if (!services.some((service: any) => service?.serviceCode === 'edob')) {
-      services.push({ serviceCode: 'edob', planId: this.plan!.id, status: 'ACTIVE' });
-      localStorage.setItem('subscribed_services', JSON.stringify(services));
-    }
     this.subscriptionStatus.markCheckoutSuccess();
     this.isLoading = false;
     this.successMessage = 'Subscription activated successfully! Redirecting to invoices...';

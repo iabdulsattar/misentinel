@@ -99,21 +99,18 @@ export class DashboardShellComponent implements OnInit {
   }
 
   get hasActiveSubscription(): boolean {
-    // Use subscription check API if available, fallback to localStorage
     if (this.subscriptionCheck !== null) {
-      // Show trial banner if status is TRIAL (trial subscription)
-      if (this.subscriptionCheck.status === 'TRIAL') {
-        return false;
-      }
-      return this.subscriptionCheck.active;
+      const isTrial = this.subscriptionCheck.status === 'TRIAL' || this.subscriptionCheck.status === 'TRIALING';
+      return this.subscriptionCheck.active || isTrial;
     }
-    try {
-      const raw = localStorage.getItem('subscribed_services');
-      const services: any[] = raw ? JSON.parse(raw) : [];
-      return services.some((s) => s?.serviceCode === 'edob');
-    } catch {
-      return false;
+    return false;
+  }
+
+  get isTrial(): boolean {
+    if (this.subscriptionCheck !== null) {
+      return this.subscriptionCheck.status === 'TRIAL' || this.subscriptionCheck.status === 'TRIALING';
     }
+    return false;
   }
 
   // Dynamic trial info from overview (primary) or subscription check (fallback)

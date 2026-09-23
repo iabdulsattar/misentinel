@@ -59,18 +59,31 @@ export class SubscriptionPlanComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.subscriptionService.startSubscription(orgId, {
-      planId,
-      billingPeriod: 'MONTHLY',
-      useTrial: true,
-    }).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.router.navigate(['/signin']);
+    this.subscriptionService.checkSubscription(orgId, 'edob').subscribe({
+      next: (check) => {
+        if (check?.active) {
+          this.isLoading = false;
+          this.router.navigate(['/signin']);
+          return;
+        }
+        this.subscriptionService.startSubscription(orgId, {
+          planId,
+          billingPeriod: 'MONTHLY',
+          useTrial: true,
+        }).subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.router.navigate(['/signin']);
+          },
+          error: (err) => {
+            this.isLoading = false;
+            this.errorMessage = err?.error?.detail || 'Failed to start subscription. Please try again.';
+          },
+        });
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.detail || 'Failed to start subscription. Please try again.';
+        this.errorMessage = err?.error?.detail || 'Failed to check subscription. Please try again.';
       },
     });
   }

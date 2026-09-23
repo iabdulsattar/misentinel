@@ -201,6 +201,11 @@ export class AppSidebarComponent {
       }
       return this.subscriptionStatus.isActive() || item.name === 'Authentication';
     }
+
+    if (this.subscriptionStatus.status() === 'trial') {
+      return true;
+    }
+
     return this.permissions.hasAnyPermission(item.permissions);
   }
 

@@ -16,14 +16,19 @@ export class SubscriptionStatusService {
     private readonly router: Router,
   ) {}
 
+  clear(): void {
+    this.status.set('unknown');
+    this.isLoading.set(false);
+  }
+
   isActive(): boolean {
-    return this.status() === 'active';
+    return this.status() === 'active' || this.status() === 'trial';
   }
 
   async refresh(): Promise<void> {
     const orgId = this.getOrgId();
     if (!orgId) {
-      this.status.set('unknown');
+      this.clear();
       return;
     }
 
@@ -31,19 +36,12 @@ export class SubscriptionStatusService {
 
     try {
       const result = await this.subscriptionService.checkSubscription(orgId, this.serviceCode).toPromise();
-      const active = result?.active === true;
-      const status = result?.status === 'TRIAL' ? 'trial' : active ? 'active' : 'inactive';
-
+      const isTrial = result?.status === 'TRIAL' || result?.status === 'TRIALING';
+      const active = result?.active === true || isTrial;
+      const status = isTrial ? 'trial' : active ? 'active' : 'inactive';
       this.status.set(status);
-
-      if (active) {
-        this.cacheActiveSubscription();
-      } else {
-        this.clearCachedSubscription();
-      }
     } catch (error) {
       this.status.set('inactive');
-      this.clearCachedSubscription();
     } finally {
       this.isLoading.set(false);
     }
@@ -51,40 +49,15 @@ export class SubscriptionStatusService {
 
   markCheckoutSuccess(): void {
     this.status.set('active');
-    this.cacheActiveSubscription();
   }
 
   redirectIfInactive(): void {
-    if (this.status() === 'inactive' || this.status() === 'trial') {
+    if (this.status() === 'inactive') {
       const currentUrl = this.router.url;
       if (!currentUrl.startsWith('/subscription') && !currentUrl.startsWith('/signin')) {
         this.router.navigate(['/subscription']);
       }
     }
-  }
-
-  private cacheActiveSubscription(): void {
-    const services = JSON.parse(localStorage.getItem('subscribed_services') || '[]');
-    const next = Array.isArray(services) ? [...services] : [];
-    const index = next.findIndex((service: any) => service?.serviceCode === this.serviceCode);
-
-    if (index >= 0) {
-      next[index] = { ...next[index], serviceCode: this.serviceCode, status: 'ACTIVE' };
-    } else {
-      next.push({ serviceCode: this.serviceCode, status: 'ACTIVE' });
-    }
-
-    localStorage.setItem('subscribed_services', JSON.stringify(next));
-  }
-
-  private clearCachedSubscription(): void {
-    const services = JSON.parse(localStorage.getItem('subscribed_services') || '[]');
-    if (!Array.isArray(services)) {
-      return;
-    }
-
-    const next = services.filter((service: any) => service?.serviceCode !== this.serviceCode);
-    localStorage.setItem('subscribed_services', JSON.stringify(next));
   }
 
   private getOrgId(): string | null {
