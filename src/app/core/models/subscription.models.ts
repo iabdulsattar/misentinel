@@ -166,6 +166,8 @@ export interface EdobOverview {
   tiers?: EdobPricingTier[];
   quote?: EdobQuote;
   features?: Record<string, any>;
+  totalUsers?: number;
+  totalEntries?: number;
   [key: string]: any;
 }
 

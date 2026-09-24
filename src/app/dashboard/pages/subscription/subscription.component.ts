@@ -66,6 +66,9 @@ export class SubscriptionComponent implements OnInit {
   invoiceStats: EdobInvoiceStats | null = null;
   invoices: Invoice[] = [];
 
+  // Total entries from overview API
+  totalEntries = 0;
+
   // Subscription check data
   subscriptionCheck: SubscriptionCheckResponse | null = null;
   subscriptionCheckLoading = false;
@@ -260,6 +263,9 @@ export class SubscriptionComponent implements OnInit {
           } else {
             this.estCost = this.priceFormatter.format(this.priceForUsers(this.sliderValue));
           }
+
+          // Extract total users and total entries from overview
+          this.totalEntries = data.totalEntries ?? 0;
         },
         error: (err) => {
           this.overviewError = 'Failed to load subscription overview. See browser console for details.';

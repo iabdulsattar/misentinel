@@ -18,22 +18,9 @@ export class AddEntryTypeModalComponent {
   readonly created = output<any>();
 
   name = '';
-  color = '';
   description = '';
   isSubmitting = false;
   errorMessage = '';
-
-  colorOptions = [
-    { value: '', label: 'None' },
-    { value: 'red', label: 'Red' },
-    { value: 'orange', label: 'Orange' },
-    { value: 'yellow', label: 'Yellow' },
-    { value: 'green', label: 'Green' },
-    { value: 'blue', label: 'Blue' },
-    { value: 'purple', label: 'Purple' },
-    { value: 'pink', label: 'Pink' },
-    { value: 'gray', label: 'Gray' },
-  ];
 
   get title(): string {
     return this.type() === 'incident' ? 'Add Incident Type' : 'Add Handover Type';
@@ -66,7 +53,6 @@ export class AddEntryTypeModalComponent {
       name: trimmedName,
       active: true,
     };
-    if (this.color) payload.color = this.color;
     if (this.description.trim()) payload.description = this.description.trim();
 
     const service = this.type() === 'incident'
@@ -77,7 +63,6 @@ export class AddEntryTypeModalComponent {
       next: (t: any) => {
         this.isSubmitting = false;
         this.name = '';
-        this.color = '';
         this.description = '';
         this.created.emit(t);
         this.close.emit();

@@ -125,8 +125,8 @@
             </div>
             <div>
               <p class="text-xs text-slate-500 font-medium">Total Users</p>
-              <p class="text-3xl font-semibold text-slate-900 leading-tight">{{ overview?.usage?.userCount ?? (overview?.quote?.userCount ?? sliderValue) }}</p>
-              <p class="text-xs text-slate-500">{{ overview?.usage ? (overview?.usage?.userCount + ' active users') : '—' }}</p>
+              <p class="text-3xl font-semibold text-slate-900 leading-tight">{{ overview?.totalUsers ?? overview?.usage?.userCount ?? (overview?.quote?.userCount ?? sliderValue) }}</p>
+              <p class="text-xs text-slate-500">{{ overview?.totalUsers ? (overview?.totalUsers + ' users') : (overview?.usage ? (overview?.usage?.userCount + ' active users') : '—') }}</p>
             </div>
           </div>
           <div class="border border-slate-200 rounded-md p-5 flex items-center gap-4">
@@ -144,8 +144,8 @@
             </div>
             <div>
               <p class="text-xs text-slate-500 font-medium">Entries Created</p>
-              <p class="text-3xl font-semibold text-slate-900 leading-tight">12</p>
-              <p class="text-xs text-slate-500">Total entries in trial</p>
+              <p class="text-3xl font-semibold text-slate-900 leading-tight">{{ totalEntries }}</p>
+              <p class="text-xs text-slate-500">Total entries</p>
             </div>
           </div>
         </div>
