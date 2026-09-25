@@ -174,6 +174,44 @@ export class SubscriptionComponent implements OnInit {
     return false;
   }
 
+  get trialStatus(): 'active' | 'expired' | 'inactive' {
+    const info = this.trialInfo;
+    if (!info) return 'inactive';
+    
+    if (info.trialDaysRemaining != null) {
+      if (info.trialDaysRemaining > 0) return 'active';
+      return 'expired';
+    }
+    
+    // If we have an end date but no days remaining, calculate
+    if (info.trialEndDate) {
+      const days = this.calculateDaysRemaining(info.trialEndDate);
+      return days > 0 ? 'active' : 'expired';
+    }
+    
+    // Check overview trial active flag
+    if (this.overview?.trial?.active === true) return 'active';
+    if (this.overview?.trial?.active === false) return 'expired';
+    
+    return 'inactive';
+  }
+
+  get trialStatusLabel(): string {
+    switch (this.trialStatus) {
+      case 'active': return 'Active';
+      case 'expired': return 'Expired';
+      default: return 'Inactive';
+    }
+  }
+
+  get trialStatusClass(): string {
+    switch (this.trialStatus) {
+      case 'active': return 'text-emerald-500 bg-emerald-100';
+      case 'expired': return 'text-red-500 bg-red-100';
+      default: return 'text-slate-500 bg-slate-100';
+    }
+  }
+
   // Dynamic trial info from subscribed services (primary), overview, or subscription check (fallback)
   get trialInfo() {
     // Use subscribedServices from login response as primary source
