@@ -125,7 +125,7 @@
             @if (errors.password) {
             <p class="mt-1 text-xs text-error-500">{{ errors.password }}</p>
             }
-            <span (click)="togglePasswordVisibility()" class="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2">
+            <span (click)="togglePasswordVisibility()" class="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-[22px]">
               @if (showPassword) {
               <svg width="1em" height="1em" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
                 class="fill-gray-500 dark:fill-gray-400 size-5">
@@ -156,7 +156,7 @@
             @if (errors.confirmpassword) {
             <p class="mt-1 text-xs text-error-500">{{ errors.confirmpassword }}</p>
             }
-            <span (click)="togglePasswordVisibilityOne()" class="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2">
+            <span (click)="togglePasswordVisibilityOne()" class="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-[22px]">
               @if (confirmPassword) {
               <svg width="1em" height="1em" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
                 class="fill-gray-500 dark:fill-gray-400 size-5">
