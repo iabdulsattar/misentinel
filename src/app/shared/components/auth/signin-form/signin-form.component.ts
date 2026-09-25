@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -23,7 +23,7 @@ import { ButtonComponent } from '../../ui/button/button.component';
   templateUrl: './signin-form.component.html',
   styles: ''
 })
-export class SigninFormComponent {
+export class SigninFormComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
@@ -32,6 +32,9 @@ export class SigninFormComponent {
     private router: Router,
     private route: ActivatedRoute,
   ) {}
+
+  ngOnInit(): void {
+  }
 
   showPassword = false;
   isChecked = false;
@@ -208,6 +211,15 @@ export class SigninFormComponent {
         console.error('Login error:', err);
         this.isLoading = false;
 
+        if (this.isEmailNotVerifiedError(err)) {
+          const email = this.email.trim();
+          localStorage.setItem('verification_email', email);
+          this.authService.resendSignupOtp({ email }).subscribe({
+            complete: () => this.router.navigate(['/verification']),
+          });
+          return;
+        }
+
         if (err.status === 401) {
           this.errorMessage = 'Invalid email or password. Please try again.';
         } else if (err.status === 400) {
@@ -256,6 +268,9 @@ export class SigninFormComponent {
         localStorage.setItem('organizationName', name);
         localStorage.setItem('org_name', name);
       }
+      if (data?.subscribedServices) {
+        localStorage.setItem('subscribed_services', JSON.stringify(data.subscribedServices));
+      }
       this.permissionService.setServiceAccess((data?.serviceAccess as ServiceAccessGrant[]) ?? data?.tokens?.serviceAccess);
       this.isLoading = false;
       const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
@@ -293,6 +308,23 @@ export class SigninFormComponent {
       return;
     }
 
+    // Check if edob service is already subscribed and active from login response
+    const subscribedServices = data?.subscribedServices ?? [];
+    const edobService = subscribedServices.find((s: any) => s?.serviceCode === SERVICE_CODE);
+    if (edobService) {
+      if (!edobService.webAccess) {
+        // User is subscribed but does not have web access — show message
+        this.isLoading = false;
+        this.errorMessage = 'Your account is not currently assigned access to this application. Please contact your administrator to request access.';
+        this.authService.clearTokens();
+        return;
+      }
+      if (edobService.active) {
+        this.router.navigateByUrl(returnUrl);
+        return;
+      }
+    }
+
     const accessToken = data?.tokens?.access_token ?? data?.access_token;
     this.subscriptionService.checkSubscription(orgId, SERVICE_CODE).subscribe({
       next: (check) => {
@@ -324,6 +356,12 @@ export class SigninFormComponent {
         this.router.navigateByUrl(returnUrl);
       }
     });
+  }
+
+  private isEmailNotVerifiedError(err: any): boolean {
+    if (err?.status !== 403) return false;
+    const source = err?.error?.message ?? err?.error?.detail ?? '';
+    return source?.toString().toLowerCase().includes('email not verified');
   }
 }
 

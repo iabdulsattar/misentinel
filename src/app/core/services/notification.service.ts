@@ -26,22 +26,48 @@ export class NotificationService {
     if (payload.unreadOnly) params.set('unreadOnly', 'true');
     return this.api.get<any>(`/api/v1/notifications?${params.toString()}`).pipe(
       map((res) => {
-        if (res && typeof res === 'object' && 'data' in res) {
-          return res.data as ListNotificationsResponse;
-        }
-        return res as ListNotificationsResponse;
+        const apiData = res?.data ?? res;
+        const notifications: any[] = Array.isArray(apiData)
+          ? apiData
+          : (apiData?.notifications ?? []);
+        const mapped = notifications.map((n: any) => ({
+          id: n.id,
+          userId: n.userId ?? n.recipientUserId,
+          organizationId: n.organizationId,
+          type: n.type ?? n.templateCode,
+          title: n.title,
+          body: n.body ?? n.shortBody,
+          read: n.read ?? (n.readAt != null),
+          createdAt: n.createdAt,
+          updatedAt: n.updatedAt,
+          ...n,
+        }));
+        const meta = res?.meta ?? {};
+        return {
+          notifications: mapped,
+          total: meta.totalElements ?? mapped.length,
+          page: meta.page ?? 0,
+          size: meta.size ?? mapped.length,
+        } as ListNotificationsResponse;
       })
     );
   }
 
-  // GET /api/v1/notifications/unread-count
+   // GET /api/v1/notifications/unread-count
   unreadCount(userId: string): Observable<UnreadCountResponse> {
     return this.api.get<any>(`/api/v1/notifications/unread-count?userId=${encodeURIComponent(userId)}`).pipe(
       map((res) => {
-        if (res && typeof res === 'object' && 'data' in res) {
-          return res.data as UnreadCountResponse;
+        const data = res?.data;
+        if (typeof data === 'object' && data !== null && 'count' in data) {
+          return data as UnreadCountResponse;
         }
-        return res as UnreadCountResponse;
+        if (typeof data === 'number') {
+          return { count: data } as UnreadCountResponse;
+        }
+        if (res?.count !== undefined) {
+          return res as UnreadCountResponse;
+        }
+        return { count: 0 } as UnreadCountResponse;
       })
     );
   }

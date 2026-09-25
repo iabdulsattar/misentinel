@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { RangeSliderComponent } from '../../../shared/components/range-slider/range-slider.component';
 import { SubscriptionService } from '../../../core/services/subscription.service';
+import { AuthService } from '../../../core/services/auth.service';
 import {
   EdobOverview,
   EdobInvoice as ApiInvoice,
@@ -156,7 +157,7 @@ export class SubscriptionComponent implements OnInit {
     year: 'numeric',
   });
 
-  constructor(private subscriptionService: SubscriptionService) {}
+  constructor(private subscriptionService: SubscriptionService, private authService: AuthService) {}
 
   get hasActiveSubscription(): boolean {
     if (this.subscriptionCheck !== null) {
@@ -173,8 +174,20 @@ export class SubscriptionComponent implements OnInit {
     return false;
   }
 
-  // Dynamic trial info from overview (primary) or subscription check (fallback)
+  // Dynamic trial info from subscribed services (primary), overview, or subscription check (fallback)
   get trialInfo() {
+    // Use subscribedServices from login response as primary source
+    const svc = this.authService.getSubscribedService('edob');
+    if (svc) {
+      const trialEndDate = svc.expiresAt;
+      const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : null;
+      return {
+        trialStartDate: svc.startDate,
+        trialEndDate,
+        trialDaysRemaining,
+      };
+    }
+
     // Prefer overview API data which has detailed trial info
     if (this.overview?.trial) {
       const trial = this.overview.trial;
@@ -186,11 +199,14 @@ export class SubscriptionComponent implements OnInit {
     }
     // Fallback to subscription check
     if (this.subscriptionCheck) {
+      const sub = this.subscriptionCheck['subscription'] || {};
       const features = this.subscriptionCheck.features || {};
+      const trialEndDate = sub.currentPeriodEnd || this.subscriptionCheck['effectiveExpiry'] || features['trialEndDate'];
+      const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : features['trialDaysRemaining'];
       return {
-        trialStartDate: features['trialStartDate'],
-        trialEndDate: this.subscriptionCheck['effectiveExpiry'] || features['trialEndDate'],
-        trialDaysRemaining: features['trialDaysRemaining'],
+        trialStartDate: sub.currentPeriodStart || this.subscriptionCheck['startDate'] || features['trialStartDate'],
+        trialEndDate,
+        trialDaysRemaining,
       };
     }
     return null;
@@ -463,5 +479,13 @@ export class SubscriptionComponent implements OnInit {
   onSliderInput(): void {
     this.update();
     this.refreshQuote();
+  }
+
+  private calculateDaysRemaining(endDate: string): number {
+    const end = new Date(endDate).getTime();
+    const now = Date.now();
+    const diffMs = end - now;
+    if (diffMs <= 0) return 0;
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   }
 }

@@ -99,6 +99,10 @@ export class DashboardShellComponent implements OnInit {
   }
 
   get hasActiveSubscription(): boolean {
+    const svc = this.authService.getSubscribedService('edob');
+    if (svc) {
+      return svc.active || svc.status === 'ACTIVE';
+    }
     if (this.subscriptionCheck !== null) {
       const isTrial = this.subscriptionCheck.status === 'TRIAL' || this.subscriptionCheck.status === 'TRIALING';
       return this.subscriptionCheck.active || isTrial;
@@ -107,15 +111,32 @@ export class DashboardShellComponent implements OnInit {
   }
 
   get isTrial(): boolean {
+    const svc = this.authService.getSubscribedService('edob');
+    if (svc) {
+      return svc.status === 'TRIAL' || svc.status === 'TRIALING';
+    }
     if (this.subscriptionCheck !== null) {
       return this.subscriptionCheck.status === 'TRIAL' || this.subscriptionCheck.status === 'TRIALING';
     }
     return false;
   }
 
-  // Dynamic trial info from overview (primary) or subscription check (fallback)
+   // Dynamic trial info from subscribed services (primary), overview, or subscription check (fallback)
   get trialInfo() {
-    // Prefer overview API data which has detailed trial info
+    // Use subscribedServices from login response as primary source
+    const svc = this.authService.getSubscribedService('edob');
+    if (svc) {
+      const trialStartDate = svc.startDate;
+      const trialEndDate = svc.expiresAt;
+      const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : null;
+      return {
+        trialStartDate,
+        trialEndDate,
+        trialDaysRemaining,
+      };
+    }
+
+    // Fallback to overview API data which has detailed trial info
     if (this.dashboardData?.trial) {
       const trial = this.dashboardData.trial;
       // Use subscription check for trial start date if available

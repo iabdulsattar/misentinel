@@ -1,13 +1,17 @@
 export interface Notification {
   id: string;
   userId: string;
+  recipientUserId?: string;
   organizationId?: string;
   type: string;
+  templateCode?: string;
   title: string;
   body: string;
+  shortBody?: string;
   read: boolean;
+  readAt?: string | null;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
   [key: string]: any;
 }
 

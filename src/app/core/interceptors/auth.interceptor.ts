@@ -6,11 +6,12 @@ import {
   HttpInterceptor,
   HttpErrorResponse,
 } from '@angular/common/http';
-import { Observable, from, throwError } from 'rxjs';
+import { Observable, EMPTY, from, throwError } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { PermissionService } from '../services/permission.service';
+import { ProfileResponse } from '../models/auth.models';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -55,6 +56,11 @@ export class AuthInterceptor implements HttpInterceptor {
       catchError((err) => {
         if (err instanceof HttpErrorResponse && err.status === 401) {
           return this.refreshAndProceed(req, next);
+        }
+        if (err instanceof HttpErrorResponse && this.isEmailNotVerifiedError(err)) {
+          return this.handleEmailNotVerified().pipe(
+            switchMap(() => EMPTY)
+          );
         }
         return throwError(() => err);
       })
@@ -178,5 +184,40 @@ export class AuthInterceptor implements HttpInterceptor {
   private clearTokens() {
     this.authService.clearTokens();
     this.permissionService.clear();
+  }
+
+  private isEmailNotVerifiedError(err: HttpErrorResponse): boolean {
+    if (err.status !== 403) return false;
+    const source = err.error?.message ?? err.error?.detail ?? '';
+    return source?.toString().toLowerCase().includes('email not verified');
+  }
+
+  private handleEmailNotVerified(): Observable<any> {
+    const token = this.getAccessToken();
+    if (!token) {
+      this.router.navigate(['/signin']);
+      return from([]);
+    }
+
+    this.authService.refreshProfile();
+    return this.authService.me(token).pipe(
+      switchMap((profile: ProfileResponse) => {
+        const email = profile?.email;
+        if (!email) {
+          this.router.navigate(['/verification']);
+          return from([]);
+        }
+        localStorage.setItem('verification_email', email);
+        return this.authService.resendSignupOtp({ email });
+      }),
+      switchMap(() => {
+        this.router.navigate(['/verification']);
+        return from([]);
+      }),
+      catchError(() => {
+        this.router.navigate(['/verification']);
+        return from([]);
+      })
+    );
   }
 }

@@ -32,10 +32,21 @@ export class DateTimePickerComponent implements AfterViewInit, OnChanges, OnDest
       this.flatpickrInstance = flatpickr(this.dateTimeInput.nativeElement, {
         enableTime: true,
         time_24hr: true,
-        dateFormat: 'Y-m-d H:i',
+        dateFormat: 'd/m/Y H:i',
         minuteIncrement: 5,
         defaultDate: (this.value || this.defaultDate) as any,
         onChange: (_selectedDates, dateStr) => {
+          // Convert from dd/mm/yyyy HH:mm to ISO format (yyyy-mm-ddTHH:mm)
+          const parts = dateStr.split(' ');
+          if (parts.length === 2) {
+            const dateParts = parts[0].split('/');
+            const timeParts = parts[1].split(':');
+            if (dateParts.length === 3 && timeParts.length === 2) {
+              const isoDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}T${timeParts[0]}:${timeParts[1]}`;
+              this.valueChange.emit(isoDate);
+              return;
+            }
+          }
           this.valueChange.emit(dateStr.replace(' ', 'T'));
         }
       });
@@ -51,13 +62,30 @@ export class DateTimePickerComponent implements AfterViewInit, OnChanges, OnDest
       const previous = changes['value'].previousValue;
       if (current === previous) return;
       if (current) {
-        this.flatpickrInstance.setDate(current, false);
+        // Convert ISO format (yyyy-mm-ddTHH:mm) to dd/mm/yyyy HH:mm for display
+        const displayValue = this.convertToDisplayFormat(current);
+        this.flatpickrInstance.setDate(displayValue, false);
       } else {
         this.flatpickrInstance.clear(false);
       }
     } catch (error) {
       console.error('DateTimePickerComponent: Error updating date in ngOnChanges:', error);
     }
+  }
+
+  private convertToDisplayFormat(isoDate: string): string {
+    // Handle ISO format: yyyy-mm-ddTHH:mm or yyyy-mm-ddTHH:mm:ss
+    if (isoDate.includes('T')) {
+      const parts = isoDate.split('T');
+      if (parts.length === 2) {
+        const dateParts = parts[0].split('-');
+        const timePart = parts[1].split(':').slice(0, 2).join(':');
+        if (dateParts.length === 3) {
+          return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]} ${timePart}`;
+        }
+      }
+    }
+    return isoDate;
   }
 
   ngOnDestroy() {

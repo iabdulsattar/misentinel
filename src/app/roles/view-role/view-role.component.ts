@@ -66,7 +66,13 @@ export class ViewRoleComponent implements OnInit {
   ) {}
 
   get canEditRole(): boolean {
+    if (!this.role) return false;
+    if (this.isSystemRole(this.role)) return false;
     return this.permissionService.hasPermission('admin.roles.manage');
+  }
+
+  isSystemRole(role: Role): boolean {
+    return role.source?.toLowerCase() === 'system';
   }
 
   ngOnInit(): void {

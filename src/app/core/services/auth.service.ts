@@ -85,8 +85,16 @@ export class AuthService {
       throw new Error("Missing access token: expected localStorage['access_token_saas'] or sessionStorage['access_token_saas'] to be set");
     }
 
+    if (this.cachedProfile) {
+      return of(this.cachedProfile);
+    }
+
     return this.api.get<ApiWrapper<ProfileResponse>>('/api/v1/auth/me', headers as any).pipe(
-      map((res) => res.data)
+      map((res) => {
+        this.cachedProfile = res.data;
+        this.cachedUserId = res.data.id;
+        return res.data;
+      })
     );
   }
 
@@ -137,6 +145,12 @@ export class AuthService {
   }
 
   private cachedUserId: string | null = null;
+  private cachedProfile: ProfileResponse | null = null;
+
+  refreshProfile(): void {
+    this.cachedProfile = null;
+    this.cachedUserId = null;
+  }
 
   getUserId(): Observable<string> {
     if (this.cachedUserId) {
@@ -151,6 +165,8 @@ export class AuthService {
   }
 
   setTokens(accessToken: string, refreshToken: string | null, expiresAt: string): void {
+    this.cachedProfile = null;
+    this.cachedUserId = null;
     const remember = localStorage.getItem('remember_device');
     if (remember === 'true') {
       localStorage.setItem('access_token_saas', accessToken);
@@ -179,11 +195,25 @@ export class AuthService {
     localStorage.removeItem('session_expires_at');
     localStorage.removeItem('org_id');
     localStorage.removeItem('organizationId');
+    localStorage.removeItem('subscribed_services');
     sessionStorage.removeItem('access_token_saas');
     sessionStorage.removeItem('refresh_token');
     sessionStorage.removeItem('session_expires_at');
     sessionStorage.removeItem('org_id');
     sessionStorage.removeItem('organizationId');
+    this.cachedProfile = null;
+    this.cachedUserId = null;
+  }
+
+  getSubscribedService(serviceCode: string): any | null {
+    try {
+      const stored = localStorage.getItem('subscribed_services');
+      if (!stored) return null;
+      const services = JSON.parse(stored) as any[];
+      return services.find((s) => s?.serviceCode === serviceCode) ?? null;
+    } catch {
+      return null;
+    }
   }
 
   getOrgName(): string | null {

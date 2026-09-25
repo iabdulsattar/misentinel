@@ -207,6 +207,9 @@
                   [(ngModel)]="severityScore" name="severityScore"
                   placeholder="1 - 10"
                   class="mt-1.5 w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 text-sm placeholder:text-gray-400 outline-none focus:border-gray-400">
+                @if (severityScoreError) {
+                  <p class="mt-1 text-xs text-red-500">{{ severityScoreError }}</p>
+                }
               </div>
             </div>
           }

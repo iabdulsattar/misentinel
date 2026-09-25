@@ -80,6 +80,7 @@ export class CreateEntryComponent implements OnInit {
   descriptionError = '';
   occurredAtError = '';
   locationError = '';
+  severityScoreError = '';
 
   // Per-type attachment state (max 2 each)
   pdfFiles: SelectedFile[] = [];
@@ -472,6 +473,7 @@ export class CreateEntryComponent implements OnInit {
     this.descriptionError = '';
     this.occurredAtError = '';
     this.locationError = '';
+    this.severityScoreError = '';
     this.incidentTitleError = '';
     this.incidentTypeError = '';
     this.incidentDateError = '';
@@ -519,7 +521,7 @@ export class CreateEntryComponent implements OnInit {
     if (!this.immediateActionsTaken.trim()) { this.immediateActionsError = 'Immediate actions taken are required'; valid = false; }
 
     if (this.severityScore && (Number(this.severityScore) < 1 || Number(this.severityScore) > 10)) {
-      this.immediateActionsError = 'Severity score must be between 1 and 10';
+      this.severityScoreError = 'Severity score must be between 1 and 10';
       valid = false;
     }
 

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { ProfileResponse } from '../../../../core/models/auth.models';
 
 @Component({
   selector: 'app-user-dropdown',
@@ -40,11 +41,10 @@ export class UserDropdownComponent implements OnInit {
     }
 
     this.authService.me(token).subscribe({
-      next: (profile: any) => {
-        const user = profile?.user || profile?.data || profile;
-        this.userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User';
-        this.userEmail = user.email || '';
-        this.userInitials = this.getInitials(user);
+      next: (profile: ProfileResponse) => {
+        this.userName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.email || 'User';
+        this.userEmail = profile.email || '';
+        this.userInitials = this.getInitials(profile);
         this.loading = false;
       },
       error: () => {
@@ -53,7 +53,7 @@ export class UserDropdownComponent implements OnInit {
     });
   }
 
-  private getInitials(user: any): string {
+  private getInitials(user: ProfileResponse): string {
     const first = (user.firstName || '').charAt(0);
     const last = (user.lastName || '').charAt(0);
     return (first + last).toUpperCase() || 'U';
