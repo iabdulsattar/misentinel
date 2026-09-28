@@ -6,6 +6,7 @@ import { ThemeToggleButtonComponent } from '../../shared/components/common/theme
 import { NotificationDropdownComponent } from '../../shared/components/header/notification-dropdown/notification-dropdown.component';
 import { UserDropdownComponent } from '../../shared/components/header/user-dropdown/user-dropdown.component';
 import { AuthService } from '../../core/services/auth.service';
+import { ProductSwitcherComponent } from '../../shared/components/ui/product-switcher/product-switcher.component';
 
 @Component({
   selector: 'app-header',
@@ -15,6 +16,7 @@ import { AuthService } from '../../core/services/auth.service';
     ThemeToggleButtonComponent,
     NotificationDropdownComponent,
     UserDropdownComponent,
+    ProductSwitcherComponent,
   ],
   templateUrl: './app-header.component.html',
 })
