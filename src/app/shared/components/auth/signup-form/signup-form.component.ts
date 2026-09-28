@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
-import { SubscriptionService, SERVICE_CODE } from '../../../../core/services/subscription.service';
-import { finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { InputFieldComponent } from '../../form/input/input-field.component';
 import { LabelComponent } from '../../form/label/label.component';
@@ -27,7 +25,6 @@ export class SignupFormComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private subscriptionService: SubscriptionService,
     private router: Router
   ) {}
 
@@ -253,8 +250,6 @@ export class SignupFormComponent implements OnInit {
   //   console.log('Remember Me:', this.isChecked);
   // }
 
-  private static readonly BASIC_PLAN_ID = '4b9f8aea-cc2c-4c7b-90cc-d5f934dac3ea';
-
   onSignUp() {
     if (!this.validateForm()) {
       return;
@@ -304,7 +299,7 @@ export class SignupFormComponent implements OnInit {
             sessionStorage.setItem('verification_password', this.password);
           } catch {
           }
-          this.startSubscriptionAndEnable(orgId, userEmail, accessToken);
+          this.navigateToVerification(userEmail);
         } else {
           console.warn('Organization ID not found in signup response. Available keys:', Object.keys(res || {}));
           this.navigateToVerification(userEmail);
@@ -330,46 +325,11 @@ export class SignupFormComponent implements OnInit {
     try {
       localStorage.setItem('verification_email', userEmail);
       sessionStorage.setItem('verification_password', this.password);
+      sessionStorage.setItem('enable_orgs_on_verification', 'true');
     } catch {
     }
     this.isLoading = false;
     this.router.navigate(['/verification']);
-  }
-
-  private startSubscriptionAndEnable(orgId: string, userEmail: string, token?: string): void {
-    this.subscriptionService.listPlans(SERVICE_CODE).subscribe({
-      next: (plans) => {
-        console.log('[SignupForm] Plans fetched:', plans);
-        const planExists = (plans || []).some(p => p.id === SignupFormComponent.BASIC_PLAN_ID);
-        if (!planExists) {
-          console.warn('[SignupForm] Basic plan not found in plan list, proceeding with hardcoded ID');
-        }
-        this.subscriptionService.startSubscription(orgId, {
-          planId: SignupFormComponent.BASIC_PLAN_ID,
-          billingPeriod: 'MONTHLY',
-          useTrial: true,
-          config: {}
-        }, SERVICE_CODE, token).pipe(
-          finalize(() => {
-            this.subscriptionService.enableService(orgId, SERVICE_CODE, token).subscribe({
-              next: () => this.navigateToVerification(userEmail),
-              error: () => this.navigateToVerification(userEmail)
-            });
-          })
-        ).subscribe({
-          next: () => {},
-          error: () => {
-            this.subscriptionService.enableService(orgId, SERVICE_CODE, token).subscribe({
-              next: () => this.navigateToVerification(userEmail),
-              error: () => this.navigateToVerification(userEmail)
-            });
-          }
-        });
-      },
-      error: () => {
-        this.navigateToVerification(userEmail);
-      }
-    });
   }
 }
 

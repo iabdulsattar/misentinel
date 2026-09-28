@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PermissionService, ServiceAccessGrant } from '../../../../core/services/permission.service';
-import { SubscriptionService, SERVICE_CODE } from '../../../../core/services/subscription.service';
+import { SubscriptionService, SERVICE_CODE, EDOB_TRIAL_PLAN_ID } from '../../../../core/services/subscription.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { InputFieldComponent } from '../../form/input/input-field.component';
 import { LabelComponent } from '../../form/label/label.component';
@@ -214,7 +214,7 @@ export class SigninFormComponent implements OnInit {
         if (this.isEmailNotVerifiedError(err)) {
           const email = this.email.trim();
           localStorage.setItem('verification_email', email);
-          this.authService.resendSignupOtp({ email }).subscribe({
+          this.authService.resendSignupOtp({ email, serviceCode: 'edob' }).subscribe({
             complete: () => this.router.navigate(['/verification']),
           });
           return;
@@ -230,8 +230,6 @@ export class SigninFormComponent implements OnInit {
       }
     });
   }
-
-  private static readonly LOGIN_PLAN_ID = '90c7dcff-f7d6-42c4-9b72-292d8f6e7793';
 
   private finalizeLogin(data: any) {
     const accessToken = data?.tokens?.access_token ?? data?.access_token;
@@ -268,13 +266,14 @@ export class SigninFormComponent implements OnInit {
         localStorage.setItem('organizationName', name);
         localStorage.setItem('org_name', name);
       }
-      if (data?.subscribedServices) {
+      if (Array.isArray(data?.subscribedServices) && data.subscribedServices.length > 0) {
         localStorage.setItem('subscribed_services', JSON.stringify(data.subscribedServices));
-      }
-      this.permissionService.setServiceAccess((data?.serviceAccess as ServiceAccessGrant[]) ?? data?.tokens?.serviceAccess);
-      this.isLoading = false;
-      const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
-      this.startTrialIfNeeded(data, returnUrl);
+      } 
+      this.loadServiceAccess(data, accessToken, () => {
+        this.isLoading = false;
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
+        this.startTrialIfNeeded(data, returnUrl);
+      });
     };
     if (orgs?.length > 0) {
       storeOrgAndProceed(orgs[0].id, orgs[0].name);
@@ -285,20 +284,43 @@ export class SigninFormComponent implements OnInit {
           if (profileOrgs?.length > 0) {
             storeOrgAndProceed(profileOrgs[0].id, profileOrgs[0].name);
           } else {
-            this.permissionService.setServiceAccess((data?.serviceAccess as ServiceAccessGrant[]) ?? data?.tokens?.serviceAccess);
-            this.isLoading = false;
-            const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
-            this.startTrialIfNeeded(data, returnUrl);
+            this.loadServiceAccess(data, accessToken, () => {
+              this.isLoading = false;
+              const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
+              this.startTrialIfNeeded(data, returnUrl);
+            });
           }
         },
         error: () => {
-          this.permissionService.setServiceAccess((data?.serviceAccess as ServiceAccessGrant[]) ?? data?.tokens?.serviceAccess);
-          this.isLoading = false;
-          const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
-          this.startTrialIfNeeded(data, returnUrl);
+          this.loadServiceAccess(data, accessToken, () => {
+            this.isLoading = false;
+            const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
+            this.startTrialIfNeeded(data, returnUrl);
+          });
         }
       });
     }
+  }
+
+  private loadServiceAccess(data: any, accessToken: string, continueLogin: () => void): void {
+    const grants = data?.serviceAccess ?? data?.tokens?.serviceAccess;
+    if (grants && (!Array.isArray(grants) || grants.length > 0)) {
+      this.permissionService.setServiceAccess(grants as ServiceAccessGrant | ServiceAccessGrant[]);
+      continueLogin();
+      return;
+    }
+
+    this.authService.getSession(accessToken).subscribe({
+      next: (session: any) => {
+        const sessionGrants = session?.serviceAccess;
+        this.permissionService.setServiceAccess(sessionGrants as ServiceAccessGrant | ServiceAccessGrant[] | undefined);
+        continueLogin();
+      },
+      error: () => {
+        this.permissionService.setServiceAccess(undefined);
+        continueLogin();
+      }
+    });
   }
 
   private startTrialIfNeeded(data: any, returnUrl: string): void {
@@ -308,12 +330,12 @@ export class SigninFormComponent implements OnInit {
       return;
     }
 
-    // Check if edob service is already subscribed and active from login response
-    const subscribedServices = data?.subscribedServices ?? [];
+    const accessToken = data?.tokens?.access_token ?? data?.access_token;
+    const subscribedServices = Array.isArray(data?.subscribedServices) ? data.subscribedServices : [];
     const edobService = subscribedServices.find((s: any) => s?.serviceCode === SERVICE_CODE);
+
     if (edobService) {
       if (!edobService.webAccess) {
-        // User is subscribed but does not have web access — show message
         this.isLoading = false;
         this.errorMessage = 'Your account is not currently assigned access to this application. Please contact your administrator to request access.';
         this.authService.clearTokens();
@@ -325,9 +347,24 @@ export class SigninFormComponent implements OnInit {
       }
     }
 
-    const accessToken = data?.tokens?.access_token ?? data?.access_token;
     this.subscriptionService.checkSubscription(orgId, SERVICE_CODE).subscribe({
       next: (check) => {
+        const checkService = check && typeof check === 'object' ? check : null;
+        if (checkService && (checkService as any)['planId']) {
+          const trialData = [{
+            serviceCode: SERVICE_CODE,
+            planId: (checkService as any)['planId'],
+            planCode: (checkService as any)['planCode'],
+            planName: (checkService as any)['planName'],
+            status: (checkService as any)['status'],
+            active: (checkService as any)['active'],
+            startDate: (checkService as any)['startDate'],
+            expiresAt: (checkService as any)['effectiveExpiry'],
+            trialActive: (checkService as any)['status'] === 'TRIAL' || (checkService as any)['status'] === 'TRIALING'
+          }];
+          localStorage.setItem('subscribed_services', JSON.stringify(trialData));
+        }
+
         if (check?.active) {
           this.subscriptionService.enableService(orgId, SERVICE_CODE, accessToken).subscribe({
             next: () => this.router.navigateByUrl(returnUrl),
@@ -336,7 +373,7 @@ export class SigninFormComponent implements OnInit {
           return;
         }
         this.subscriptionService.startSubscription(orgId, {
-          planId: SigninFormComponent.LOGIN_PLAN_ID,
+          planId: EDOB_TRIAL_PLAN_ID,
           billingPeriod: 'MONTHLY',
           useTrial: true,
           config: {}

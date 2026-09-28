@@ -34,6 +34,7 @@ import {
 } from '../models/subscription.models';
 
 export const SERVICE_CODE = 'edob';
+export const EDOB_TRIAL_PLAN_ID = '61795be2-aa82-47c3-b7d3-6df4d0075a0a';
 
 @Injectable({ providedIn: 'root' })
 export class SubscriptionService {
@@ -143,9 +144,9 @@ export class SubscriptionService {
 
   // GET /api/v1/subscriptions/check?organizationId={orgId}&serviceCode={serviceCode}
   checkSubscription(orgId: string, serviceCode = SERVICE_CODE): Observable<SubscriptionCheckResponse> {
-    return this.api.get<ApiWrapper<SubscriptionCheckResponse>>(
+    return this.api.get<ApiWrapper<SubscriptionCheckResponse> | SubscriptionCheckResponse>(
       `/api/v1/subscriptions/check?organizationId=${encodeURIComponent(orgId)}&serviceCode=${encodeURIComponent(serviceCode)}`
-    ).pipe(map((res) => res.data));
+    ).pipe(map((res) => ('data' in res ? res.data : res)));
   }
 
   // -------- Billing Information --------

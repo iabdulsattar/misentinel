@@ -168,6 +168,7 @@ export interface LogoutRequest {
 // -------- OTP / 2FA --------
 export interface ResendOtpRequest {
   email: string;
+  serviceCode: string;
 }
 
 export interface ResendOtpResponse {
@@ -178,6 +179,7 @@ export interface ResendOtpResponse {
 export interface VerifySignupOtpRequest {
   email: string;
   code: string;
+  serviceCode: string;
 }
 
 export interface VerifySignupOtpResponse {

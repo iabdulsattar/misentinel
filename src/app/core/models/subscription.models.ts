@@ -116,9 +116,12 @@ export interface SubscriptionHistoryResponse {
 export interface SubscriptionCheckResponse {
   active: boolean;
   status?: string;
+  planId?: string;
   planCode?: string;
   planName?: string;
   serviceCode?: string;
+  startDate?: string;
+  effectiveExpiry?: string;
   features: Record<string, any>;
   [key: string]: any;
 }

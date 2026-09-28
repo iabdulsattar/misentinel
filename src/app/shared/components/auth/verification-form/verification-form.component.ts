@@ -110,20 +110,18 @@ export class VerificationFormComponent implements OnInit {
       return;
     }
 
-    this.authService.verifySignupOtp({ email, code: otp }).subscribe({
-      next: () => {
-        this.successMessage = 'Email verified successfully.';
-        this.isLoading = false;
-        setTimeout(() => {
-          this.router.navigate(['/signin']);
-        }, 600);
-      },
-      error: (err) => {
-        this.isLoading = false;
-        const detail = err?.error?.detail;
-        this.errorMessage = detail ? `Verification failed: ${detail}` : 'Verification failed. Please try again.';
-      },
-    });
+this.authService.verifySignupOtp({ email, code: otp, serviceCode: 'edob' }).subscribe({
+        next: () => {
+          this.successMessage = 'Email verified successfully.';
+          this.isLoading = false;
+          setTimeout(() => this.router.navigate(['/signin']), 600);
+        },
+        error: (err) => {
+          this.isLoading = false;
+          const detail = err?.error?.detail;
+          this.errorMessage = detail ? `Verification failed: ${detail}` : 'Verification failed. Please try again.';
+        },
+      });
   }
 
   onResendCode() {
@@ -136,7 +134,7 @@ export class VerificationFormComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     this.successMessage = '';
-    this.authService.resendSignupOtp({ email }).subscribe({
+    this.authService.resendSignupOtp({ email, serviceCode: 'edob' }).subscribe({
       next: () => {
         this.isLoading = false;
         this.successMessage = 'Verification code resent. Please check your inbox.';

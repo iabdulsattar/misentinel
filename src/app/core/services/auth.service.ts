@@ -59,6 +59,13 @@ export class AuthService {
     return this.api.post('/api/v1/auth/signup/verify-otp', payload, headers);
   }
 
+  enableAllOrganizations(): Observable<void> {
+    const headers = new HttpHeaders({
+      'X-Internal-Secret': '9f2c7b4e1a8d6f3c5b9e2a7d1f4c8e6b3a9d5f2c7e1b8a4d6f9c3e7a2b5d1f8'
+    });
+    return this.api.post<void>('/api/v1/users/internal/services/edob/enable-all-orgs', {}, headers);
+  }
+
   // POST /api/v1/auth/login
   login(payload: LoginRequest): Observable<LoginResponse> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });

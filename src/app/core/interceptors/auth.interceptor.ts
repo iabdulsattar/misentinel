@@ -208,7 +208,7 @@ export class AuthInterceptor implements HttpInterceptor {
           return from([]);
         }
         localStorage.setItem('verification_email', email);
-        return this.authService.resendSignupOtp({ email });
+        return this.authService.resendSignupOtp({ email, serviceCode: 'edob' });
       }),
       switchMap(() => {
         this.router.navigate(['/verification']);

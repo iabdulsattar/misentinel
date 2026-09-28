@@ -212,39 +212,40 @@ export class SubscriptionComponent implements OnInit {
     }
   }
 
-  // Dynamic trial info from subscribed services (primary), overview, or subscription check (fallback)
+  // Dynamic trial info from subscription check (primary), then login subscribed services, then overview
   get trialInfo() {
-    // Use subscribedServices from login response as primary source
-    const svc = this.authService.getSubscribedService('edob');
-    if (svc) {
-      const trialEndDate = svc.expiresAt;
-      const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : null;
-      return {
-        trialStartDate: svc.startDate,
-        trialEndDate,
-        trialDaysRemaining,
-      };
-    }
-
-    // Prefer overview API data which has detailed trial info
-    if (this.overview?.trial) {
-      const trial = this.overview.trial;
-      return {
-        trialStartDate: trial.startedAt,
-        trialEndDate: trial.endsAt,
-        trialDaysRemaining: trial.daysRemaining,
-      };
-    }
-    // Fallback to subscription check
     if (this.subscriptionCheck) {
       const sub = this.subscriptionCheck['subscription'] || {};
       const features = this.subscriptionCheck.features || {};
       const trialEndDate = sub.currentPeriodEnd || this.subscriptionCheck['effectiveExpiry'] || features['trialEndDate'];
       const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : features['trialDaysRemaining'];
       return {
+        planId: this.subscriptionCheck['planId'],
         trialStartDate: sub.currentPeriodStart || this.subscriptionCheck['startDate'] || features['trialStartDate'],
         trialEndDate,
         trialDaysRemaining,
+      };
+    }
+
+    const svc = this.authService.getSubscribedService('edob');
+    if (svc) {
+      const trialEndDate = svc.expiresAt;
+      const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : null;
+      return {
+        planId: svc.planId,
+        trialStartDate: svc.startDate,
+        trialEndDate,
+        trialDaysRemaining,
+      };
+    }
+
+    if (this.overview?.trial) {
+      const trial = this.overview.trial;
+      return {
+        planId: trial.planId,
+        trialStartDate: trial.startedAt,
+        trialEndDate: trial.endsAt,
+        trialDaysRemaining: trial.daysRemaining,
       };
     }
     return null;

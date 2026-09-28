@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { EdobService } from '../../core/services/edob.service';
 import { PermissionService } from '../../core/services/permission.service';
-import { SubscriptionService } from '../../core/services/subscription.service';
+import { SubscriptionStatusService } from '../../core/services/subscription-status.service';
 import { ProfileResponse } from '../../core/models/auth.models';
 import { DashboardData, OrgUser } from '../../core/models/edob.models';
 import { SubscriptionCheckResponse } from '../../core/models/subscription.models';
@@ -99,24 +99,24 @@ export class DashboardShellComponent implements OnInit {
   }
 
   get hasActiveSubscription(): boolean {
-    const svc = this.authService.getSubscribedService('edob');
-    if (svc) {
-      return svc.active || svc.status === 'ACTIVE';
-    }
     if (this.subscriptionCheck !== null) {
       const isTrial = this.subscriptionCheck.status === 'TRIAL' || this.subscriptionCheck.status === 'TRIALING';
       return this.subscriptionCheck.active || isTrial;
+    }
+    const svc = this.authService.getSubscribedService('edob');
+    if (svc) {
+      return svc.active || svc.status === 'ACTIVE';
     }
     return false;
   }
 
 get isTrial(): boolean {
+    if (this.subscriptionCheck !== null) {
+      return this.subscriptionCheck.status === 'TRIAL' || this.subscriptionCheck.status === 'TRIALING';
+    }
     const svc = this.authService.getSubscribedService('edob');
     if (svc) {
       return svc.status === 'TRIAL' || svc.status === 'TRIALING';
-    }
-    if (this.subscriptionCheck !== null) {
-      return this.subscriptionCheck.status === 'TRIAL' || this.subscriptionCheck.status === 'TRIALING';
     }
     return false;
   }
@@ -159,43 +159,41 @@ get isTrial(): boolean {
     }
   }
 
-  // Dynamic trial info from subscribed services (primary), overview, or subscription check (fallback)
+  // Dynamic trial info from subscription check (primary), then login subscribed services, then overview
   get trialInfo() {
-    // Use subscribedServices from login response as primary source
+    if (this.subscriptionCheck) {
+      const features = this.subscriptionCheck.features || {};
+      const trialEndDate = this.subscriptionCheck['effectiveExpiry'] || features['trialEndDate'];
+      const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : features['trialDaysRemaining'];
+      return {
+        planId: this.subscriptionCheck['planId'],
+        trialStartDate: this.subscriptionCheck['startDate'] || features['trialStartDate'],
+        trialEndDate,
+        trialDaysRemaining,
+      };
+    }
+
     const svc = this.authService.getSubscribedService('edob');
     if (svc) {
       const trialStartDate = svc.startDate;
       const trialEndDate = svc.expiresAt;
       const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : null;
       return {
+        planId: svc.planId,
         trialStartDate,
         trialEndDate,
         trialDaysRemaining,
       };
     }
 
-    // Fallback to overview API data which has detailed trial info
     if (this.dashboardData?.trial) {
       const trial = this.dashboardData.trial;
-      // Use subscription check for trial start date if available
-      const trialStartDate = this.subscriptionCheck?.['startDate'] || trial.startedAt;
+      const trialStartDate = trial.startedAt;
       const trialEndDate = trial.endsAt;
-      // Calculate days remaining dynamically from end date
       const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : trial.daysRemaining;
       return {
+        planId: trial.planId,
         trialStartDate,
-        trialEndDate,
-        trialDaysRemaining,
-      };
-    }
-    // Fallback to subscription check
-    if (this.subscriptionCheck) {
-      const features = this.subscriptionCheck.features || {};
-      const trialEndDate = this.subscriptionCheck['effectiveExpiry'] || features['trialEndDate'];
-      // Calculate days remaining dynamically from end date
-      const trialDaysRemaining = trialEndDate ? this.calculateDaysRemaining(trialEndDate) : features['trialDaysRemaining'];
-      return {
-        trialStartDate: this.subscriptionCheck['startDate'] || features['trialStartDate'],
         trialEndDate,
         trialDaysRemaining,
       };
@@ -261,7 +259,7 @@ get isTrial(): boolean {
     private authService: AuthService,
     private edobService: EdobService,
     private permissionService: PermissionService,
-    private subscriptionService: SubscriptionService,
+    private subscriptionStatus: SubscriptionStatusService,
   ) {}
 
   ngOnInit(): void {
@@ -275,14 +273,11 @@ get isTrial(): boolean {
     if (!orgId) return;
 
     this.subscriptionLoading = true;
-    this.subscriptionService.checkSubscription(orgId, 'edob').subscribe({
-      next: (data) => {
-        this.subscriptionCheck = data;
+    this.subscriptionStatus.refresh().then((data) => {
+      this.subscriptionCheck = data;
+      this.subscriptionLoading = false;
+    }).catch(() => {
         this.subscriptionLoading = false;
-      },
-      error: () => {
-        this.subscriptionLoading = false;
-      }
     });
   }
 
