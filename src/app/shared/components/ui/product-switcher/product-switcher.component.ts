@@ -40,14 +40,7 @@ export class ProductSwitcherComponent {
       actionHref: '#',
       descriptionText: 'Securely register, issue, track and audit every key across your organisation.',
     },
-    {
-      id: 'misentinel',
-      name: 'MiSentinelSOS',
-      description: 'Lone Worker Safety',
-      icon: '<path d="M12 3 5 6v5c0 4.500 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
-      iconBg: 'bg-emerald-600',
-      status: 'coming-soon',
-    },
+   
   ];
 
   @Input() exploreAllHref: string = '#';
