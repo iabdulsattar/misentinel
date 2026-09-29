@@ -1,0 +1,18 @@
+<div class="relative bg-[#fff] z-1 dark:bg-gray-900 sm:p-0">
+  <div class="grid w-full lg:grid-cols-[300px_1fr] dark:bg-gray-900 min-h-screen">
+
+    <!-- LEFT PANEL -->
+    <div class="hidden lg:block h-screen sticky top-0 ">
+      <div class="flex flex-col h-full overflow-y-auto no-scrollbar px-4 sm:px-4 py-10">
+        <ng-content select="[layout-left]"></ng-content>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="flex flex-col w-full h-screen overflow-y-auto">
+      <ng-content select="[layout-right]"></ng-content>
+    </div>
+    <app-toast></app-toast>
+
+  </div>
+</div>
