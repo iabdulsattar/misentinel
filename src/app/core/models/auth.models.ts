@@ -160,6 +160,19 @@ export interface RefreshTokenRequest {
 export interface RefreshTokenResponse {
   access_token: string;
   refresh_token: string;
+  expires_in?: number;
+  refresh_expires_in?: number;
+  token_type?: string;
+  scope?: string;
+  organizations?: Array<{ id: string; name: string; slug?: string; role?: string }>;
+  serviceAccess?: any;
+  subscribedServices?: any[];
+  tokens?: {
+    access_token?: string;
+    refresh_token?: string;
+    organizations?: Array<{ id: string; name: string; slug?: string; role?: string }>;
+    serviceAccess?: any;
+  };
 }
 
 export interface LogoutRequest {

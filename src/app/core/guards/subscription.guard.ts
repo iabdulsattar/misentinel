@@ -6,7 +6,18 @@ export const subscriptionGuard: CanActivateFn = async (route, state) => {
   const router = inject(Router);
   const subscriptionStatus = inject(SubscriptionStatusService);
 
-  const allowedPaths = ['/subscription', '/invoice-details', '/subscription/checkout', '/signin', '/login'];
+  const allowedPaths = [
+    '/subscription',
+    '/invoice-details',
+    '/subscription/checkout',
+    '/signin',
+    '/login',
+    '/external-login',
+    '/auth/external-login',
+    '/subscription-trial-start',
+    '/subscription-trial-ready',
+    '/subscription-plan'
+  ];
   const isAllowedPath = allowedPaths.some((path) => state.url.startsWith(path));
 
   if (isAllowedPath) {

@@ -178,9 +178,9 @@ export const routes: Routes = [
   },
   // auth pages
   {
-    path:'auth/external-login',
+    path:'external-login',
      loadComponent: () => import('./auth/pages/subscription-trial-start/subscription-trial-start.component').then(m => m.SubscriptionTrialStartComponent),
-    title:'Start Your Free Trial | KeyVault Pro'
+    title:'Start Your Free Trial | eDOB'
   },
   {
     path:'subscription-trial-start',

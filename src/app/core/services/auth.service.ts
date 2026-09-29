@@ -171,7 +171,7 @@ export class AuthService {
     );
   }
 
-  setTokens(accessToken: string, refreshToken: string | null, expiresAt: string): void {
+  setTokens(accessToken: string, refreshToken: string | null, expiresAt: string, serviceCode?: string): void {
     this.cachedProfile = null;
     this.cachedUserId = null;
     const remember = localStorage.getItem('remember_device');
@@ -179,11 +179,17 @@ export class AuthService {
       localStorage.setItem('access_token_saas', accessToken);
       localStorage.setItem('refresh_token', refreshToken ?? '');
       localStorage.setItem('session_expires_at', expiresAt);
+      if (serviceCode) localStorage.setItem('service_code', serviceCode);
     } else {
       sessionStorage.setItem('access_token_saas', accessToken);
       sessionStorage.setItem('refresh_token', refreshToken ?? '');
       sessionStorage.setItem('session_expires_at', expiresAt);
+      if (serviceCode) sessionStorage.setItem('service_code', serviceCode);
     }
+  }
+
+  refreshForService(payload: RefreshTokenRequest, serviceCode: string): Observable<RefreshTokenResponse> {
+    return this.refresh({ ...payload, serviceCode });
   }
 
   setRefreshToken(refreshToken: string): void {
@@ -270,10 +276,20 @@ export class AuthService {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.api.post<ApiWrapper<RefreshTokenResponse> | RefreshTokenResponse>('/api/v1/auth/refresh', payload, headers).pipe(
       map((res: any) => {
-        if (res && typeof res === 'object' && 'data' in res) {
-          return res.data as RefreshTokenResponse;
+        const body = (res && typeof res === 'object' && 'data' in res) ? res.data : res;
+
+        // This endpoint nests the pair under `tokens` (same shape as login), so
+        // hoist them to the top level and keep the rest of the payload intact.
+        const tokens = body?.tokens;
+        if (tokens && !body?.access_token) {
+          return {
+            ...body,
+            access_token: tokens.access_token,
+            refresh_token: tokens.refresh_token
+          } as RefreshTokenResponse;
         }
-        return res as RefreshTokenResponse;
+
+        return body as RefreshTokenResponse;
       })
     );
   }

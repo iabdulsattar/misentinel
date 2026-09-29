@@ -61,10 +61,10 @@
         </ng-container>
 
         <ng-template #productRow>
-          <button class="flex items-center gap-3 rounded-xl p-3 w-full text-left"
+          <button class="flex items-center gap-3 rounded-xl p-3 w-full text-left cursor-pointer hover:bg-blue-50"
             [class.opacity-90]="product.status === 'coming-soon'"
             [class.bg-slate-50/70 ring-1 ring-slate-100]="product.status === 'available'"
-            [disabled]="product.status === 'coming-soon' || isSwitching"
+            [disabled]="isSwitching"
             (click)="selectProduct(product); $event.preventDefault()"
             type="button">
             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl {{ product.iconBg }} text-white">
@@ -77,6 +77,8 @@
               <span class="block truncate text-xs text-slate-500 font-medium">{{ product.description }}</span>
             </span>
             <span class="shrink-0 rounded-xs bg-green-50 px-2.5 py-0.5 text-[11px] font-bold text-green-600"
+              *ngIf="product.status === 'current'">Current</span>
+            <span class="shrink-0 rounded-xs bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold text-blue-600"
               *ngIf="product.status === 'available'">Available</span>
             <span class="shrink-0 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-500"
               *ngIf="product.status === 'coming-soon'">Coming Soon</span>
