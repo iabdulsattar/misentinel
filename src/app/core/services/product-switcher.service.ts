@@ -49,7 +49,7 @@ export class ProductSwitcherService {
       throw new Error('Refresh token not found');
     }
 
-    const targetUrl = `${config.url}/auth/external-login?token=${encodeURIComponent(refreshToken)}&serviceCode=${encodeURIComponent(config.serviceCode)}`;
+    const targetUrl = `${config.url}external-login?token=${encodeURIComponent(refreshToken)}&serviceCode=${encodeURIComponent(config.serviceCode)}`;
     window.location.href = targetUrl;
   }
 }
