@@ -178,6 +178,21 @@ export const routes: Routes = [
   },
   // auth pages
   {
+    path:'auth/external-login',
+     loadComponent: () => import('./auth/pages/subscription-trial-start/subscription-trial-start.component').then(m => m.SubscriptionTrialStartComponent),
+    title:'Start Your Free Trial | KeyVault Pro'
+  },
+  {
+    path:'subscription-trial-start',
+    loadComponent: () => import('./auth/pages/subscription-trial-start/subscription-trial-start.component').then(m => m.SubscriptionTrialStartComponent),
+    title:'Start Your Free Trial | KeyVault Pro'
+  },
+  {
+    path:'subscription-trial-ready',
+    loadComponent: () => import('./auth/pages/subscription-trial-ready/subscription-trial-ready.component').then(m => m.SubscriptionTrialReadyComponent),
+    title:'Trial Ready | KeyVault Pro'
+  },
+  {
     path:'signin',
     loadComponent: () => import('./auth/pages/sign-in/sign-in.component').then(m => m.SignInComponent),
     title:'Sign In | eDOB'

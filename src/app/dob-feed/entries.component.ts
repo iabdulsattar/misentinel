@@ -154,8 +154,8 @@ export class EntriesComponent implements OnInit {
       priority: this.filters.priority || undefined,
       createdBy: this.filters.createdBy || undefined,
       assignedTo: this.filters.assignedTo || undefined,
-      from: this.filters.from || undefined,
-      to: this.filters.to || undefined,
+      from: this.filters.from ? `${this.filters.from}T00:00:00Z` : undefined,
+      to: this.filters.to ? `${this.filters.to}T00:00:00Z` : undefined,
     };
   }
 

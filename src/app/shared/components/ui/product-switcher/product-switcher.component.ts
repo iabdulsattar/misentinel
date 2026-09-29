@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ProductSwitcherService, ProductConfig } from '../../../../core/services/product-switcher.service';
 
 export interface ProductItem {
   id: string;
@@ -19,43 +20,55 @@ export interface ProductItem {
   imports: [CommonModule],
   templateUrl: './product-switcher.component.html',
 })
-export class ProductSwitcherComponent {
-  @Input() products: ProductItem[] = [
-    {
-      id: 'edob',
-      name: 'eDOB',
-      description: 'Digital Occurrence Management',
-      icon: '<path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
-      iconBg: 'bg-blue-600',
-      status: 'current',
-    },
-    {
-      id: 'keyvault',
-      name: 'KeyVault Pro',
-      description: 'Enterprise Key Management',
-      icon: '<path d="M12 3 5 6v5c0 4.500 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
-      iconBg: 'bg-violet-700',
-      status: 'available',
-      actionLabel: 'Explore KeyVault Pro',
-      actionHref: '#',
-      descriptionText: 'Securely register, issue, track and audit every key across your organisation.',
-    },
-   
-  ];
-
+export class ProductSwitcherComponent implements OnInit {
+  private readonly productSwitcherService = inject(ProductSwitcherService);
+  
+  @Input() products: ProductItem[] = [];
   @Input() exploreAllHref: string = '#';
-
   @Output() productSelected = new EventEmitter<ProductItem>();
 
   showSwitcher = false;
+  isSwitching = false;
+
+  ngOnInit(): void {
+    if (this.products.length === 0) {
+      const configs = this.productSwitcherService.getAllProductConfigs();
+      this.products = configs.map((config: ProductConfig) => ({
+        id: config.id,
+        name: config.name,
+        description: config.id === 'edob' ? 'Digital Occurrence Management' : 'Enterprise Key Management',
+        icon: config.id === 'edob' 
+          ? '<path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>'
+          : '<path d="M12 3 5 6v5c0 4.500 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
+        iconBg: config.id === 'edob' ? 'bg-blue-600' : 'bg-violet-700',
+        status: config.id === 'edob' ? 'current' : 'available',
+        actionLabel: config.id === 'edob' ? undefined : `Switch to ${config.name}`,
+        descriptionText: config.id === 'edob' ? undefined : 'Securely register, issue, track and audit every key across your organisation.'
+      }));
+    }
+  }
 
   toggleSwitcher(event: MouseEvent): void {
     event.stopPropagation();
     this.showSwitcher = !this.showSwitcher;
   }
 
-  selectProduct(product: ProductItem): void {
-    this.productSelected.emit(product);
+  async selectProduct(product: ProductItem): Promise<void> {
+    if (product.status === 'current' || product.status === 'coming-soon' || this.isSwitching) {
+      return;
+    }
+
+    this.isSwitching = true;
+    this.showSwitcher = false;
+
+    try {
+      await this.productSwitcherService.switchToProduct(product.id);
+    } catch (error: any) {
+      console.error('Product switch failed:', error);
+      this.isSwitching = false;
+      const message = error?.message || error?.error?.detail || error?.error?.message || 'Unknown error';
+      alert(`Failed to switch to ${product.name}: ${message}. Please try again.`);
+    }
   }
 
   @HostListener('document:click')

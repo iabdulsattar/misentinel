@@ -1,6 +1,12 @@
-export const environment = {
+import { Environment } from './environment.interface';
+
+export const environment: Environment = {
   production: false,
   OPENROUTER_API_URL: 'https://openrouter.ai/api/v1/chat/completions',
   OPENROUTER_MODEL: 'openai/gpt-oss-20b:free',
-  stripePublishableKey: 'pk_test_51RdXPoIcFjCeeaggwPWJMyzNbjLZS24qSHpJRkgxEJAHCoNAKmsbE4dPYaCJRyKrQtEzWrJhgRt3RBQHzeCAWOAM00Ib97iV3O'
+  stripePublishableKey: 'pk_test_51RdXPoIcFjCeeaggwPWJMyzNbjLZS24qSHpJRkgxEJAHCoNAKmsbE4dPYaCJRyKrQtEzWrJhgRt3RBQHzeCAWOAM00Ib97iV3O',
+  productUrls: {
+    edob: 'https://sbsedob.workalert.uk/',
+    keyvault: 'https://sbskeyvault.workalert.uk/'
+  }
 };
