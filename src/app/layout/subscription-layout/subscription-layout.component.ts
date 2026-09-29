@@ -1,8 +1,16 @@
 import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { ToastComponent } from '../../shared/components/ui/toast/toast.component';
 
 @Component({
   selector: 'app-subscription-layout',
-  standalone: true,
+  imports: [
+    RouterModule,
+    ToastComponent,
+  ],
   templateUrl: './subscription-layout.component.html',
+  styles: ``
 })
-export class SubscriptionLayoutComponent {}
+export class SubscriptionLayoutComponent {
+
+}
