@@ -171,7 +171,7 @@ export class AuthService {
     );
   }
 
-  setTokens(accessToken: string, refreshToken: string | null, expiresAt: string): void {
+  setTokens(accessToken: string, refreshToken: string | null, expiresAt: string, serviceCode?: string): void {
     this.cachedProfile = null;
     this.cachedUserId = null;
     const remember = localStorage.getItem('remember_device');
@@ -179,11 +179,17 @@ export class AuthService {
       localStorage.setItem('access_token_saas', accessToken);
       localStorage.setItem('refresh_token', refreshToken ?? '');
       localStorage.setItem('session_expires_at', expiresAt);
+      if (serviceCode) localStorage.setItem('service_code', serviceCode);
     } else {
       sessionStorage.setItem('access_token_saas', accessToken);
       sessionStorage.setItem('refresh_token', refreshToken ?? '');
       sessionStorage.setItem('session_expires_at', expiresAt);
+      if (serviceCode) sessionStorage.setItem('service_code', serviceCode);
     }
+  }
+
+  refreshForService(payload: RefreshTokenRequest, serviceCode: string): Observable<RefreshTokenResponse> {
+    return this.refresh({ ...payload, serviceCode });
   }
 
   setRefreshToken(refreshToken: string): void {

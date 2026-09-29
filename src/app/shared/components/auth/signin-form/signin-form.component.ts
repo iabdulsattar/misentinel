@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PermissionService, ServiceAccessGrant } from '../../../../core/services/permission.service';
+import { ProductSwitcherService } from '../../../../core/services/product-switcher.service';
 import { SubscriptionService, SERVICE_CODE, EDOB_TRIAL_PLAN_ID } from '../../../../core/services/subscription.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { InputFieldComponent } from '../../form/input/input-field.component';
@@ -29,6 +30,7 @@ export class SigninFormComponent implements OnInit {
     private authService: AuthService,
     private permissionService: PermissionService,
     private subscriptionService: SubscriptionService,
+    private productSwitcherService: ProductSwitcherService,
     private router: Router,
     private route: ActivatedRoute,
   ) {}
@@ -267,8 +269,8 @@ export class SigninFormComponent implements OnInit {
         localStorage.setItem('org_name', name);
       }
       if (Array.isArray(data?.subscribedServices) && data.subscribedServices.length > 0) {
-        localStorage.setItem('subscribed_services', JSON.stringify(data.subscribedServices));
-      } 
+        this.productSwitcherService.setSubscribedServices(data.subscribedServices);
+      }
       this.loadServiceAccess(data, accessToken, () => {
         this.isLoading = false;
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';

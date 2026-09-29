@@ -1,15 +1,15 @@
 import { Component, Input, Output, EventEmitter, HostListener, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProductSwitcherService, ProductConfig } from '../../../../core/services/product-switcher.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { ProductSwitcherService, ProductConfig, ProductStatus } from '../../../../core/services/product-switcher.service';
 
 export interface ProductItem {
   id: string;
   name: string;
   description: string;
+  serviceCode: string;
   icon: string;
   iconBg: string;
-  status: 'current' | 'active' | 'available' | 'coming-soon';
+  status: ProductStatus;
   actionLabel?: string;
   actionHref?: string;
   descriptionText?: string;
@@ -23,8 +23,7 @@ export interface ProductItem {
 })
 export class ProductSwitcherComponent implements OnInit {
   private readonly productSwitcherService = inject(ProductSwitcherService);
-  private readonly authService = inject(AuthService);
-  
+
   @Input() products: ProductItem[] = [];
   @Input() exploreAllHref: string = '#';
   @Output() productSelected = new EventEmitter<ProductItem>();
@@ -33,40 +32,41 @@ export class ProductSwitcherComponent implements OnInit {
   isSwitching = false;
 
   ngOnInit(): void {
-    if (this.products.length === 0) {
-      const configs = this.productSwitcherService.getAllProductConfigs();
-      this.products = configs.map((config: ProductConfig) => ({
-        id: config.id,
-        name: config.name,
-        description: config.id === 'edob' ? 'Digital Occurrence Management' : 'Enterprise Key Management',
-        icon: config.id === 'edob' 
-          ? '<path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>'
-          : '<path d="M12 3 5 6v5c0 4.500 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
-        iconBg: config.id === 'edob' ? 'bg-blue-600' : 'bg-violet-700',
-        status: 'available',
-        actionLabel: config.id === 'edob' ? undefined : `Switch to ${config.name}`,
-        descriptionText: config.id === 'edob' ? undefined : 'Securely register, issue, track and audit every key across your organisation.'
-      }));
-    }
+    this.buildProducts();
     this.refreshProductStatuses();
   }
 
+  private buildProducts(): void {
+    if (this.products.length > 0) return;
+
+    const configs = this.productSwitcherService.getAllProductConfigs();
+    this.products = configs.map((config: ProductConfig) => ({
+      id: config.id,
+      name: config.name,
+      description: config.id === 'edob' ? 'Digital Occurrence Management' : 'Enterprise Key Management',
+      serviceCode: config.serviceCode,
+      icon: config.id === 'edob'
+        ? '<path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>'
+        : '<path d="M12 3 5 6v5c0 4.500 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
+      iconBg: config.id === 'edob' ? 'bg-blue-600' : 'bg-violet-700',
+      status: 'coming-soon',
+      actionLabel: config.id === 'edob' ? undefined : `Switch to ${config.name}`,
+      descriptionText: config.id === 'edob' ? undefined : 'Securely register, issue, track and audit every key across your organisation.',
+    }));
+  }
+
+  /** Statuses come from the persisted subscription list, not hardcoded ids. */
   private refreshProductStatuses(): void {
     const configs = this.productSwitcherService.getAllProductConfigs();
     this.products = this.products.map((product) => {
-      if (product.status === 'coming-soon') return product;
+      if (product.status === 'coming-soon' && !configs.some((c) => c.id === product.id)) {
+        return product;
+      }
 
       const config = configs.find((item) => item.id === product.id);
       if (!config) return product;
 
-      return {
-        ...product,
-        status: config.id === 'edob'
-          ? 'current'
-          : this.authService.getSubscribedService(config.serviceCode)
-            ? 'active'
-            : 'available'
-      };
+      return { ...product, status: this.productSwitcherService.getProductStatus(config) };
     });
   }
 

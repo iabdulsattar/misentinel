@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ProductSwitcherService } from '../../../core/services/product-switcher.service';
+import { PermissionService } from '../../../core/services/permission.service';
 import { SubscriptionLayoutComponent } from '../../../layout/subscription-layout/subscription-layout.component';
 import { Plan } from '../../../core/models/subscription.models';
 import { CommonModule } from '@angular/common';
@@ -33,6 +35,8 @@ export class SubscriptionTrialStartComponent implements OnInit {
   constructor(
     private subscriptionService: SubscriptionService,
     private authService: AuthService,
+    private productSwitcherService: ProductSwitcherService,
+    private permissionService: PermissionService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -68,6 +72,21 @@ export class SubscriptionTrialStartComponent implements OnInit {
     }
 
     this.loadTrialPlan();
+  }
+
+  private storeOrg(id: string, name?: string): void {
+    const store = localStorage.getItem('remember_device') === 'true' ? localStorage : sessionStorage;
+    store.setItem('org_id', id);
+    store.setItem('organizationId', id);
+    // Mirror into localStorage: guards and other consumers read it from there.
+    localStorage.setItem('org_id', id);
+    localStorage.setItem('organizationId', id);
+    if (name) {
+      store.setItem('org_name', name);
+      store.setItem('organizationName', name);
+      localStorage.setItem('org_name', name);
+      localStorage.setItem('organizationName', name);
+    }
   }
 
   private getOrgId(): string | null {
@@ -146,6 +165,26 @@ export class SubscriptionTrialStartComponent implements OnInit {
           res.refresh_token ?? refreshToken,
           String(Date.now() + 24 * 60 * 60 * 1000)
         );
+
+        // Persist the refresh response before deciding anything, exactly as
+        // the sign-in flow does, so the switcher and guards see the real state.
+        localStorage.setItem('service_code', this.serviceCode);
+        this.productSwitcherService.setSubscribedServices(res?.subscribedServices);
+        this.permissionService.setServiceAccess(
+          (res as any)?.serviceAccess ?? (res as any)?.tokens?.serviceAccess
+        );
+
+        const responseOrgs = res?.organizations ?? res?.tokens?.organizations ?? [];
+        if (responseOrgs[0]?.id) {
+          this.storeOrg(responseOrgs[0].id, responseOrgs[0].name);
+        }
+
+        if (this.productSwitcherService.isServiceSubscribed(this.serviceCode)) {
+          this.incomingRefreshToken = null;
+          this.router.navigate(['/']);
+          return;
+        }
+
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: { token: null, refreshToken: null },
@@ -163,9 +202,11 @@ export class SubscriptionTrialStartComponent implements OnInit {
 
             const remember = localStorage.getItem('remember_device') === 'true';
             const storage = remember ? localStorage : sessionStorage;
-            storage.setItem('org_id', organization.id);
-            if (organization.name) {
-              storage.setItem('org_name', organization.name);
+            if (!this.orgId) {
+              storage.setItem('org_id', organization.id);
+              if (organization.name) {
+                storage.setItem('org_name', organization.name);
+              }
             }
             this.orgId = organization.id;
             this.orgName = organization.name || '';
