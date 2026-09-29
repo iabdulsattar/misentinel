@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SubscriptionLayoutComponent } from '../../../layout/subscription-layout/subscription-layout.component';
 import { AuthService } from '../../../core/services/auth.service';
+import { GridShapeComponent } from '../../../shared/components/common/grid-shape/grid-shape.component';
 
 @Component({
   selector: 'app-subscription-trial-ready',
@@ -10,6 +11,7 @@ import { AuthService } from '../../../core/services/auth.service';
     CommonModule,
     RouterModule,
     SubscriptionLayoutComponent,
+    GridShapeComponent
   ],
   templateUrl: './subscription-trial-ready.component.html',
   styles: ''
