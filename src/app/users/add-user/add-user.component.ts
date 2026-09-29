@@ -24,6 +24,7 @@ export class AddUserComponent implements OnInit {
   successMessage = '';
   isEditMode = false;
   userId: string | null = null;
+  activeTab = 0;
 
   form = {
     firstName: '',
