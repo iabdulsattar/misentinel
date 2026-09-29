@@ -41,31 +41,43 @@ export class SubscriptionTrialReadyComponent implements OnInit {
 
     const serviceCode = this.route.snapshot.queryParamMap.get('serviceCode') || 'edob';
     this.authService.refresh({ refreshToken, serviceCode }).subscribe({
-      next: (res) => {
-        if (!res?.access_token) {
+      next: (res: any) => {
+        // The identity service nests the tokens under `tokens` on this endpoint.
+        const accessToken = res?.access_token ?? res?.tokens?.access_token;
+        const newRefreshToken = res?.refresh_token ?? res?.tokens?.refresh_token;
+        if (!accessToken) {
           this.router.navigate(['/signin']);
           return;
         }
 
         this.authService.setTokens(
-          res.access_token,
-          res.refresh_token ?? refreshToken,
-          String(Date.now() + 24 * 60 * 60 * 1000)
+          accessToken,
+          newRefreshToken ?? refreshToken,
+          String(Date.now() + 24 * 60 * 60 * 1000),
+          serviceCode
         );
-        this.authService.me(res.access_token).subscribe({
-        next: (profile: any) => {
-          const user = profile?.user || profile?.data || profile;
-          this.userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User';
-          this.userEmail = user.email || '';
-          this.userRole = this.extractRole(profile);
-        },
-        error: () => {
-          this.userName = 'User';
-        }
-      });
+        localStorage.setItem('service_code', serviceCode);
+        this.authService.me(accessToken).subscribe({
+          next: (profile: any) => {
+            const user = profile?.user || profile?.data || profile;
+            this.userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User';
+            this.userEmail = user.email || '';
+            this.userRole = this.extractRole(profile);
+            this.redirectToDashboard();
+          },
+          error: () => {
+            this.userName = 'User';
+            this.redirectToDashboard();
+          }
+        });
       },
       error: () => this.router.navigate(['/signin'])
     });
+  }
+
+  /** Hand the user on to the dashboard once the fresh session is in place. */
+  private redirectToDashboard(): void {
+    setTimeout(() => this.router.navigate(['/dashboard']), 2500);
   }
 
   private getOrgId(): string | null {

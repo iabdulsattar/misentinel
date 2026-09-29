@@ -99,8 +99,8 @@ export class AuthInterceptor implements HttpInterceptor {
     return from(this.authService.refresh({ refreshToken, serviceCode: 'edob' })).pipe(
       switchMap((res: any) => {
         this.isRefreshing = false;
-        const newToken = res?.access_token;
-        const newRefreshToken = res?.refresh_token;
+        const newToken = res?.access_token ?? res?.tokens?.access_token;
+        const newRefreshToken = res?.refresh_token ?? res?.tokens?.refresh_token;
 
         if (!newToken) {
           console.error('[AuthInterceptor] Refresh response missing access_token');

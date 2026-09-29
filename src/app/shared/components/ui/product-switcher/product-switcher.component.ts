@@ -77,7 +77,10 @@ export class ProductSwitcherComponent implements OnInit {
   }
 
   async selectProduct(product: ProductItem): Promise<void> {
-    if (product.status === 'current' || product.status === 'coming-soon' || this.isSwitching) {
+    this.productSelected.emit(product);
+
+    if (product.status === 'current' || this.isSwitching) {
+      this.showSwitcher = false;
       return;
     }
 

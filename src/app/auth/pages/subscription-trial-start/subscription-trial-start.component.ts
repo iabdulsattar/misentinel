@@ -48,12 +48,201 @@ export class SubscriptionTrialStartComponent implements OnInit {
     this.orgId = this.getOrgId();
     this.orgName = this.authService.getOrgName() || '';
 
+    // External entry point: exchange the link's refresh token first so the
+    // session and the subscription cache are real, then decide where to go.
+    // The trial itself still only starts from the button click.
+    if (this.incomingRefreshToken) {
+      this.resolveFromRefreshToken(this.incomingRefreshToken, this.serviceCode);
+      return;
+    }
+
     const accessToken = this.authService.getAccessToken();
     if (accessToken) {
-      this.loadUserAndTrial(accessToken);
+      if (this.productSwitcherService.isServiceSubscribed(this.serviceCode)) {
+        window.location.replace('/dashboard');
+        return;
+      }
+      this.isLoading = true;
+      this.resolveOrgThenRender(accessToken);
     } else {
       this.loadTrialPlan();
     }
+  }
+
+  /**
+   * Exchange the refresh token from the link and persist that response (tokens,
+   * org, service access, subscribed services) exactly as the sign-in flow does.
+   * A `subscribedServices`/`serviceAccess` entry for this serviceCode means the
+   * org is already entitled, so the user goes straight to the dashboard;
+   * anything else falls through to the trial page.
+   */
+  private resolveFromRefreshToken(refreshToken: string, serviceCode: string): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.authService.refresh({ refreshToken, serviceCode }).subscribe({
+      next: (res: any) => {
+        const accessToken = res?.access_token ?? res?.tokens?.access_token;
+        const newRefreshToken = res?.refresh_token ?? res?.tokens?.refresh_token;
+
+        if (!accessToken) {
+          this.isLoading = false;
+          this.failExternalTrial('Unable to establish your session. Please try again.');
+          return;
+        }
+
+        this.authService.setTokens(
+          accessToken,
+          newRefreshToken ?? refreshToken,
+          String(Date.now() + 24 * 60 * 60 * 1000),
+          serviceCode
+        );
+
+        localStorage.setItem('service_code', serviceCode);
+        this.productSwitcherService.setSubscribedServices(
+          res?.subscribedServices ?? res?.tokens?.subscribedServices
+        );
+        this.permissionService.setServiceAccess(
+          res?.serviceAccess ?? res?.tokens?.serviceAccess
+        );
+
+        const orgs = res?.organizations ?? res?.tokens?.organizations ?? [];
+        if (orgs[0]?.id) {
+          this.storeOrg(orgs[0].id, orgs[0].name);
+          this.orgId = orgs[0].id;
+          this.orgName = orgs[0].name || this.orgName;
+        }
+
+        this.incomingRefreshToken = null;
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { token: null, refreshToken: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true
+        });
+
+        const entitled = this.hasServiceInResponse(res, serviceCode);
+        console.log('[ExternalLogin] serviceCode:', serviceCode,
+          '| subscribedServices:', JSON.stringify(res?.subscribedServices),
+          '| entitled:', entitled);
+
+        // Already entitled to this service: boot the app straight on the
+        // dashboard. A full navigation is used deliberately so no in-app guard
+        // can bounce the user back onto this trial page.
+        if (entitled) {
+          this.isLoading = false;
+          window.location.replace('/dashboard');
+          return;
+        }
+
+        this.authService.getSession(accessToken).subscribe({
+          next: (session) => {
+            const organization = session?.organizations?.[0];
+            if (organization?.id) {
+              this.storeOrg(organization.id, organization.name);
+              this.orgId = organization.id;
+              this.orgName = organization.name || this.orgName;
+            }
+            this.resolveOrgThenRender(accessToken);
+          },
+          error: () => {
+            this.isLoading = false;
+            this.loadUserAndTrial(accessToken);
+          }
+        });
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.failExternalTrial(
+          err?.error?.detail || err?.error?.message || 'Unable to establish your session. Please try again.'
+        );
+      }
+    });
+  }
+
+  /**
+   * Ask the subscription service whether this org already has coverage for
+   * `serviceCode`. An active trial counts as covered - `subscription: null`
+   * only means there is no *paid* record on top of the trial, which is not a
+   * reason to put the user back on the trial page.
+   */
+  private resolveOrgThenRender(accessToken: string): void {
+    if (!this.orgId) {
+      this.isLoading = false;
+      this.loadUserAndTrial(accessToken);
+      return;
+    }
+
+    this.subscriptionService.checkSubscription(this.orgId, this.serviceCode).subscribe({
+      next: (check) => {
+        const status = (check?.status || '').toUpperCase();
+        const isTrial = status === 'TRIAL' || status === 'TRIALING';
+        const active = check?.active === true || isTrial;
+
+        console.log('[ExternalLogin] checkSubscription status:', check?.status,
+          '| active:', check?.active,
+          '| subscription:', JSON.stringify(check?.['subscription']));
+
+        if (active) {
+          this.cacheSubscription(check);
+          this.isLoading = false;
+          window.location.replace('/dashboard');
+          return;
+        }
+
+        this.isLoading = false;
+        this.loadUserAndTrial(accessToken);
+      },
+      error: () => {
+        this.isLoading = false;
+        this.loadUserAndTrial(accessToken);
+      }
+    });
+  }
+
+  /** Keep the switcher/guard cache in step with the live check. */
+  private cacheSubscription(check: any): void {
+    if (!check?.planId) {
+      return;
+    }
+
+    const services = JSON.parse(localStorage.getItem('subscribed_services') || '[]')
+      .filter((s: any) => s?.serviceCode !== this.serviceCode);
+
+    services.push({
+      serviceCode: this.serviceCode,
+      planId: check.planId,
+      planCode: check.planCode,
+      planName: check.planName,
+      status: check.status,
+      active: check.active,
+      startDate: check.startDate,
+      expiresAt: check.effectiveExpiry,
+      trialActive: true
+    });
+
+    localStorage.setItem('subscribed_services', JSON.stringify(services));
+  }
+
+  /** True when the refresh response already reports this service as active. */
+  private hasServiceInResponse(res: any, serviceCode: string): boolean {
+    const subscribed = res?.subscribedServices ?? res?.tokens?.subscribedServices ?? [];
+    if (Array.isArray(subscribed)) {
+      const match = subscribed.find((entry: any) => entry?.serviceCode === serviceCode);
+      if (match) {
+        return match.active !== false;
+      }
+    }
+
+    const access = res?.serviceAccess ?? res?.tokens?.serviceAccess;
+    if (Array.isArray(access)) {
+      return access.some((grant: any) => grant?.serviceCode === serviceCode || grant?.wildcard === true);
+    }
+    if (access && typeof access === 'object') {
+      return access?.serviceCode === serviceCode || access?.wildcard === true;
+    }
+
+    return this.productSwitcherService.isServiceSubscribed(serviceCode);
   }
 
   private loadUserAndTrial(token: string | null): void {
@@ -127,9 +316,9 @@ export class SubscriptionTrialStartComponent implements OnInit {
     });
   }
 
+  /** Button handler: the trial only ever starts from this click. */
   startTrial(): void {
-    if (!this.trialPlan) {
-      this.errorMessage = 'Trial details are unavailable. Please try again.';
+    if (this.isLoading) {
       return;
     }
 
@@ -137,88 +326,19 @@ export class SubscriptionTrialStartComponent implements OnInit {
     this.errorMessage = '';
 
     const token = this.authService.getAccessToken();
-    if (this.incomingRefreshToken) {
-      this.exchangeTokenAndStartTrial(this.incomingRefreshToken);
-      return;
-    }
-
     if (!token || !this.orgId) {
       this.isLoading = false;
       this.errorMessage = 'Your session or organisation is unavailable. Please sign in again.';
       return;
     }
 
+    if (!this.trialPlan) {
+      this.isLoading = false;
+      this.errorMessage = 'Trial details are unavailable. Please try again.';
+      return;
+    }
+
     this.startSubscriptionAndEnable(token);
-  }
-
-  private exchangeTokenAndStartTrial(refreshToken: string): void {
-    this.authService.refresh({ refreshToken, serviceCode: this.serviceCode }).subscribe({
-      next: (res) => {
-        const accessToken = res?.access_token;
-        if (!accessToken) {
-          this.failExternalTrial('Unable to establish your session. Please try again.');
-          return;
-        }
-
-        this.authService.setTokens(
-          accessToken,
-          res.refresh_token ?? refreshToken,
-          String(Date.now() + 24 * 60 * 60 * 1000)
-        );
-
-        // Persist the refresh response before deciding anything, exactly as
-        // the sign-in flow does, so the switcher and guards see the real state.
-        localStorage.setItem('service_code', this.serviceCode);
-        this.productSwitcherService.setSubscribedServices(res?.subscribedServices);
-        this.permissionService.setServiceAccess(
-          (res as any)?.serviceAccess ?? (res as any)?.tokens?.serviceAccess
-        );
-
-        const responseOrgs = res?.organizations ?? res?.tokens?.organizations ?? [];
-        if (responseOrgs[0]?.id) {
-          this.storeOrg(responseOrgs[0].id, responseOrgs[0].name);
-        }
-
-        if (this.productSwitcherService.isServiceSubscribed(this.serviceCode)) {
-          this.incomingRefreshToken = null;
-          this.router.navigate(['/']);
-          return;
-        }
-
-        this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: { token: null, refreshToken: null },
-          queryParamsHandling: 'merge',
-          replaceUrl: true
-        });
-
-        this.authService.getSession(accessToken).subscribe({
-          next: (session) => {
-            const organization = session?.organizations?.[0];
-            if (!organization?.id) {
-              this.failExternalTrial('No organisation is available for this account.');
-              return;
-            }
-
-            const remember = localStorage.getItem('remember_device') === 'true';
-            const storage = remember ? localStorage : sessionStorage;
-            if (!this.orgId) {
-              storage.setItem('org_id', organization.id);
-              if (organization.name) {
-                storage.setItem('org_name', organization.name);
-              }
-            }
-            this.orgId = organization.id;
-            this.orgName = organization.name || '';
-            this.incomingRefreshToken = null;
-            this.loadUserAndTrial(accessToken);
-            this.startSubscriptionAndEnable(accessToken);
-          },
-          error: () => this.failExternalTrial('Unable to load your organisation. Please try again.')
-        });
-      },
-      error: () => this.failExternalTrial('Unable to establish your session. Please try again.')
-    });
   }
 
   private startSubscriptionAndEnable(token: string): void {
