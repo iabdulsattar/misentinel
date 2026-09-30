@@ -11,7 +11,7 @@ export interface ProductConfig {
   serviceCode: string;
 }
 
-export type ProductStatus = 'current' | 'available' | 'coming-soon';
+export type ProductStatus = 'current' | 'active' | 'available';
 
 @Injectable({ providedIn: 'root' })
 export class ProductSwitcherService {
@@ -91,12 +91,15 @@ export class ProductSwitcherService {
   }
 
   /**
-   * Status shown in the switcher: the active service is `current`, any other
-   * subscribed service is `available`, everything else is `coming-soon`.
+   * Status shown in the switcher, derived from the `subscribedServices` the
+   * identity service returns: the service this app runs is `current`, any other
+   * service the org is subscribed to is `active`, and the rest are `available`.
    */
   getProductStatus(config: ProductConfig): ProductStatus {
-    if (config.serviceCode === this.getCurrentServiceCode()) return 'current';
-    return this.isServiceSubscribed(config.serviceCode) ? 'available' : 'coming-soon';
+    if (config.serviceCode === this.getCurrentServiceCode()) {
+      return 'current';
+    }
+    return this.isServiceSubscribed(config.serviceCode) ? 'active' : 'available';
   }
 
   async switchToProduct(productId: string): Promise<void> {
