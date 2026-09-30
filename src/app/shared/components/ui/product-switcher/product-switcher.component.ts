@@ -48,7 +48,7 @@ export class ProductSwitcherComponent implements OnInit {
       icon: config.id === 'edob'
         ? '<path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>'
         : '<path d="M12 3 5 6v5c0 4.500 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
-      iconBg: config.id === 'edob' ? 'bg-blue-600' : 'bg-violet-700',
+      iconBg: config.id === 'edob' ? 'bg-blue-600' : 'bg-blue-600',
       status: 'available',
       actionLabel: config.id === 'edob' ? undefined : `Switch to ${config.name}`,
       descriptionText: config.id === 'edob' ? undefined : 'Securely register, issue, track and audit every key across your organisation.',

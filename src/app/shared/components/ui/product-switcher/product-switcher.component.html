@@ -61,12 +61,14 @@
         </ng-container>
 
         <ng-template #productRow>
-          <button class="flex items-center gap-3 rounded-xl p-3 w-full text-left cursor-pointer hover:bg-blue-50"
+          <div class="rounded-md p-3 hover:bg-blue-50">
+          
+          <button class="flex items-center gap-3 w-full text-left cursor-pointer hover:bg-blue-50"
             [class.bg-slate-50/70 ring-1 ring-slate-100]="product.status === 'active'"
             [disabled]="isSwitching"
             (click)="selectProduct(product); $event.preventDefault()"
             type="button">
-            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl {{ product.iconBg }} text-white">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md {{ product.iconBg }} text-white">
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="product.icon"></svg>
             </span>
             <span class="min-w-0 flex-1">
@@ -78,9 +80,18 @@
             <span class="shrink-0 rounded-xs bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold text-blue-600"
               *ngIf="product.status === 'available'">Available</span>
           </button>
-          <p class="mt-3 text-xs leading-relaxed text-slate-600" *ngIf="product.descriptionText">
+          <p class="mt-3 text-xs leading-relaxed text-slate-500 font-medium" *ngIf="product.descriptionText">
             {{ product.descriptionText }}
           </p>
+          <a [href]="product.actionHref || '#'" role="menuitem"
+            class="mt-3 flex w-full items-center justify-center gap-2 rounded-sm border border-blue-600 bg-white px-4 py-2 text-sm font-bold text-blue-600 transition hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            *ngIf="product.actionLabel"
+            (click)="selectProduct(product); $event.preventDefault()">
+            {{ product.actionLabel }}
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          
+          </div>
         </ng-template>
       </ng-container>
     </div>
