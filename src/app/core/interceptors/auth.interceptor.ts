@@ -96,7 +96,10 @@ export class AuthInterceptor implements HttpInterceptor {
 
     this.isRefreshing = true;
     console.log('[AuthInterceptor] Refreshing access token...');
-    return from(this.authService.refresh({ refreshToken, serviceCode: 'edob' })).pipe(
+    const serviceCode = localStorage.getItem('service_code')
+      || sessionStorage.getItem('service_code')
+      || 'edob';
+    return from(this.authService.refresh({ refreshToken, serviceCode })).pipe(
       switchMap((res: any) => {
         this.isRefreshing = false;
         const newToken = res?.access_token ?? res?.tokens?.access_token;

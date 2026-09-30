@@ -154,7 +154,8 @@ export interface AcceptInvitationRequest {
 
 export interface RefreshTokenRequest {
   refreshToken: string;
-  serviceCode?: string;
+  /** Required: the identity service scopes the issued token to this service. */
+  serviceCode: string;
 }
 
 export interface RefreshTokenResponse {
