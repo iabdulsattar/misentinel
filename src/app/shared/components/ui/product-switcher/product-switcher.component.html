@@ -46,7 +46,7 @@
       <ng-container *ngFor="let product of products">
         <ng-container *ngIf="product.status === 'current'; else productRow">
           <div role="menuitem" aria-disabled="true"
-            class="flex items-center gap-3 rounded-md p-3 cursor-default bg-slate-50/70 ring-1 ring-slate-100">
+            class="flex items-center gap-3 rounded-md p-3 cursor-default bg-blue-50 hover:bg-blue-50">
             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md {{ product.iconBg }} text-white">
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="product.icon"></svg>
             </span>
