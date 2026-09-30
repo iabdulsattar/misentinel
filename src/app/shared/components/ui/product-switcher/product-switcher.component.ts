@@ -73,13 +73,12 @@ export class ProductSwitcherComponent implements OnInit {
   }
 
   async selectProduct(product: ProductItem): Promise<void> {
-    this.productSelected.emit(product);
-
+    // The current product is not switchable: no emit, no navigation.
     if (product.status === 'current' || this.isSwitching) {
-      this.showSwitcher = false;
       return;
     }
 
+    this.productSelected.emit(product);
     this.isSwitching = true;
     this.showSwitcher = false;
 

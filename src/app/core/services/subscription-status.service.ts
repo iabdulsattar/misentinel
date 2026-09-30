@@ -11,7 +11,12 @@ export class SubscriptionStatusService {
   readonly isLoading = signal(false);
   readonly lastCheck = signal<SubscriptionCheckResponse | null>(null);
 
-  private readonly serviceCode = 'edob';
+  /** The service this session runs, as persisted by login/refresh. */
+  private get serviceCode(): string {
+    return localStorage.getItem('service_code')
+      || sessionStorage.getItem('service_code')
+      || 'edob';
+  }
 
   constructor(
     private readonly subscriptionService: SubscriptionService,
@@ -41,7 +46,7 @@ export class SubscriptionStatusService {
       const result = await this.subscriptionService.checkSubscription(orgId, this.serviceCode).toPromise();
       this.lastCheck.set(result ?? null);
       if (result?.planId) {
-        localStorage.setItem('subscribed_services', JSON.stringify([{
+        this.upsertSubscribedService({
           serviceCode: this.serviceCode,
           planId: result.planId,
           planCode: result.planCode,
@@ -51,7 +56,7 @@ export class SubscriptionStatusService {
           startDate: result.startDate,
           expiresAt: result.effectiveExpiry,
           trialActive: result.status === 'TRIAL' || result.status === 'TRIALING',
-        }]));
+        });
       }
       const isTrial = result?.status === 'TRIAL' || result?.status === 'TRIALING';
       const active = result?.active === true || isTrial;
@@ -69,6 +74,28 @@ export class SubscriptionStatusService {
 
   markCheckoutSuccess(): void {
     this.status.set('active');
+  }
+
+  /**
+   * Replace only this service's entry, keeping the others intact. Overwriting the
+   * whole list here would drop the sibling services the product switcher relies
+   * on to tell `current` from `active`.
+   */
+  private upsertSubscribedService(entry: Record<string, unknown>): void {
+    let services: any[] = [];
+    try {
+      const stored = localStorage.getItem('subscribed_services');
+      const parsed = stored ? JSON.parse(stored) : [];
+      if (Array.isArray(parsed)) {
+        services = parsed;
+      }
+    } catch {
+      services = [];
+    }
+
+    const next = services.filter((s) => s?.serviceCode !== entry['serviceCode']);
+    next.push(entry);
+    localStorage.setItem('subscribed_services', JSON.stringify(next));
   }
 
   redirectIfInactive(): void {

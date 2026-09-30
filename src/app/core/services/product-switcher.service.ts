@@ -40,9 +40,14 @@ export class ProductSwitcherService {
     return Object.values(this.productConfigs);
   }
 
-  /** The service code this browser session is currently running. */
+  /**
+   * This app *is* eDOB, so it is always the current product. Read from the
+   * persisted `service_code` only when it names this app, so a stale value left
+   * by a link for another service cannot displace it.
+   */
   getCurrentServiceCode(): string {
-    return localStorage.getItem('service_code') || sessionStorage.getItem('service_code') || SERVICE_CODE;
+    const stored = localStorage.getItem('service_code') || sessionStorage.getItem('service_code');
+    return stored === SERVICE_CODE ? stored : SERVICE_CODE;
   }
 
   /**

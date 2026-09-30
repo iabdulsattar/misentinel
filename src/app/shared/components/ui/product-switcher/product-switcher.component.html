@@ -45,19 +45,17 @@
     <div class="space-y-1 px-3 pb-3">
       <ng-container *ngFor="let product of products">
         <ng-container *ngIf="product.status === 'current'; else productRow">
-          <a href="#" role="menuitem" class="flex items-center gap-3 rounded-md p-3 hover:bg-blue-50"
-            (click)="selectProduct(product); $event.preventDefault()">
+          <div role="menuitem" aria-disabled="true"
+            class="flex items-center gap-3 rounded-md p-3 cursor-default bg-slate-50/70 ring-1 ring-slate-100">
             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md {{ product.iconBg }} text-white">
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [innerHTML]="product.icon"></svg>
-              
- 
             </span>
             <span class="min-w-0 flex-1">
               <span class="block text-sm font-semibold text-slate-900">{{ product.name }}</span>
               <span class="block truncate text-xs text-slate-500 font-medium">{{ product.description }}</span>
             </span>
             <span class="shrink-0 rounded-xs bg-blue-100 px-2.5 py-0.5 text-[11px] font-bold text-blue-600">Current</span>
-          </a>
+          </div>
         </ng-container>
 
         <ng-template #productRow>
