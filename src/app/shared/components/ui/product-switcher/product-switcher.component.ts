@@ -49,7 +49,7 @@ export class ProductSwitcherComponent implements OnInit {
         ? '<path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>'
         : '<path d="M12 3 5 6v5c0 4.500 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
       iconBg: config.id === 'edob' ? 'bg-blue-600' : 'bg-blue-600',
-      status: 'coming-soon',
+      status: 'available',
       actionLabel: config.id === 'edob' ? undefined : `Switch to ${config.name}`,
       descriptionText: config.id === 'edob' ? undefined : 'Securely register, issue, track and audit every key across your organisation.',
     }));
@@ -59,10 +59,6 @@ export class ProductSwitcherComponent implements OnInit {
   private refreshProductStatuses(): void {
     const configs = this.productSwitcherService.getAllProductConfigs();
     this.products = this.products.map((product) => {
-      if (product.status === 'coming-soon' && !configs.some((c) => c.id === product.id)) {
-        return product;
-      }
-
       const config = configs.find((item) => item.id === product.id);
       if (!config) return product;
 
