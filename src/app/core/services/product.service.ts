@@ -31,7 +31,7 @@ export class ProductService {
     },
     {
       id: 'keyvault',
-      name: 'KeyVault Pro',
+      name: 'KeyVault',
       description: 'Enterprise Key Management',
       serviceCode: 'key-vault',
       baseUrl: 'https://sbskeyvault.workalert.uk',

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SubscriptionLayoutComponent } from '../../../layout/subscription-layout/subscription-layout.component';
 import { AuthService } from '../../../core/services/auth.service';
+import { PermissionService } from '../../../core/services/permission.service';
+import { ProductSwitcherService } from '../../../core/services/product-switcher.service';
 import { GridShapeComponent } from '../../../shared/components/common/grid-shape/grid-shape.component';
 
 @Component({
@@ -25,6 +27,8 @@ export class SubscriptionTrialReadyComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private permissionService: PermissionService,
+    private productSwitcherService: ProductSwitcherService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -57,6 +61,19 @@ export class SubscriptionTrialReadyComponent implements OnInit {
           serviceCode
         );
         localStorage.setItem('service_code', serviceCode);
+        // Persist the grants/subscriptions this refresh returned. The trial grants
+        // permissions server-side, and they only reach the client through this
+        // block, so dropping it here leaves the dashboard with no permissions.
+        const serviceAccess = res?.serviceAccess ?? res?.tokens?.serviceAccess;
+        if (serviceAccess) {
+          this.permissionService.setServiceAccess(serviceAccess);
+        }
+
+        const subscribed = res?.subscribedServices ?? res?.tokens?.subscribedServices;
+        if (Array.isArray(subscribed) && subscribed.length) {
+          this.productSwitcherService.setSubscribedServices(subscribed);
+        }
+
         this.authService.me(accessToken).subscribe({
           next: (profile: any) => {
             const user = profile?.user || profile?.data || profile;
@@ -73,6 +90,11 @@ export class SubscriptionTrialReadyComponent implements OnInit {
       },
       error: () => this.router.navigate(['/signin'])
     });
+  }
+
+  /** Avatar initial, with a fallback so the badge is never blank. */
+  get userInitial(): string {
+    return (this.userName || this.userEmail || '?').charAt(0).toUpperCase();
   }
 
   /** Hand the user on to the dashboard once the fresh session is in place. */

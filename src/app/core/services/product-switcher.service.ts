@@ -26,7 +26,7 @@ export class ProductSwitcherService {
     },
     keyvault: {
       id: 'keyvault',
-      name: 'KeyVault Pro',
+      name: 'KeyVault',
       url: (environment as Environment).productUrls.keyvault,
       serviceCode: 'key-vault'
     }

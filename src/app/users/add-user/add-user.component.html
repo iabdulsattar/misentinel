@@ -17,6 +17,7 @@
     </div>
   </div>
 
+  @if (!isEditMode) {
   <div class="mt-5">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
       <button (click)="activeTab = 0" class="border text-left flex items-start gap-4 p-5 rounded-md shadow-xs transition"
@@ -36,7 +37,7 @@
         <span>
           <span class="block font-bold text-slate-900 text-base font-[Outfit]">Create New User</span>
           <span class="block text-xs text-slate-500 font-normal font-[outfit] mt-0.5">Add a completely new user to
-            KeyVault.</span>
+            eDOB.</span>
         </span>
       </button>
 
@@ -63,6 +64,7 @@
       </button>
     </div>
   </div>
+  }
   
   <!-- Body -->
   <div class="mt-4 gap-4">
@@ -430,7 +432,7 @@
               </clipPath>
             </defs>
           </svg>
-          <span class="text-xs text-slate-900 font-medium">Showing users who do not have access to KeyVault.</span>
+          <span class="text-xs text-slate-900 font-medium">Showing users who do not have access to eDOB.</span>
         </div>
 
         <!-- Table -->

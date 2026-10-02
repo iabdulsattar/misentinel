@@ -369,18 +369,95 @@ export class SubscriptionTrialStartComponent implements OnInit {
   private enableTrialService(token: string): void {
     this.subscriptionService.enableService(this.orgId!, this.serviceCode, token).subscribe({
       next: () => {
-        const services = JSON.parse(localStorage.getItem('subscribed_services') || '[]');
-        const updatedServices = services.filter((service: any) => service.serviceCode !== this.serviceCode);
-        updatedServices.push({ serviceCode: this.serviceCode, status: 'ACTIVE', active: true, trialActive: true });
-        localStorage.setItem('subscribed_services', JSON.stringify(updatedServices));
-        this.isLoading = false;
-        this.router.navigate(['/subscription-trial-ready'], {
-          queryParams: { serviceCode: this.serviceCode }
-        });
+        this.markServiceEnabledLocally();
+        // The trial only grants permissions server-side, and those live on the
+        // refresh response's `serviceAccess` block. Nothing else repopulates it
+        // after the trial, so re-issue the refresh call to pick up the new grants
+        // before the dashboard reads them.
+        this.resyncAfterTrial();
       },
       error: (err) => {
         this.failExternalTrial(err?.error?.detail || 'Failed to enable the service. Please try again.');
       }
+    });
+  }
+
+  /** Optimistic cache entry so the switcher/guards see the service right away. */
+  private markServiceEnabledLocally(): void {
+    const services = JSON.parse(localStorage.getItem('subscribed_services') || '[]')
+      .filter((service: any) => service?.serviceCode !== this.serviceCode);
+
+    services.push({ serviceCode: this.serviceCode, status: 'ACTIVE', active: true, trialActive: true });
+    localStorage.setItem('subscribed_services', JSON.stringify(services));
+  }
+
+  /**
+   * Exchange the stored refresh token again to load the post-trial grants.
+   * The dashboard reads permissions from `service_access_saas`, which is only
+   * written from a login/refresh response, so without this call the user lands
+   * on the dashboard with no permissions at all.
+   */
+  private resyncAfterTrial(): void {
+    const refreshToken = this.authService.getRefreshToken();
+    if (!refreshToken) {
+      this.goToTrialReady();
+      return;
+    }
+
+    this.authService.refresh({ refreshToken, serviceCode: this.serviceCode }).subscribe({
+      next: (res: any) => {
+        const newAccessToken = res?.access_token ?? res?.tokens?.access_token;
+        const newRefreshToken = res?.refresh_token ?? res?.tokens?.refresh_token;
+
+        if (newAccessToken) {
+          this.authService.setTokens(
+            newAccessToken,
+            newRefreshToken ?? refreshToken,
+            String(Date.now() + 24 * 60 * 60 * 1000),
+            this.serviceCode
+          );
+        }
+
+        const serviceAccess = res?.serviceAccess ?? res?.tokens?.serviceAccess;
+        if (serviceAccess) {
+          this.permissionService.setServiceAccess(serviceAccess);
+        }
+
+        const subscribed = res?.subscribedServices ?? res?.tokens?.subscribedServices;
+        if (Array.isArray(subscribed) && subscribed.length) {
+          // The server list is authoritative for the sibling products, but if it
+          // has not caught up with this trial yet, keep the optimistic entry
+          // rather than dropping the service we just enabled.
+          const hasThisService = subscribed.some(
+            (entry: any) => entry?.serviceCode === this.serviceCode
+          );
+          this.productSwitcherService.setSubscribedServices(
+            hasThisService ? subscribed : [...subscribed, {
+              serviceCode: this.serviceCode,
+              status: 'ACTIVE',
+              active: true,
+              trialActive: true
+            }]
+          );
+        } else {
+          // Refresh response carried no list; keep the optimistic entry.
+          this.markServiceEnabledLocally();
+        }
+
+        console.log('[TrialStart] post-trial resync grants:',
+          this.permissionService.getPermissions().length, 'permission(s)');
+
+        this.goToTrialReady();
+      },
+      // Permissions stay as they are; the local cache is the fallback.
+      error: () => this.goToTrialReady()
+    });
+  }
+
+  private goToTrialReady(): void {
+    this.isLoading = false;
+    this.router.navigate(['/subscription-trial-ready'], {
+      queryParams: { serviceCode: this.serviceCode }
     });
   }
 
