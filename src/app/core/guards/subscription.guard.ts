@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { SubscriptionStatusService } from '../services/subscription-status.service';
+import { PermissionService } from '../services/permission.service';
 
 export const subscriptionGuard: CanActivateFn = async (route, state) => {
   const router = inject(Router);
@@ -38,6 +39,14 @@ export const subscriptionGuard: CanActivateFn = async (route, state) => {
 
   if (subscriptionStatus.isActive()) {
     return true;
+  }
+
+  // Only administrators may manage billing, and `/subscription` is admin-only
+  // behind `adminGuard`. Sending a member there would bounce them straight back
+  // to the dashboard, so send them straight there instead.
+  const permissionService = inject(PermissionService);
+  if (!permissionService.isOrgAdmin()) {
+    return router.createUrlTree(['/dashboard']);
   }
 
   return router.createUrlTree(['/subscription']);

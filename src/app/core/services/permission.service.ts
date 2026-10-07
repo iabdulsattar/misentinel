@@ -130,4 +130,32 @@ export class PermissionService {
   hasAnyPermission(permissions: string[]): boolean {
     return permissions.some((p) => this.hasPermission(p));
   }
+
+  /**
+   * True when the user is an organisation administrator.
+   *
+   * There is no role field the client can trust here: `/auth/me` does not type a
+   * role, and the identity `role` string is never persisted. Authorisation in
+   * this app is decided purely by the permission strings inside the grants, and
+   * the admin tier is the `admin.*` namespace (`admin.users.manage`,
+   * `admin.roles.manage`). A member is granted entry-level permissions only, so
+   * holding any `admin.*` permission - or a wildcard grant - is what
+   * distinguishes an administrator. Billing, trials and subscription management
+   * are gated on this.
+   */
+  isOrgAdmin(): boolean {
+    const grants = this.grantsSignal();
+
+    // A wildcard grant already passes every `hasPermission` check, so it has to
+    // count as admin here too or admins would be locked out of billing.
+    if (grants.some((g) => g.wildcard === true)) {
+      return true;
+    }
+
+    return grants.some((g) =>
+      (g.permissions ?? []).some((p) =>
+        typeof p === 'string' && p.trim().toLowerCase().startsWith('admin.')
+      )
+    );
+  }
 }

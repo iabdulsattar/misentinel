@@ -58,7 +58,10 @@ export class SubscriptionTrialStartComponent implements OnInit {
 
     const accessToken = this.authService.getAccessToken();
     if (accessToken) {
-      if (this.productSwitcherService.isServiceSubscribed(this.serviceCode)) {
+      // A member's own grant is what matters. Org-level entitlement must not
+      // short-circuit past the enable call for them, or they would land on the
+      // dashboard with no permissions of their own.
+      if (this.canStartTrial && this.productSwitcherService.isServiceSubscribed(this.serviceCode)) {
         window.location.replace('/dashboard');
         return;
       }
@@ -67,6 +70,60 @@ export class SubscriptionTrialStartComponent implements OnInit {
     } else {
       this.loadTrialPlan();
     }
+  }
+
+  /**
+   * Members never see the trial page: they have no billing rights, so the only
+   * thing left to do is enable the service for the org's existing subscription
+   * and send them on. Admins fall through to the normal render path.
+   */
+  private continueOrEnableForMember(accessToken: string): void {
+    const isAdmin = this.canStartTrial;
+
+    console.log('[SubscriptionTrialStart] route decision:', {
+      serviceCode: this.serviceCode,
+      isOrgAdmin: isAdmin,
+      hasOwnGrant: this.permissionService.canAccessService(this.serviceCode),
+      grants: this.permissionService.getServiceAccess()
+    });
+
+    if (isAdmin) {
+      this.loadUserAndTrial(accessToken);
+      return;
+    }
+
+    if (!this.orgId) {
+      // Without an org there is nothing to enable against; send them to the
+      // dashboard and let the normal guards decide what they can reach.
+      console.warn('[SubscriptionTrialStart] member with no org; going to dashboard');
+      this.isLoading = false;
+      window.location.replace('/dashboard');
+      return;
+    }
+
+    this.enableServiceOnly(accessToken);
+  }
+
+  /** Enable the service for a member, then hand them straight to the dashboard. */
+  private enableServiceOnly(token: string): void {
+    console.log('[SubscriptionTrialStart] member: enabling service', this.serviceCode, 'for org', this.orgId);
+
+    this.subscriptionService.enableService(this.orgId!, this.serviceCode, token).subscribe({
+      next: () => {
+        console.log('[SubscriptionTrialStart] member: enable succeeded, resyncing grants');
+        this.markServiceEnabledLocally();
+        this.resyncAfterEnableForMember();
+      },
+      error: (err) => {
+        // Never strand a member on a page they should not be on; the guards on
+        // the dashboard decide what they can actually reach. Logged so a failed
+        // enable is distinguishable from the call never being made.
+        console.error('[SubscriptionTrialStart] member: enable FAILED',
+          err?.status, err?.error?.detail || err?.error?.message || err?.message);
+        this.isLoading = false;
+        window.location.replace('/dashboard');
+      }
+    });
   }
 
   /**
@@ -128,8 +185,10 @@ export class SubscriptionTrialStartComponent implements OnInit {
 
         // Already entitled to this service: boot the app straight on the
         // dashboard. A full navigation is used deliberately so no in-app guard
-        // can bounce the user back onto this trial page.
-        if (entitled) {
+        // can bounce the user back onto this trial page. Members are excluded
+        // here - org-level entitlement is not the same as their own grant, and
+        // they still need the enable call.
+        if (entitled && this.canStartTrial) {
           this.isLoading = false;
           window.location.replace('/dashboard');
           return;
@@ -147,7 +206,7 @@ export class SubscriptionTrialStartComponent implements OnInit {
           },
           error: () => {
             this.isLoading = false;
-            this.loadUserAndTrial(accessToken);
+            this.continueOrEnableForMember(accessToken);
           }
         });
       },
@@ -169,7 +228,7 @@ export class SubscriptionTrialStartComponent implements OnInit {
   private resolveOrgThenRender(accessToken: string): void {
     if (!this.orgId) {
       this.isLoading = false;
-      this.loadUserAndTrial(accessToken);
+      this.continueOrEnableForMember(accessToken);
       return;
     }
 
@@ -186,16 +245,20 @@ export class SubscriptionTrialStartComponent implements OnInit {
         if (active) {
           this.cacheSubscription(check);
           this.isLoading = false;
-          window.location.replace('/dashboard');
-          return;
+          // Admins with coverage are done. A member still needs the service
+          // enabled for them, which happens in continueOrEnableForMember.
+          if (this.canStartTrial) {
+            window.location.replace('/dashboard');
+            return;
+          }
         }
 
         this.isLoading = false;
-        this.loadUserAndTrial(accessToken);
+        this.continueOrEnableForMember(accessToken);
       },
       error: () => {
         this.isLoading = false;
-        this.loadUserAndTrial(accessToken);
+        this.continueOrEnableForMember(accessToken);
       }
     });
   }
@@ -316,6 +379,16 @@ export class SubscriptionTrialStartComponent implements OnInit {
     });
   }
 
+  /**
+   * Only organisation administrators may start a trial: it is the call that
+   * creates a subscription and can incur billing. Members never reach this page
+   * - `ngOnInit` enables the service for them and redirects, so this handler is
+   * reached by admins only.
+   */
+  get canStartTrial(): boolean {
+    return this.permissionService.isOrgAdmin();
+  }
+
   /** Button handler: the trial only ever starts from this click. */
   startTrial(): void {
     if (this.isLoading) {
@@ -370,11 +443,11 @@ export class SubscriptionTrialStartComponent implements OnInit {
     this.subscriptionService.enableService(this.orgId!, this.serviceCode, token).subscribe({
       next: () => {
         this.markServiceEnabledLocally();
-        // The trial only grants permissions server-side, and those live on the
+        // The enable only grants permissions server-side, and those live on the
         // refresh response's `serviceAccess` block. Nothing else repopulates it
-        // after the trial, so re-issue the refresh call to pick up the new grants
-        // before the dashboard reads them.
-        this.resyncAfterTrial();
+        // afterwards, so re-issue the refresh call to pick up the new grants
+        // before the next page reads them.
+        this.resyncAfterEnable(() => this.goToTrialReady());
       },
       error: (err) => {
         this.failExternalTrial(err?.error?.detail || 'Failed to enable the service. Please try again.');
@@ -382,25 +455,38 @@ export class SubscriptionTrialStartComponent implements OnInit {
     });
   }
 
-  /** Optimistic cache entry so the switcher/guards see the service right away. */
+  /**
+   * Optimistic cache entry so the switcher/guards see the service right away.
+   * `trialActive` is only set when this flow actually started a trial; a member
+   * is enabled against the org's existing subscription, so claiming a trial
+   * there would show them a false trial banner.
+   */
   private markServiceEnabledLocally(): void {
     const services = JSON.parse(localStorage.getItem('subscribed_services') || '[]')
       .filter((service: any) => service?.serviceCode !== this.serviceCode);
 
-    services.push({ serviceCode: this.serviceCode, status: 'ACTIVE', active: true, trialActive: true });
+    services.push({
+      serviceCode: this.serviceCode,
+      status: 'ACTIVE',
+      active: true,
+      trialActive: this.canStartTrial
+    });
     localStorage.setItem('subscribed_services', JSON.stringify(services));
   }
 
   /**
-   * Exchange the stored refresh token again to load the post-trial grants.
-   * The dashboard reads permissions from `service_access_saas`, which is only
-   * written from a login/refresh response, so without this call the user lands
-   * on the dashboard with no permissions at all.
+   * Exchange the stored refresh token again to load the grants the server just
+   * issued. The dashboard reads permissions from `service_access_saas`, which is
+   * only written from a login/refresh response, so without this call the user
+   * lands on the dashboard with no permissions at all.
+   *
+   * `onDone` decides where the user ends up: admins see the trial-ready page,
+   * members go straight to the dashboard.
    */
-  private resyncAfterTrial(): void {
+  private resyncAfterEnable(onDone: () => void): void {
     const refreshToken = this.authService.getRefreshToken();
     if (!refreshToken) {
-      this.goToTrialReady();
+      onDone();
       return;
     }
 
@@ -426,8 +512,8 @@ export class SubscriptionTrialStartComponent implements OnInit {
         const subscribed = res?.subscribedServices ?? res?.tokens?.subscribedServices;
         if (Array.isArray(subscribed) && subscribed.length) {
           // The server list is authoritative for the sibling products, but if it
-          // has not caught up with this trial yet, keep the optimistic entry
-          // rather than dropping the service we just enabled.
+          // has not caught up with the service we just enabled yet, keep the
+          // optimistic entry rather than dropping it.
           const hasThisService = subscribed.some(
             (entry: any) => entry?.serviceCode === this.serviceCode
           );
@@ -436,7 +522,7 @@ export class SubscriptionTrialStartComponent implements OnInit {
               serviceCode: this.serviceCode,
               status: 'ACTIVE',
               active: true,
-              trialActive: true
+              trialActive: this.canStartTrial
             }]
           );
         } else {
@@ -444,13 +530,22 @@ export class SubscriptionTrialStartComponent implements OnInit {
           this.markServiceEnabledLocally();
         }
 
-        console.log('[TrialStart] post-trial resync grants:',
+        console.log('[SubscriptionTrialStart] post-enable resync grants:',
           this.permissionService.getPermissions().length, 'permission(s)');
 
-        this.goToTrialReady();
+        onDone();
       },
       // Permissions stay as they are; the local cache is the fallback.
-      error: () => this.goToTrialReady()
+      error: () => onDone()
+    });
+  }
+
+  /** Post-enable landing spot: members skip the trial-ready page entirely. */
+  private resyncAfterEnableForMember(): void {
+    this.resyncAfterEnable(() => {
+      this.isLoading = false;
+      // Full navigation so no in-app guard can bounce them back here.
+      window.location.replace('/dashboard');
     });
   }
 

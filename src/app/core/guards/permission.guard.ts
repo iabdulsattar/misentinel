@@ -20,3 +20,18 @@ export function permissionGuard(...permissions: string[]): CanActivateFn {
     return allowed ? true : router.createUrlTree(['/dashboard']);
   };
 }
+
+/**
+ * Guard that requires organisation-administrator rights, i.e. any `admin.*`
+ * permission (or a wildcard grant). Used for billing surfaces - subscription
+ * management, checkout and invoices - which must not be reachable by members.
+ *
+ * Usage:
+ *   canActivate: [authGuard, adminGuard]
+ */
+export const adminGuard: CanActivateFn = (): boolean | UrlTree => {
+  const permissionService = inject(PermissionService);
+  const router = inject(Router);
+
+  return permissionService.isOrgAdmin() ? true : router.createUrlTree(['/dashboard']);
+};

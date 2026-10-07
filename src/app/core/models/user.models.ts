@@ -58,6 +58,35 @@ export interface ListUsersParams {
   roleId?: string;
 }
 
+/**
+ * A user who exists in the organisation but has no access to a given service,
+ * i.e. someone who can be imported/activated onto it.
+ */
+export interface EligibleUser {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  phoneNumber?: string;
+  department?: string;
+  jobTitle?: string;
+  status?: UserStatus;
+  avatarUrl?: string;
+  /** Set once the user has been granted access; blocks re-import. */
+  grantedAt?: string | null;
+  active?: boolean;
+  [key: string]: any;
+}
+
+export interface PagedEligibleUsers {
+  content: EligibleUser[];
+  page?: number;
+  size?: number;
+  totalElements?: number;
+  totalPages?: number;
+  [key: string]: any;
+}
+
 export interface PagedUsers {
   content: ServiceUser[];
   page: number;

@@ -94,6 +94,14 @@ export class DashboardShellComponent implements OnInit {
     return this.permissionService.hasPermission('entry.view');
   }
 
+  /**
+   * Trials and subscription management are organisation-admin only, so members
+   * must not see the trial banner or its "Manage Subscription" action.
+   */
+  get canManageSubscription(): boolean {
+    return this.permissionService.isOrgAdmin();
+  }
+
   get hasAnyDashboardAccess(): boolean {
     return this.visibleQuickEntries.length > 0 || this.canViewEntries;
   }

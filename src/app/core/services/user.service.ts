@@ -10,6 +10,8 @@ import {
   UserStats,
   ListUsersParams,
   PagedUsers,
+  PagedEligibleUsers,
+  EligibleUser,
   CreateUserRequest,
   UpdateUserRequest,
   DeactivateUserRequest,
@@ -149,6 +151,33 @@ export class UserService {
     return this.api
       .post<any>(`${this.base(orgId)}/users/${userId}/reactivate`, {}, this.jsonHeaders())
       .pipe(this.unwrap<ServiceUser>());
+  }
+
+  // 13.7 GET /api/v1/users/organizations/{orgId}/services/{serviceCode}/eligible-users
+  // Users who exist in the organisation but have no access to `serviceCode`,
+  // i.e. the candidates that can be imported/activated onto it.
+  listEligibleUsers(
+    orgId: string,
+    serviceCode = 'edob',
+    options: { q?: string; page?: number; size?: number } = {},
+  ): Observable<PagedEligibleUsers> {
+    let params = new HttpParams();
+    if (options.q) params = params.set('q', options.q);
+    if (options.page != null) params = params.set('page', String(options.page));
+    if (options.size != null) params = params.set('size', String(options.size));
+
+    const query = params.toString();
+    const path =
+      `${this.base(orgId)}/services/${encodeURIComponent(serviceCode)}/eligible-users` +
+      `${query ? `?${query}` : ''}`;
+
+    return this.api.get<any>(path, this.authHeaders()).pipe(
+      // Tolerate a bare array as well as the standard paged envelope.
+      map(res => {
+        const data = res && typeof res === 'object' && 'data' in res ? res.data : res;
+        return (Array.isArray(data) ? { content: data } : (data ?? { content: [] })) as PagedEligibleUsers;
+      }),
+    );
   }
 
   // Resend credentials

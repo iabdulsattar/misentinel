@@ -15,6 +15,9 @@ type NavItem = {
   new?: boolean;
   // Permission(s) required to see this menu item. Undefined = visible to all.
   permissions?: string[];
+  // Reserved for organisation administrators (any `admin.*` permission).
+  // Used by billing entries, which have no single owning permission.
+  adminOnly?: boolean;
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
@@ -60,6 +63,7 @@ export class AppSidebarComponent {
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M2 5C2 3.89543 2.89543 3 4 3H20C21.1046 3 22 3.89543 22 5V19C22 20.1046 21.1046 21 20 21H4C2.89543 21 2 20.1046 2 19V5ZM4 5H20V9H4V5ZM4 11H20V19H4V11Z" fill="currentColor"></path><path d="M6 13C6 12.4477 6.44772 12 7 12H9C9.55228 12 10 12.4477 10 13C10 13.5523 9.55228 14 9 14H7C6.44772 14 6 13.5523 6 13Z" fill="currentColor"></path></svg>`,
       name: "Subscription",
       path: "/subscription",
+      adminOnly: true,
     },
 
     // {
@@ -190,18 +194,19 @@ export class AppSidebarComponent {
     return this.router.url === path;
   }
 
-  // A nav item is visible when it has no permission requirement, or the user
-  // holds at least one of the required permissions.
+  // A nav item is visible when the user is allowed to see it. Billing entries
+  // are organisation-admin only, so they are checked against `isOrgAdmin()`
+  // rather than the permission list, which they intentionally do not declare.
   isNavVisible(item: NavItem): boolean {
-    if (!item.permissions || item.permissions.length === 0) {
-      if (item.path === '/subscription') {
-        return true;
-      }
-      return this.subscriptionStatus.isActive() || item.name === 'Authentication';
+    if (item.adminOnly) {
+      return this.permissions.isOrgAdmin();
     }
 
-    if (this.subscriptionStatus.status() === 'trial') {
-      return true;
+    if (!item.permissions || item.permissions.length === 0) {
+      if (item.path === '/subscription') {
+        return this.permissions.isOrgAdmin();
+      }
+      return this.subscriptionStatus.isActive() || item.name === 'Authentication';
     }
 
     return this.permissions.hasAnyPermission(item.permissions);

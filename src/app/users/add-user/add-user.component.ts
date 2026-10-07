@@ -6,7 +6,7 @@ import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../core/services/auth.service';
 import { EdobService } from '../../core/services/edob.service';
 import { PermissionService } from '../../core/services/permission.service';
-import { ServiceUser, CreateUserRequest, UpdateUserRequest } from '../../core/models/user.models';
+import { ServiceUser, CreateUserRequest, UpdateUserRequest, EligibleUser } from '../../core/models/user.models';
 import { AssignRolesRequest, Role } from '../../core/models/edob.models';
 import { MultiSelectComponent, Option as MultiOption } from '../../shared/components/form/multi-select/multi-select.component';
 
@@ -25,6 +25,26 @@ export class AddUserComponent implements OnInit {
   isEditMode = false;
   userId: string | null = null;
   activeTab = 0;
+
+  // "Activate Existing User" tab: users in the org that have no eDOB access.
+  eligibleUsers: EligibleUser[] = [];
+  eligibleLoading = false;
+  eligibleError = '';
+  eligibleSearch = '';
+  eligiblePage = 0;
+  eligibleSize = 10;
+  eligibleTotal = 0;
+  eligibleTotalPages = 0;
+  selectedEligibleUser: EligibleUser | null = null;
+  activatingUserId: string | null = null;
+
+  // "Assign Role" step for activating an existing organisation user onto eDOB.
+  showAssignRoleModal = false;
+  selectedUserForRole: EligibleUser | null = null;
+  selectedRoleId = '';
+  selectedRoleDetails: Role | null = null;
+  loadingRoleDetails = false;
+  assigningRole = false;
 
   form = {
     firstName: '',
@@ -73,6 +93,214 @@ export class AddUserComponent implements OnInit {
     }
 
     this.loadRoles();
+  }
+
+  /**
+   * Eligible users are only needed on the "Activate Existing User" tab, so the
+   * list is fetched on demand rather than on every visit to the page.
+   */
+  private loadEligibleUsers(): void {
+    const orgId = this.getOrgId();
+    if (!orgId) {
+      this.eligibleError = 'Organisation not found.';
+      return;
+    }
+
+    this.eligibleLoading = true;
+    this.eligibleError = '';
+
+    this.userService
+      .listEligibleUsers(orgId, this.form.serviceCode || 'edob', {
+        q: this.eligibleSearch.trim() || undefined,
+        page: this.eligiblePage,
+        size: this.eligibleSize,
+      })
+      .subscribe({
+        next: (res) => {
+          // `eligible-users` identifies the user as `id`, `userId` or
+          // `keycloakId` depending on the payload, so normalise to `id` here -
+          // import is a no-op without it.
+          this.eligibleUsers = (res?.content ?? []).map((user: any, index: number) => ({
+            ...user,
+            id: user.id || user.userId || user.keycloakId || user.sub || '',
+          }));
+          this.eligibleTotal = res?.totalElements ?? this.eligibleUsers.length;
+          this.eligibleTotalPages = res?.totalPages ?? 1;
+          this.eligibleLoading = false;
+        },
+        error: () => {
+          this.eligibleUsers = [];
+          this.eligibleTotal = 0;
+          this.eligibleTotalPages = 0;
+          this.eligibleError = 'Failed to load users. Please try again.';
+          this.eligibleLoading = false;
+        },
+      });
+  }
+
+  /** Switch tabs from the template, loading the eligible list when needed. */
+  selectTab(tab: number): void {
+    this.activeTab = tab;
+    if (tab === 1 && this.eligibleUsers.length === 0 && !this.eligibleLoading) {
+      this.loadEligibleUsers();
+    }
+  }
+
+  onEligibleSearch(value: string): void {
+    this.eligibleSearch = value;
+    this.eligiblePage = 0;
+    this.loadEligibleUsers();
+  }
+
+  refreshEligibleUsers(): void {
+    this.eligiblePage = 0;
+    this.loadEligibleUsers();
+  }
+
+  goToEligiblePage(page: number): void {
+    if (page < 0 || page >= this.eligibleTotalPages || page === this.eligiblePage) {
+      return;
+    }
+    this.eligiblePage = page;
+    this.loadEligibleUsers();
+  }
+
+  get eligibleRangeStart(): number {
+    return this.eligibleTotal === 0 ? 0 : this.eligiblePage * this.eligibleSize + 1;
+  }
+
+  get eligibleRangeEnd(): number {
+    return Math.min((this.eligiblePage + 1) * this.eligibleSize, this.eligibleTotal);
+  }
+
+  /** Page indices to render, capped so a large result set stays navigable. */
+  get eligiblePageNumbers(): number[] {
+    const total = this.eligibleTotalPages;
+    if (total <= 1) return [0];
+
+    const window = 5;
+    let start = Math.max(0, this.eligiblePage - Math.floor(window / 2));
+    const end = Math.min(total, start + window);
+    start = Math.max(0, end - window);
+
+    return Array.from({ length: end - start }, (_, i) => start + i);
+  }
+
+  /**
+   * Opening the modal must not activate anything - the request only fires once a
+   * role is chosen in assignRole().
+   */
+  selectEligibleUser(user: EligibleUser): void {
+    if (this.isAlreadyActive(user)) {
+      this.errorMessage = `${user.email} already has eDOB access.`;
+      return;
+    }
+    if (!user?.id) {
+      console.error('importUser: eligible user has no id', user);
+      this.errorMessage = 'Could not identify this user. Please refresh and try again.';
+      return;
+    }
+    this.selectedEligibleUser = user;
+    this.selectedUserForRole = user;
+    this.selectedRoleId = '';
+    this.selectedRoleDetails = null;
+    this.errorMessage = '';
+    this.showAssignRoleModal = true;
+  }
+
+  /** Alias matching the template's Import action. */
+  importUser(user: EligibleUser): void {
+    this.selectEligibleUser(user);
+  }
+
+/** Users that already hold a grant cannot be imported again. */
+isAlreadyActive(user: EligibleUser): boolean {
+    return !!user?.grantedAt;
+}
+
+  closeAssignRoleModal(): void {
+    this.showAssignRoleModal = false;
+    this.selectedUserForRole = null;
+    this.selectedRoleId = '';
+    this.selectedRoleDetails = null;
+  }
+
+  onRoleChange(): void {
+    if (!this.selectedRoleId) {
+      this.selectedRoleDetails = null;
+      return;
+    }
+    this.loadRoleDetails(this.selectedRoleId);
+  }
+
+  private loadRoleDetails(roleId: string): void {
+    const orgId = this.getOrgId();
+    if (!orgId) return;
+
+    this.loadingRoleDetails = true;
+    this.edobService.getRole(orgId, roleId).subscribe({
+      next: (role: Role) => {
+        this.selectedRoleDetails = role ?? null;
+        this.loadingRoleDetails = false;
+      },
+      error: () => {
+        this.selectedRoleDetails = null;
+        this.loadingRoleDetails = false;
+      },
+    });
+  }
+
+  /**
+   * Grants the chosen role and activates the user onto the service. The backend
+   * issues the login/activation instructions as part of this call - the frontend
+   * sends no email request of its own.
+   */
+  assignRole(): void {
+    const user = this.selectedUserForRole;
+    const orgId = this.getOrgId();
+
+    if (!user?.id || !orgId || !this.selectedRoleId) {
+      return;
+    }
+    if (this.assigningRole || this.activatingUserId) {
+      return;
+    }
+
+    this.assigningRole = true;
+    this.activatingUserId = user.id;
+    this.errorMessage = '';
+
+    const roleIds = [this.selectedRoleId];
+
+    this.edobService.assignUserToService(orgId, user.id, roleIds, this.form.serviceCode || 'edob').subscribe({
+      next: () => this.finishActivation(user),
+      error: (err: any) => {
+        console.error('assignUserToService error:', err);
+        this.errorMessage = err?.error?.message || 'Failed to activate user for eDOB.';
+        this.assigningRole = false;
+        this.activatingUserId = null;
+      },
+    });
+  }
+
+  private finishActivation(user: EligibleUser): void {
+    this.assigningRole = false;
+    this.activatingUserId = null;
+    this.showAssignRoleModal = false;
+    this.selectedUserForRole = null;
+    this.selectedRoleId = '';
+    this.selectedRoleDetails = null;
+    this.successMessage = `User ${user.email} activated for eDOB successfully.`;
+    this.selectedEligibleUser = null;
+    setTimeout(() => this.router.navigate(['/user-management']), 1000);
+  }
+
+  get eligibleUserInitials(): Record<string, string> {
+    return this.eligibleUsers.reduce<Record<string, string>>((acc, user) => {
+      const name = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
+      acc[user.id] = (name || user.email || '?').charAt(0).toUpperCase();
+      return acc;
+    }, {});
   }
 
   private loadRoles(): void {

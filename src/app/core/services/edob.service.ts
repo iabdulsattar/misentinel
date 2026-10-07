@@ -283,6 +283,19 @@ export class EdobService {
     return this.api.put(`${this.basePath(orgId)}/users/${userId}/roles`, payload, headers);
   }
 
+  // POST /api/v1/users/organizations/{orgId}/services/{serviceCode}/users/{userId}
+  // Grants an organisation user access to the service. This is the "Activate
+  // Existing User" / import call: it acts on the target user (unlike
+  // enableService, which acts on the caller).
+  assignUserToService(orgId: string, userId: string, roleIds: string[], serviceCode = 'edob'): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.api.post(
+      `/api/v1/users/organizations/${encodeURIComponent(orgId)}/services/${encodeURIComponent(serviceCode)}/users/${encodeURIComponent(userId)}`,
+      { roleIds },
+      headers
+    );
+  }
+
   // DELETE /api/v1/edob/organizations/{orgId}/roles/{roleId}
   deleteRole(orgId: string, roleId: string): Observable<any> {
     return this.api.delete(`${this.basePath(orgId)}/roles/${roleId}`);

@@ -1,6 +1,6 @@
 import { Routes, PreloadAllModules } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { permissionGuard } from './core/guards/permission.guard';
+import { permissionGuard, adminGuard } from './core/guards/permission.guard';
 import { subscriptionGuard } from './core/guards/subscription.guard';
 
 export const routes: Routes = [
@@ -83,19 +83,19 @@ export const routes: Routes = [
           {
             path: 'subscription',
             loadComponent: () => import('./dashboard/pages/subscription/subscription.component').then(m => m.SubscriptionComponent),
-            canActivate: [authGuard],
+            canActivate: [authGuard, adminGuard],
             title: 'Subscription | eDOB'
           },
           {
             path: 'invoice-details/:id',
             loadComponent: () => import('./dashboard/pages/subscription/invoice-details/invoice-details.component').then(m => m.InvoiceDetailsComponent),
-            canActivate: [authGuard],
+            canActivate: [authGuard, adminGuard],
             title: 'Invoice Details | eDOB'
           },
           {
             path: 'subscription/checkout',
             loadComponent: () => import('./dashboard/pages/subscription/subscription-checkout/subscription-checkout.component').then(m => m.SubscriptionCheckoutComponent),
-            canActivate: [authGuard],
+            canActivate: [authGuard, adminGuard],
             title: 'Complete Your Subscription | eDOB'
           },
           {
