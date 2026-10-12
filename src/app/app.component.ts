@@ -6,6 +6,7 @@ import { WithRouteLoaderComponent } from './layout/route-loader/with-route-loade
 import { RouterEventsLoaderService } from './layout/route-loader/router-events-loader.service';
 import { IdleService } from './core/services/idle.service';
 import { SubscriptionStatusService } from './core/services/subscription-status.service';
+import { DateTimeService } from './shared/services/date-time.service';
 
 @Component({
   selector: 'app-root',
@@ -18,10 +19,12 @@ export class AppComponent {
   readonly active$ = inject(RouterEventsLoaderService).active$;
   private readonly idleService = inject(IdleService);
   private readonly subscriptionStatus = inject(SubscriptionStatusService);
+  private readonly dateTimeService = inject(DateTimeService);
 
   constructor() {
     this.idleService.start();
     this.subscriptionStatus.refresh();
+    this.dateTimeService.initialize();
   }
 }
 

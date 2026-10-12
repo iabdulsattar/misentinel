@@ -90,14 +90,14 @@
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="text-[#6b7280] mt-0.5 flex-shrink-0"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
             <div>
               <div class="text-xs font-bold text-[#111827]">Last Updated On</div>
-              <div class="text-sm text-[#6b7280] mt-0.5">{{ role.updatedAt | date:'medium' }}</div>
+              <div class="text-sm text-[#6b7280] mt-0.5">{{ role.updatedAt | utcToLocal }}</div>
             </div>
           </div>
           <div class="flex items-start gap-3">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="text-[#6b7280] mt-0.5 flex-shrink-0"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
             <div>
               <div class="text-xs font-bold text-[#111827]">Created On</div>
-              <div class="text-sm text-[#6b7280] mt-0.5">{{ role.createdAt | date:'medium' }}</div>
+              <div class="text-sm text-[#6b7280] mt-0.5">{{ role.createdAt | utcToLocal }}</div>
             </div>
           </div>
           <div class="flex items-start gap-3">

@@ -13,6 +13,7 @@ import { ResendCredentialsModalComponent } from './resend-credentials-modal/rese
 import { UsersTableComponent, TableUser } from '../shared/components/users/users-table/users-table.component';
 import { RolesTableComponent } from '../shared/components/roles/roles-table/roles-table.component';
 import { Role } from '../core/models/edob.models';
+import { DateTimeService } from '../shared/services/date-time.service';
 
 interface User {
   id?: string;
@@ -345,7 +346,15 @@ export class UserManagementComponent implements OnInit {
     'Not Invited': { icon: 'ti-circle-minus', color: 'text-slate-400' },
   };
 
-  constructor(private userService: UserService, private edobService: EdobService, private router: Router, private sanitizer: DomSanitizer, private permissionService: PermissionService, private route: ActivatedRoute) {}
+  constructor(
+    private userService: UserService,
+    private edobService: EdobService,
+    private router: Router,
+    private sanitizer: DomSanitizer,
+    private permissionService: PermissionService,
+    private route: ActivatedRoute,
+    private dateTime: DateTimeService
+  ) {}
 
   get canAddUser(): boolean {
     return this.permissionService.hasPermission('admin.users.manage');
@@ -422,17 +431,17 @@ export class UserManagementComponent implements OnInit {
           roles: (item.roles || []).map((r: any) => r.name).filter(Boolean),
           status: (item.status || '').toLowerCase() === 'inactive' ? 'Inactive' : 'Active',
           invite: item.invitationStatus || 'Not Invited',
-          inviteSub: item.invitationUpdatedAt ? new Date(item.invitationUpdatedAt).toLocaleString() : '-',
-          lastLogin: item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleString() : '-',
-          lastTime: item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleTimeString() : '-',
-          created: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-',
+          inviteSub: item.invitationUpdatedAt ? this.dateTime.format(item.invitationUpdatedAt) : '-',
+          lastLogin: item.lastLoginAt ? this.dateTime.format(item.lastLoginAt) : '-',
+          lastTime: item.lastLoginAt ? this.dateTime.formatTimeOnly(item.lastLoginAt) : '-',
+          created: item.createdAt ? this.dateTime.formatDateOnly(item.createdAt) : '-',
            img: (index % 37) + 1,
           resend: item.invitationStatus === 'Pending',
           department: item.department || ['Operations', 'Security', 'Compliance', 'HR'][index % 4],
           phone: item.phoneNumber || ['+91 98765 43210', '+91 98765 12345', '+91 99456 12345', '+91 99876 00000'][index % 4],
           location: item.location || ['Head Office', 'North Gate', 'Control Room', 'Central Hub'][index % 4],
           employeeId: item.employeeId || `EMP-${String(12 + index).padStart(5, '0')}`,
-          joined: item.createdAt ? new Date(item.createdAt).toLocaleString() : '-',
+          joined: item.createdAt ? this.dateTime.format(item.createdAt) : '-',
         }));
 
         if (Array.isArray(payload)) {
@@ -680,12 +689,12 @@ export class UserManagementComponent implements OnInit {
   }
 
   get detailJoined(): string {
-    if (this.detailUser?.createdAt) return new Date(this.detailUser.createdAt).toLocaleString();
+    if (this.detailUser?.createdAt) return this.dateTime.format(this.detailUser.createdAt);
     return this.selectedUser?.joined || this.selectedUser?.created || '';
   }
 
   get detailLastLogin(): string {
-    if (this.detailUser?.lastLoginAt) return new Date(this.detailUser.lastLoginAt).toLocaleString();
+    if (this.detailUser?.lastLoginAt) return this.dateTime.format(this.detailUser.lastLoginAt);
     return this.selectedUser?.lastLogin || '';
   }
 
@@ -739,7 +748,7 @@ export class UserManagementComponent implements OnInit {
   onInviteSent(): void {
     this.showInviteModal = false;
     if (this.selectedUser) {
-      this.selectedUser = { ...this.selectedUser, invite: 'Pending', inviteSub: new Date().toLocaleString() } as User;
+      this.selectedUser = { ...this.selectedUser, invite: 'Pending', inviteSub: this.dateTime.format(new Date()) } as User;
     }
   }
 

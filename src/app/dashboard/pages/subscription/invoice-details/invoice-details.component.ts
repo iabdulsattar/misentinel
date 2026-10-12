@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { SubscriptionService } from '../../../../core/services/subscription.service';
 import { EdobInvoiceDetail, EdobInvoiceLineItem } from '../../../../core/models/subscription.models';
+import { DateTimeService } from '../../../../shared/services/date-time.service';
 
 interface InvoiceDetail {
   id: string;
@@ -59,12 +60,6 @@ export class InvoiceDetailsComponent implements OnInit {
     currency: 'GBP',
   });
 
-  private readonly dateFormatter = new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-
   readonly footerLinks = [
     { label: 'Privacy Policy', href: '#' },
     { label: 'Terms of Service', href: '#' },
@@ -78,7 +73,8 @@ export class InvoiceDetailsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private subscriptionService: SubscriptionService
+    private subscriptionService: SubscriptionService,
+    private dateTime: DateTimeService
   ) {}
 
   private getOrgId(): string | null {
@@ -154,9 +150,9 @@ export class InvoiceDetailsComponent implements OnInit {
     const periodEnd = detail.periodEnd || detail.subscription?.currentPeriodEnd;
 
     const issueDate = invoiceDate
-      ? this.dateFormatter.format(new Date(invoiceDate))
+      ? this.dateTime.formatDateOnly(invoiceDate)
       : '—';
-    const dueDate = dueAt ? this.dateFormatter.format(new Date(dueAt)) : '—';
+    const dueDate = dueAt ? this.dateTime.formatDateOnly(dueAt) : '—';
 
     // Determine dueIn text
     let dueIn = '';
@@ -176,17 +172,17 @@ export class InvoiceDetailsComponent implements OnInit {
     }
 
     const billingPeriod = periodStart && periodEnd
-      ? `${this.dateFormatter.format(new Date(periodStart))} – ${this.dateFormatter.format(new Date(periodEnd))}`
+      ? `${this.dateTime.formatDateOnly(periodStart)} – ${this.dateTime.formatDateOnly(periodEnd)}`
       : '—';
 
     // Use API-provided next billing date if available, otherwise compute
     let nextBilling = '';
     if (detail.subscription?.nextBillingDate) {
-      nextBilling = this.dateFormatter.format(new Date(detail.subscription.nextBillingDate));
+      nextBilling = this.dateTime.formatDateOnly(detail.subscription.nextBillingDate);
     } else if (periodEnd) {
       const nb = new Date(periodEnd);
       nb.setMonth(nb.getMonth() + 1);
-      nextBilling = this.dateFormatter.format(nb);
+      nextBilling = this.dateTime.formatDateOnly(nb);
     }
 
     // Build line items from API 'items' field

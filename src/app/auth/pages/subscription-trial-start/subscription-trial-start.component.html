@@ -397,8 +397,9 @@
             Not Now
           </a>
           <button
+            type="button"
             class="w-full sm:w-auto px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            [disabled]="isLoading" (click)="startTrial()">
+            [disabled]="isLoading || !trialPlan || !orgId" (click)="startTrial()">
             @if (isLoading) {
             <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />

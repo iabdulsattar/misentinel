@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { ButtonComponent } from '../../ui/button/button.component';
 import { TableEntry } from '../entries-table/entries-table.component';
+import { DateTimeService } from '../../../services/date-time.service';
 
 @Component({
   selector: 'app-entries-followup',
@@ -14,13 +15,10 @@ export class EntriesFollowupComponent {
   @Output() edit = new EventEmitter<void>();
   @Output() close = new EventEmitter<void>();
 
+  private readonly dateTime = inject(DateTimeService);
+
   formatDateTime(iso: string): string {
-    if (!iso) return '-';
-    const d = new Date(iso);
-    return d.toLocaleString('en-GB', {
-      day: 'numeric', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
+    return this.dateTime.format(iso);
   }
 
   typeBadgeClass(code: string): string {

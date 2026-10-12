@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { EdobService } from '../core/services/edob.service';
 import { AuthService } from '../core/services/auth.service';
+import { DateTimeService } from '../shared/services/date-time.service';
 import { Entry, ListEntriesRequest, ListEntriesResponse, EntryType, OrgUser, Category, EntryStatus, EntryPriority } from '../core/models/edob.models';
 
 @Component({
@@ -66,7 +67,12 @@ export class DobFeedComponent implements OnInit {
     { label: 'Completed (This Month)', value: '156', note: 'View all completed', tone: 'bg-success-50 text-success-600', icon: this.icon('M20 6 9 17l-5-5') },
   ];
 
-  constructor(private edobService: EdobService, private authService: AuthService, private router: Router) {}
+  constructor(
+    private edobService: EdobService,
+    private authService: AuthService,
+    private router: Router,
+    private dateTime: DateTimeService
+  ) {}
 
   ngOnInit(): void {
     this.ensureOrgId().then((orgId) => {
@@ -223,9 +229,7 @@ export class DobFeedComponent implements OnInit {
   }
 
   private formatDate(iso: string): string {
-    if (!iso) return '-';
-    const d = new Date(iso);
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return this.dateTime.formatDateOnly(iso);
   }
 
   private getTypeClass(code: string): string {

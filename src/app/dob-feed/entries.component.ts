@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { EdobService } from '../core/services/edob.service';
 import { AuthService } from '../core/services/auth.service';
+import { DateTimeService } from '../shared/services/date-time.service';
 import { Entry, ListEntriesRequest, ListEntriesResponse, EntryType, OrgUser, Category, EntryStatus, EntryPriority } from '../core/models/edob.models';
 
 import { EntriesTypesComponent } from '../shared/components/entries/entries-types/entries-types.component';
@@ -80,7 +81,8 @@ export class EntriesComponent implements OnInit {
   constructor(
     private edobService: EdobService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private dateTime: DateTimeService
   ) {}
 
   ngOnInit(): void {
@@ -316,9 +318,7 @@ export class EntriesComponent implements OnInit {
   }
 
   private formatDate(iso: string): string {
-    if (!iso) return '-';
-    const d = new Date(iso);
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return this.dateTime.formatDateOnly(iso);
   }
 
   private initials(name: string): string {

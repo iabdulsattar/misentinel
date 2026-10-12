@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { EdobService } from '../../core/services/edob.service';
 import { PermissionService } from '../../core/services/permission.service';
 import { SubscriptionStatusService } from '../../core/services/subscription-status.service';
+import { DateTimeService } from '../../shared/services/date-time.service';
 import { ProfileResponse } from '../../core/models/auth.models';
 import { DashboardData, OrgUser } from '../../core/models/edob.models';
 import { SubscriptionCheckResponse } from '../../core/models/subscription.models';
@@ -268,6 +269,7 @@ get isTrial(): boolean {
     private edobService: EdobService,
     private permissionService: PermissionService,
     private subscriptionStatus: SubscriptionStatusService,
+    private dateTime: DateTimeService
   ) {}
 
   ngOnInit(): void {
@@ -463,15 +465,7 @@ get isTrial(): boolean {
   }
 
   private formatTime(iso?: string): string {
-    if (!iso) return '';
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return '';
-    return d.toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return this.dateTime.format(iso, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
   private initials(name: string): string {

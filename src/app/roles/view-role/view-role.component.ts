@@ -6,6 +6,7 @@ import { EdobService } from '../../core/services/edob.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PermissionService } from '../../core/services/permission.service';
 import { Role, Permission, PermissionsGrouped } from '../../core/models/edob.models';
+import { UtcToLocalPipe } from '../../shared/pipe/utc-to-local.pipe';
 
 interface ActivityItem {
   date: string;
@@ -32,7 +33,7 @@ interface PermissionView {
 @Component({
   selector: 'app-view-role',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, UtcToLocalPipe],
   templateUrl: './view-role.component.html',
   styles: [`
     .perm-row-body { display: none; padding-top: 14px; }

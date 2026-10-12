@@ -8,6 +8,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { ReactivateRoleModalComponent } from '../reactivate-role-modal/reactivate-role-modal.component';
 import { Role } from '../../core/models/edob.models';
 import { ServiceUser } from '../../core/models/user.models';
+import { DateTimeService } from '../../shared/services/date-time.service';
 
 interface AssignedUser {
   id?: string;
@@ -73,6 +74,7 @@ export class ReactivateRoleComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private toastService: ToastService,
+    private dateTime: DateTimeService
   ) {}
 
   ngOnInit(): void {
@@ -243,20 +245,7 @@ export class ReactivateRoleComponent implements OnInit {
   }
 
   formatDateTime(value?: string): string {
-    if (!value) return '—';
-    const d = new Date(value);
-    if (isNaN(d.getTime())) return '—';
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mon = months[d.getMonth()];
-    const yyyy = d.getFullYear();
-    let h = d.getHours();
-    const mm = String(d.getMinutes()).padStart(2, '0');
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12;
-    if (h === 0) h = 12;
-    const hh = String(h).padStart(2, '0');
-    return `${dd} ${mon} ${yyyy}, ${hh}:${mm} ${ampm}`;
+    return this.dateTime.format(value);
   }
 
   private getOrgId(): string | null {

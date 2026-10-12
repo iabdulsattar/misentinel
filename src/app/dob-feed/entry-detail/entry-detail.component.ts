@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { PermissionService } from '../../core/services/permission.service';
 import { Entry, Comment } from '../../core/models/edob.models';
 import { getUserAvatar } from '../../shared/utils/avatar.utils';
+import { DateTimeService } from '../../shared/services/date-time.service';
 
 @Component({
   selector: 'app-entry-detail',
@@ -36,7 +37,8 @@ export class EntryDetailComponent implements OnInit {
     private authService: AuthService,
     private permissionService: PermissionService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private dateTime: DateTimeService
   ) {}
 
   ngOnInit(): void {
@@ -191,12 +193,7 @@ export class EntryDetailComponent implements OnInit {
   }
 
   formatDateTime(iso: string): string {
-    if (!iso) return '-';
-    const d = new Date(iso);
-    return d.toLocaleString('en-GB', {
-      day: 'numeric', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
+    return this.dateTime.format(iso);
   }
 
   get createdByUserName(): string {

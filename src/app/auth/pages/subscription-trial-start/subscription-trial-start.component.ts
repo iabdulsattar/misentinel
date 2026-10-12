@@ -61,7 +61,9 @@ export class SubscriptionTrialStartComponent implements OnInit {
       // A member's own grant is what matters. Org-level entitlement must not
       // short-circuit past the enable call for them, or they would land on the
       // dashboard with no permissions of their own.
-      if (this.canStartTrial && this.productSwitcherService.isServiceSubscribed(this.serviceCode)) {
+      if (this.canStartTrial
+        && this.productSwitcherService.isServiceSubscribed(this.serviceCode)
+        && this.hasServiceAccess()) {
         window.location.replace('/dashboard');
         return;
       }
@@ -244,12 +246,12 @@ export class SubscriptionTrialStartComponent implements OnInit {
 
         if (active) {
           this.cacheSubscription(check);
-          this.isLoading = false;
-          // Admins with coverage are done. A member still needs the service
-          // enabled for them, which happens in continueOrEnableForMember.
           if (this.canStartTrial) {
-            window.location.replace('/dashboard');
-            return;
+            if (this.hasServiceAccess()) {
+              this.isLoading = false;
+              window.location.replace('/dashboard');
+              return;
+            }
           }
         }
 
@@ -287,25 +289,23 @@ export class SubscriptionTrialStartComponent implements OnInit {
     localStorage.setItem('subscribed_services', JSON.stringify(services));
   }
 
-  /** True when the refresh response already reports this service as active. */
+  /** A grant for another service cannot authorize this app, even if it is wildcard. */
   private hasServiceInResponse(res: any, serviceCode: string): boolean {
-    const subscribed = res?.subscribedServices ?? res?.tokens?.subscribedServices ?? [];
-    if (Array.isArray(subscribed)) {
-      const match = subscribed.find((entry: any) => entry?.serviceCode === serviceCode);
-      if (match) {
-        return match.active !== false;
-      }
-    }
-
     const access = res?.serviceAccess ?? res?.tokens?.serviceAccess;
     if (Array.isArray(access)) {
-      return access.some((grant: any) => grant?.serviceCode === serviceCode || grant?.wildcard === true);
+      return access.some((grant: any) => grant?.serviceCode === serviceCode);
     }
     if (access && typeof access === 'object') {
-      return access?.serviceCode === serviceCode || access?.wildcard === true;
+      return access?.serviceCode === serviceCode;
     }
 
-    return this.productSwitcherService.isServiceSubscribed(serviceCode);
+    return false;
+  }
+
+  private hasServiceAccess(): boolean {
+    return this.permissionService.getServiceAccess().some(
+      (grant) => grant.serviceCode === this.serviceCode
+    );
   }
 
   private loadUserAndTrial(token: string | null): void {
@@ -430,10 +430,6 @@ export class SubscriptionTrialStartComponent implements OnInit {
         this.enableTrialService(token);
       },
       error: (err) => {
-        if (err?.status === 400 || err?.status === 409) {
-          this.enableTrialService(token);
-          return;
-        }
         this.failExternalTrial(err?.error?.detail || 'Failed to start trial. Please try again.');
       }
     });

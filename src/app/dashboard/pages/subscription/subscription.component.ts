@@ -6,6 +6,7 @@ import { finalize } from 'rxjs/operators';
 import { RangeSliderComponent } from '../../../shared/components/range-slider/range-slider.component';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { DateTimeService } from '../../../shared/services/date-time.service';
 import {
   EdobOverview,
   EdobInvoice as ApiInvoice,
@@ -151,13 +152,11 @@ export class SubscriptionComponent implements OnInit {
     currency: 'GBP',
   });
 
-  private readonly dateFormatter = new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-
-  constructor(private subscriptionService: SubscriptionService, private authService: AuthService) {}
+  constructor(
+    private subscriptionService: SubscriptionService,
+    private authService: AuthService,
+    private dateTime: DateTimeService
+  ) {}
 
   get hasActiveSubscription(): boolean {
     if (this.subscriptionCheck !== null) {
@@ -434,8 +433,8 @@ export class SubscriptionComponent implements OnInit {
 
   private mapInvoice(inv: ApiInvoice): Invoice {
     const status = this.normalizeStatus(inv.status || '');
-    const issueDate = inv.invoiceDate ? this.dateFormatter.format(new Date(inv.invoiceDate)) : '';
-    const dueDate = inv.dueAt ? this.dateFormatter.format(new Date(inv.dueAt)) : '';
+    const issueDate = inv.invoiceDate ? this.dateTime.formatDateOnly(inv.invoiceDate) : '';
+    const dueDate = inv.dueAt ? this.dateTime.formatDateOnly(inv.dueAt) : '';
     const amount = inv.amountDisplay || this.centsToDisplay(inv.totalCents || 0);
     return {
       id: inv.id,

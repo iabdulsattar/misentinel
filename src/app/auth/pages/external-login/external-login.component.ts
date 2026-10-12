@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProductSwitcherService } from '../../../core/services/product-switcher.service';
 import { PermissionService } from '../../../core/services/permission.service';
-import { SubscriptionService } from '../../../core/services/subscription.service';
 
 @Component({
   selector: 'app-external-login',
@@ -34,7 +33,6 @@ export class ExternalLoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly productSwitcherService = inject(ProductSwitcherService);
   private readonly permissionService = inject(PermissionService);
-  private readonly subscriptionService = inject(SubscriptionService);
 
   error: string | null = null;
   private serviceCode = 'edob';
@@ -78,7 +76,7 @@ export class ExternalLoginComponent implements OnInit {
         const orgs = res?.organizations ?? res?.tokens?.organizations ?? [];
         if (orgs[0]?.id) {
           this.storeOrg(orgs[0].id, orgs[0].name);
-          this.routeAfterLogin(orgs[0].id);
+          this.routeAfterLogin(orgs[0].role);
         } else {
           this.authService.getSession(accessToken).subscribe({
             next: (session) => {
@@ -86,9 +84,9 @@ export class ExternalLoginComponent implements OnInit {
               if (org?.id) {
                 this.storeOrg(org.id, org.name);
               }
-              this.routeAfterLogin(org?.id ?? null);
+              this.routeAfterLogin(org?.role);
             },
-            error: () => this.routeAfterLogin(null)
+            error: () => this.routeAfterLogin()
           });
         }
       },
@@ -100,38 +98,20 @@ export class ExternalLoginComponent implements OnInit {
   }
 
   /**
-   * Subscribed (trial or paid) goes straight to the app. Anything else is sent
-   * to the trial start page, where nothing happens until the user clicks
-   * "Start Free Trial".
+  * Members go straight to the app. Administrators are routed by whether the
+  * refresh response lists this service.
    */
-  private routeAfterLogin(orgId: string | null): void {
-    const hasGrant = this.permissionService.canAccessService(this.serviceCode);
-    const isAdmin = this.permissionService.isOrgAdmin();
+  private routeAfterLogin(role?: string): void {
+    const isAdmin = this.isAdminRole(role);
 
     console.log('[ExternalLogin] route decision:', {
       serviceCode: this.serviceCode,
-      hasOwnGrant: hasGrant,
+      role,
       isOrgAdmin: isAdmin,
-      grants: this.permissionService.getServiceAccess()
     });
 
-    // A member needs the service enabled for *them* even when the org already
-    // has a subscription, so their own grant is checked first. Org-level
-    // entitlement alone must not short-circuit past the enable call.
-    if (hasGrant) {
-      window.location.replace('/dashboard');
-      return;
-    }
-
-    if (!orgId) {
-      this.error = 'No organisation is available for this account.';
-      return;
-    }
-
-    // A member whose service is not enabled yet: enable it and move on. They
-    // have no billing rights, so they never see the trial page.
     if (!isAdmin) {
-      this.enableServiceForMember(orgId);
+      window.location.replace('/dashboard');
       return;
     }
 
@@ -140,114 +120,13 @@ export class ExternalLoginComponent implements OnInit {
       return;
     }
 
-    this.subscriptionService.checkSubscription(orgId, this.serviceCode).subscribe({
-      next: (check) => {
-        const status = (check?.status || '').toUpperCase();
-        const active = check?.active === true || status === 'TRIAL' || status === 'TRIALING';
-
-        if (active) {
-          this.cacheSubscription(check);
-          window.location.replace('/dashboard');
-          return;
-        }
-
-        this.goToTrialStart();
-      },
-      error: () => this.goToTrialStart()
-    });
+    this.goToTrialStart();
   }
 
-  private enableServiceForMember(orgId: string): void {
-    const token = this.authService.getAccessToken() ?? undefined;
-    console.log('[ExternalLogin] member: enabling service', this.serviceCode, 'for org', orgId);
-
-    this.subscriptionService.enableService(orgId, this.serviceCode, token).subscribe({
-      next: () => {
-        console.log('[ExternalLogin] member: enable succeeded, resyncing grants');
-        this.markServiceEnabledLocally();
-        this.resyncAndGoToDashboard();
-      },
-      error: (err) => {
-        // Never strand a member on an error page; the dashboard guards decide
-        // what they can actually reach. Logged so a failed enable is
-        // distinguishable from the call never being made.
-        console.error('[ExternalLogin] member: enable FAILED',
-          err?.status, err?.error?.detail || err?.error?.message || err?.message);
-        window.location.replace('/dashboard');
-      }
-    });
-  }
-
-  /**
-   * Enabling the service grants permissions server-side, and those only reach
-   * the client through a refresh response. Without this the member lands on the
-   * dashboard with the grants they had before enabling.
-   */
-  private resyncAndGoToDashboard(): void {
-    const refreshToken = this.authService.getRefreshToken();
-    if (!refreshToken) {
-      window.location.replace('/dashboard');
-      return;
-    }
-
-    this.authService.refresh({ refreshToken, serviceCode: this.serviceCode }).subscribe({
-      next: (res: any) => {
-        const accessToken = res?.access_token ?? res?.tokens?.access_token;
-        const newRefreshToken = res?.refresh_token ?? res?.tokens?.refresh_token;
-
-        if (accessToken) {
-          this.authService.setTokens(
-            accessToken,
-            newRefreshToken ?? refreshToken,
-            String(Date.now() + 24 * 60 * 60 * 1000),
-            this.serviceCode
-          );
-        }
-
-        const serviceAccess = res?.serviceAccess ?? res?.tokens?.serviceAccess;
-        if (serviceAccess) {
-          this.permissionService.setServiceAccess(serviceAccess);
-        }
-
-        const subscribed = res?.subscribedServices ?? res?.tokens?.subscribedServices;
-        if (Array.isArray(subscribed) && subscribed.length) {
-          // Keep the entry we just created if the server list has not caught up.
-          const hasThisService = subscribed.some(
-            (entry: any) => entry?.serviceCode === this.serviceCode
-          );
-          this.productSwitcherService.setSubscribedServices(
-            hasThisService ? subscribed : [...subscribed, {
-              serviceCode: this.serviceCode,
-              status: 'ACTIVE',
-              active: true,
-              trialActive: false
-            }]
-          );
-        }
-
-        window.location.replace('/dashboard');
-      },
-      // Local cache is the fallback; the dashboard still loads.
-      error: () => window.location.replace('/dashboard')
-    });
-  }
-
-  /**
-   * Optimistic cache entry so the switcher and guards see the service right
-   * away. A member is enabled against the org's existing subscription, so this
-   * is deliberately not flagged as a trial.
-   */
-  private markServiceEnabledLocally(): void {
-    const services = JSON.parse(localStorage.getItem('subscribed_services') || '[]')
-      .filter((service: any) => service?.serviceCode !== this.serviceCode);
-
-    services.push({
-      serviceCode: this.serviceCode,
-      status: 'ACTIVE',
-      active: true,
-      trialActive: false
-    });
-    localStorage.setItem('subscribed_services', JSON.stringify(services));
+  private isAdminRole(role?: string): boolean {
+    const normalizedRole = role?.trim().toUpperCase().replace(/[\s-]+/g, '_');
+    return this.permissionService.isOrgAdmin()
+      || ['ADMIN', 'ADMINISTRATOR', 'OWNER', 'ORG_ADMIN', 'ORGANIZATION_ADMIN'].includes(normalizedRole ?? '');
   }
 
   private goToTrialStart(): void {
@@ -256,40 +135,12 @@ export class ExternalLoginComponent implements OnInit {
     );
   }
 
-  /** The refresh response already lists this service as covered. */
+  /** Route only when the refresh response includes this exact service. */
   private hasServiceInResponse(): boolean {
-    const subscribed = this.subscribedServices;
-    if (Array.isArray(subscribed)) {
-      const match = subscribed.find((entry: any) => entry?.serviceCode === this.serviceCode);
-      if (match) {
-        return match.active !== false;
-      }
-    }
-    return this.productSwitcherService.isServiceSubscribed(this.serviceCode);
-  }
-
-  /** Keep the switcher/guard cache in step with the live check. */
-  private cacheSubscription(check: any): void {
-    if (!check?.planId) {
-      return;
-    }
-
-    const services = JSON.parse(localStorage.getItem('subscribed_services') || '[]')
-      .filter((s: any) => s?.serviceCode !== this.serviceCode);
-
-    services.push({
-      serviceCode: this.serviceCode,
-      planId: check.planId,
-      planCode: check.planCode,
-      planName: check.planName,
-      status: check.status,
-      active: check.active,
-      startDate: check.startDate,
-      expiresAt: check.effectiveExpiry,
-      trialActive: true
-    });
-
-    localStorage.setItem('subscribed_services', JSON.stringify(services));
+    const serviceCode = this.serviceCode.trim().toLowerCase();
+    return Array.isArray(this.subscribedServices) && this.subscribedServices.some(
+      (service) => String(service?.serviceCode ?? '').trim().toLowerCase() === serviceCode
+    );
   }
 
   private storeOrg(id: string, name?: string): void {

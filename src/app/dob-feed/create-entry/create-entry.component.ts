@@ -10,6 +10,7 @@ import { Entry, EntryType, Category, IncidentType, HandoverType, OrgUser } from 
 import { DateTimePickerComponent } from '../../shared/components/form/datetime-picker/datetime-picker.component';
 import { RichSelectComponent, RichSelectOption } from '../../shared/components/form/rich-select/rich-select.component';
 import { MultiSelectComponent, Option as MultiOption } from '../../shared/components/form/multi-select/multi-select.component';
+import { UtcToLocalPipe } from '../../shared/pipe/utc-to-local.pipe';
 
 interface AIHistoryItem {
   prompt: string;
@@ -43,6 +44,7 @@ import { AddEntryTypeModalComponent } from './add-entry-type-modal/add-entry-typ
     MultiSelectComponent,
     AddCategoryModalComponent,
     AddEntryTypeModalComponent,
+    UtcToLocalPipe,
   ],
   templateUrl: './create-entry.component.html',
 })
